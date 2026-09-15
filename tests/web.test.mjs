@@ -4,7 +4,7 @@ import { createClient, ApiError } from "../dist/index.js";
 const baseUrl = "https://service.example";
 const path = { workspace: "ws_test", provider_id: "sp_test" };
 
-test("search account create, rotation, and tests never automatically replay", async () => {
+test("Web Provider create, rotation, and tests never automatically replay", async () => {
   let calls = 0;
   const client = createClient({
     baseUrl,
@@ -21,25 +21,29 @@ test("search account create, rotation, and tests never automatically replay", as
     },
   });
   await assert.rejects(
-    client.http.POST("/api/v1/workspaces/{workspace}/search-providers", {
+    client.http.POST("/api/v1/workspaces/{workspace}/web-providers", {
       params: { path },
-      body: { type: "brave", name: "Research", credential: "test-secret" },
+      body: {
+        type: "brave",
+        name: "Research",
+        credential: { api_key: "test-secret" },
+      },
     }),
     ApiError,
   );
   await assert.rejects(
     client.http.PATCH(
-      "/api/v1/workspaces/{workspace}/search-providers/{provider_id}",
+      "/api/v1/workspaces/{workspace}/web-providers/{provider_id}",
       {
         params: { path, header: { "If-Match": '\"v1\"' } },
-        body: { credential: "test-secret" },
+        body: { credential: { api_key: "test-secret" } },
       },
     ),
     ApiError,
   );
   await assert.rejects(
     client.http.POST(
-      "/api/v1/workspaces/{workspace}/search-providers/{provider_id}/test",
+      "/api/v1/workspaces/{workspace}/web-providers/{provider_id}/test",
       { params: { path }, body: {} },
     ),
     ApiError,
@@ -95,15 +99,21 @@ test("scoped account responses retain ETags and do not copy secret inputs", asyn
     },
   });
   const result = await client.http.POST(
-    "/api/v1/organizations/{organization}/search-providers",
+    "/api/v1/organizations/{organization}/web-providers",
     {
       params: { path: { organization: "org_test" } },
-      body: { type: "exa", name: "Research", credential: "test-secret" },
+      body: {
+        type: "exa",
+        name: "Research",
+        credential: { api_key: "test-secret" },
+      },
     },
   );
   assert.equal(result.response.headers.get("ETag"), '\"v1\"');
   assert.ok(!JSON.stringify(result.data).includes("test-secret"));
-  assert.equal((await requests[0].json()).credential, "test-secret");
+  assert.deepEqual((await requests[0].json()).credential, {
+    api_key: "test-secret",
+  });
   client.close();
 });
 
@@ -122,15 +132,15 @@ test("workspace-bound search uses credential context and shares shutdown", async
     },
   });
   const http = await client.workspaceHttp();
-  await http.GET("/search-providers");
-  await http.GET("/search-providers/{provider_id}/references", {
+  await http.GET("/web-providers");
+  await http.GET("/web-providers/{provider_id}/references", {
     params: { path: { provider_id: "sp_test" } },
   });
   assert.deepEqual(urls, [
     `${baseUrl}/api/v1/auth/context`,
-    `${baseUrl}/api/v1/workspaces/ws_test/search-providers`,
-    `${baseUrl}/api/v1/workspaces/ws_test/search-providers/sp_test/references`,
+    `${baseUrl}/api/v1/workspaces/ws_test/web-providers`,
+    `${baseUrl}/api/v1/workspaces/ws_test/web-providers/sp_test/references`,
   ]);
   client.close();
-  await assert.rejects(http.GET("/search-providers"));
+  await assert.rejects(http.GET("/web-providers"));
 });
