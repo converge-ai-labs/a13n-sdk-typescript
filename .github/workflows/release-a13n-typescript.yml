@@ -1,0 +1,137 @@
+name: Release a13n for TypeScript
+
+on:
+  push:
+    tags:
+      - "release/a13n/typescript/*"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: release-a13n-typescript
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  build:
+    name: Build a13n for TypeScript
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Verify release source passed main CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/verify-release-source.sh
+
+      - name: Prepare release version
+        id: version
+        run: |
+          version="${GITHUB_REF_NAME#release/a13n/typescript/}"
+          node scripts/prepare-release-version.mjs a13n-typescript "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build a13n for TypeScript
+        run: npm ci && make build
+
+      - name: Pack npm package
+        run: |
+          mkdir -p dist
+          npm pack --pack-destination dist
+
+      - name: Upload npm package
+        uses: actions/upload-artifact@v4
+        with:
+          name: a13n-typescript-package
+          path: dist/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish a13n for TypeScript to npm
+    needs: build
+    runs-on: ubuntu-latest
+    environment: sdk-typescript-npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release tooling
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Download npm package
+        uses: actions/download-artifact@v4
+        with:
+          name: a13n-typescript-package
+          path: dist
+
+      - name: Set up Node.js for npm
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Prevent the latest dist-tag from moving backward
+        if: ${{ !contains(needs.build.outputs.version, '-rc.') }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: node scripts/check-npm-latest.mjs
+
+      - name: Publish package with npm Trusted Publishing
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if [[ "$VERSION" == *-rc.* ]]; then
+            npm publish ./dist/*.tgz --access public --tag rc
+          else
+            npm publish ./dist/*.tgz --access public
+          fi
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout release tag and history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download npm package
+        uses: actions/download-artifact@v4
+        with:
+          name: a13n-typescript-package
+          path: dist
+
+      - name: Create release with channel-scoped notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: >-
+          node scripts/create-github-release.mjs a13n-typescript "$VERSION"
+          "a13n SDK for TypeScript $VERSION" dist/*

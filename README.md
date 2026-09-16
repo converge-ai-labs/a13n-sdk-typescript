@@ -44,45 +44,26 @@ Binary operations accept `Blob` or `ReadableStream<Uint8Array>` and an explicit 
 
 ## Development
 
+This is the independent `converge-ai-labs/a13n-sdk-typescript` repository. Use Node.js 24, npm and Make for development. Runtime support remains declared in `package.json`; neither generation nor tests require Python, Service or another SDK.
+
 ```bash
-make sdk-typescript-generate  # refresh the Service contract and TypeScript models
-make sdk-typescript-check-all
+make install
+make generate         # from the pinned local contract only
+make generated-check  # non-mutating type and published snapshot comparison
+make check-all        # generation, formatting, types, tests and package contents
 ```
 
-Generated contract drift is checked against the live Service schema in the repository gate. The standalone SDK retains its own npm lockfile and build boundary.
+`contract/source.json` records the upstream repository, full commit SHA, original paths and exact input hashes. The generated package-level `openapi.json` remains a supported export. The generator uses openapi-typescript and formatter versions fixed by `package-lock.json`. Do not reformat the raw contract inputs or edit generated types by hand.
+
+See [contract provenance](contract/README.md), [SDK contract](spec/README.md) and [Contributing](CONTRIBUTING.md).
 
 ## Publishing
 
-The first public version must be published locally as an RC to establish the npm package while preserving the stable version for the release workflow. For the initial A13N release:
+The package identity remains `@converge.ai/a13n`; moving its repository does not create a new npm package or transfer publisher authority. Source versions remain `0.0.0`. Release tags use `release/a13n/typescript/<version>`, with stable `X.Y.Z` or `X.Y.Z-rc.N`; versions are injected into the manifest and lockfile only in an ephemeral release checkout. RCs use the `rc` dist-tag and never advance `latest`.
 
-```bash
-python3 scripts/prepare-release-version.py a13n-typescript 0.0.3-rc.1
-cd sdk/typescript
-npm ci
-npm run check:all
-npm publish --access public --tag rc
-```
+The release environment is `sdk-typescript-npm`. npm trusted publishing must authorize **this** repository (`converge-ai-labs/a13n-sdk-typescript`), workflow `release-a13n-typescript.yml`, and that exact environment. Parent-repository trust does not transfer automatically. A package owner must verify/configure trust before release; copied GitHub settings and successful local packaging do not establish npm publishing access. Do not create long-lived publishing tokens as a substitute for that setup.
 
-Run this from a clean checkout of the reviewed release commit and discard the injected local version changes afterward. The publishing account must be able to create the public `@converge.ai/a13n` package in the `converge.ai` organization and either complete 2FA or use a temporary granular access token that can bypass 2FA. Revoke the bootstrap token immediately after trusted publishing is configured.
-
-After bootstrap, inspect `npm dist-tag ls @converge.ai/a13n`. If npm initializes `latest` to the bootstrap RC, remove only that tag with `npm dist-tag rm @converge.ai/a13n latest`; retain the published version and the `rc` tag. Never remove a `latest` tag that points to a stable release. If the bootstrap token cannot manage dist-tags, complete this step after interactive account login before considering bootstrap complete.
-
-The GitHub Environment `sdk-typescript-npm` must allow deployment tags matching `release/a13n/typescript/*`. A rule for the former `release/sdk/typescript/*` channel does not allow the renamed release tags.
-
-Configure the newly created package to trust the exact GitHub workflow and Environment. `npm trust` requires npm 11.15 or newer and interactive account authentication with 2FA; a bypass-2FA granular token cannot configure trust:
-
-```bash
-npx -y npm@11.19.0 trust github @converge.ai/a13n \
-  --repo converge-ai-labs/agent-foundation \
-  --file release-a13n-typescript.yml \
-  --environment sdk-typescript-npm \
-  --allow-publish \
-  --yes
-
-npx -y npm@11.19.0 trust list @converge.ai/a13n
-```
-
-After the bootstrap RC and trust configuration succeed, publish stable `0.0.3` from `.github/workflows/release-a13n-typescript.yml`. Subsequent versions also use this Trusted Publishing workflow. Push `release/a13n/typescript/<version>`, where `<version>` is stable `X.Y.Z` or RC `X.Y.Z-rc.N`; the workflow injects that version into `package.json` and `package-lock.json` in its ephemeral checkout. RCs publish under the npm `rc` dist-tag and never advance `latest`.
+Actual publishing and any required npm bootstrap are separate maintainer actions, not part of repository initialization.
 
 ## License
 

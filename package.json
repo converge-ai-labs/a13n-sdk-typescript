@@ -1,6 +1,6 @@
 {
   "name": "@converge.ai/a13n",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "TypeScript SDK for a13n Service",
   "license": "Apache-2.0",
   "type": "module",
@@ -30,14 +30,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/converge-ai-labs/agent-foundation.git",
-    "directory": "sdk/typescript"
+    "url": "git+https://github.com/converge-ai-labs/a13n-sdk-typescript.git"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "npm run format:check && npm run typecheck",
-    "check:all": "npm run check && npm test && npm run pack:check",
+    "check:all": "npm run generate:check && npm run check && npm test && npm run pack:check",
     "clean": "rm -rf dist *.tgz",
+    "generate": "bash scripts/sync-contract.sh --check && node generate.mjs",
+    "generate:check": "bash scripts/sync-contract.sh --check && node generate.mjs --check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "pack:check": "npm pack --dry-run",

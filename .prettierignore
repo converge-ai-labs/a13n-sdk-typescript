@@ -1,2 +1,5 @@
 dist/
 *.tgz
+# Exact upstream bytes; do not invalidate provenance hashes by reformatting.
+contract/**/*.json
+contract/semantics/
