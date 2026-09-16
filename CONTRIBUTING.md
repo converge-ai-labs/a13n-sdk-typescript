@@ -29,7 +29,7 @@ GITHUB_REPOSITORY=converge-ai-labs/a13n-sdk-typescript \
 
 The first channel release uses initial or curated notes rather than attributing extracted monorepo history to this repository's PR numbers. RC GitHub Releases explicitly avoid `latest`. Repository privacy is separate from package visibility: registry publication can expose the package even when its source repository remains private.
 
-Trusted Publishing must bind `converge-ai-labs/a13n-sdk-typescript`, workflow `release-a13n-typescript.yml`, and environment `sdk-typescript-npm`. Do not reuse the old repository trust or assume copying Actions settings configures npm. For an absent package namespace, the reviewed local RC bootstrap and subsequent trusted-publisher setup require explicit maintainer action before tag-driven publication. The stable guard reads npm dist-tags, rejects equal/older latest versions, and fails on registry/auth/network uncertainty; only an explicit missing-package response or an absent latest tag permits first stable publication. RC publication always uses `--tag rc`.
+Trusted Publishing must bind the `@converge.ai/a13n` package to `converge-ai-labs/a13n-sdk-typescript`, workflow `release-a13n-typescript.yml`, and environment `sdk-typescript-npm`. Configure this connection in the package's npm settings; copying GitHub Actions settings does not configure npm trust. The stable guard reads npm dist-tags, rejects equal/older latest versions, and fails on registry/auth/network uncertainty; only an explicit missing-package response or an absent latest tag permits first stable publication. RC publication always uses `--tag rc`.
 
 ## Service contract updates
 
