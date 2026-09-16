@@ -69,6 +69,14 @@ jobs:
           SOURCE_SHA: ${{ steps.source.outputs.sha }}
         run: bash scripts/sync-contract.sh ../service-source "$SOURCE_SHA"
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: sdk/package-lock.json
+      - run: make install
+        working-directory: sdk
+
       - name: SDK-scoped PR installation token
         uses: actions/create-github-app-token@v3
         id: pr-token
