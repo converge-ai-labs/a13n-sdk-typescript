@@ -4,7 +4,10 @@ import test from "node:test";
 import { createClient } from "../dist/index.js";
 
 const wire = JSON.parse(
-  await readFile(new URL("../../fixtures/wire.json", import.meta.url), "utf8"),
+  await readFile(
+    new URL("../contract/fixtures/wire.json", import.meta.url),
+    "utf8",
+  ),
 );
 
 test("shared wire fixtures preserve omission, null and response metadata", async () => {
