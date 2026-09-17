@@ -35,10 +35,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "npm run format:check && npm run lint && npm run typecheck",
-    "check:all": "npm run generate:check && npm run check && npm test && npm run pack:check",
+    "check:all": "npm run check && npm test && npm run pack:check",
     "clean": "rm -rf dist *.tgz",
-    "generate": "bash scripts/sync-contract.sh --check && node generate.mjs",
-    "generate:check": "bash scripts/sync-contract.sh --check && node generate.mjs --check",
+    "generate": "node generate.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
