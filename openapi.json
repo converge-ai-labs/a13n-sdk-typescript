@@ -9421,6 +9421,25 @@
       "ItemCollection": {
         "additionalProperties": false,
         "properties": {
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "finalized": {
+            "title": "Finalized",
+            "type": "boolean"
+          },
+          "incomplete_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incomplete Reason"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/ItemResource"
@@ -9438,9 +9457,32 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "projection_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projection Cursor"
+          },
+          "snapshot_version": {
+            "title": "Snapshot Version",
+            "type": "integer"
           }
         },
-        "required": ["items", "next_cursor"],
+        "required": [
+          "items",
+          "next_cursor",
+          "snapshot_version",
+          "projection_cursor",
+          "complete",
+          "incomplete_reason",
+          "finalized"
+        ],
         "title": "ItemCollection",
         "type": "object"
       },
@@ -37113,6 +37155,17 @@
                 }
               ],
               "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": ["asc", "desc"],
+              "title": "Order",
+              "type": "string"
             }
           }
         ],
