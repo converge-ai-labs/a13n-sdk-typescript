@@ -204,7 +204,7 @@ function changeEntry(change, repository) {
   category =
     labelCategories.find(([label]) => change.labels.includes(label))?.[1] ??
     category;
-  subject = subject.replace(/([\\`*_{}\[\]<>])/g, "\\$1");
+  subject = subject.replace(/([\\`*_{}[\]<>])/g, "\\$1");
   const pr = pullRequest(change);
   const link = pr
     ? `[#${pr}](https://github.com/${repository}/pull/${pr})`
