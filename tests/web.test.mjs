@@ -35,7 +35,7 @@ test("Web Provider create, rotation, and tests never automatically replay", asyn
     client.http.PATCH(
       "/api/v1/workspaces/{workspace}/web-providers/{provider_id}",
       {
-        params: { path, header: { "If-Match": '\"v1\"' } },
+        params: { path, header: { "If-Match": '"v1"' } },
         body: { credential: { api_key: "test-secret" } },
       },
     ),
@@ -94,7 +94,7 @@ test("scoped account responses retain ETags and do not copy secret inputs", asyn
       requests.push(request);
       return new Response(
         JSON.stringify({ id: "sp_test", credential_configured: true }),
-        { headers: { ETag: '\"v1\"', "Content-Type": "application/json" } },
+        { headers: { ETag: '"v1"', "Content-Type": "application/json" } },
       );
     },
   });
@@ -109,7 +109,7 @@ test("scoped account responses retain ETags and do not copy secret inputs", asyn
       },
     },
   );
-  assert.equal(result.response.headers.get("ETag"), '\"v1\"');
+  assert.equal(result.response.headers.get("ETag"), '"v1"');
   assert.ok(!JSON.stringify(result.data).includes("test-secret"));
   assert.deepEqual((await requests[0].json()).credential, {
     api_key: "test-secret",

@@ -4,7 +4,22 @@ Write code, documentation, commit messages, Issues and pull requests in English.
 
 ## Development
 
-Use Node.js 24, npm and Make. `make install` uses the committed npm lockfile. `make generate` consumes only the local pinned Service snapshot; `make generated-check` compares generated types and the published OpenAPI without updating them. `make check` verifies formatting and TypeScript, including negative type examples. `make test` builds and runs transport, stream, notification, wire and generator tests. `make check-all` combines the full gate and npm package-content checks. No Python, Service or sibling SDK checkout is needed.
+Use Node.js 24, npm and Make. `make install` uses the committed npm lockfile. `make generate` consumes only the local pinned Service snapshot; `make generated-check` compares generated types and the published OpenAPI without updating them. `make check` verifies Prettier, ESLint, and TypeScript, including negative type examples. `make test` builds and runs transport, stream, notification, wire and generator tests. `make check-all` combines the full gate and npm package-content checks. No Python, Service or sibling SDK checkout is needed.
+
+### Quality gates
+
+After `make install`, run `make hooks-install` once to select the tracked `.githooks/` directory as this checkout's local `core.hooksPath`. This replaces any existing local hook-path setting; integrate the hook into an existing custom setup instead when needed. The executable pre-commit hook runs `npm run check` without modifying files, installing packages, or running full tests/builds. No Python or extra hook framework is required.
+
+| Command            | Purpose                                                                       |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `make format`      | Apply Prettier formatting                                                     |
+| `make lint`        | Check formatting and moderate ESLint recommended rules                        |
+| `make typecheck`   | Run strict no-emit tsc, including generated types and negative examples       |
+| `make check`       | Run the same fast checks as the commit hook                                   |
+| `make hooks-check` | Exercise the tracked hook without installing it                               |
+| `make check-all`   | Verify provenance/generated drift, static checks, tests, and package contents |
+
+ESLint covers handwritten TypeScript and JavaScript tooling/tests; Prettier alone owns style. Generated `src/schema.ts` is excluded only from ESLint, not compilation, formatting, or generation checks. Keep the existing NodeNext compiler settings rather than copying browser-app configuration. CI uses the same full gate independently of local hook installation. Formatters must retain the vendored-contract exclusions in `.prettierignore`; never rewrite upstream evidence to satisfy a style check.
 
 Keep changes direct and scoped. Preserve omission/null, bounded read retries, non-replayed mutations and shared shutdown. Change generators rather than generated output. Streaming delivery does not own durable Run execution; tests must retain replay-gap and best-effort notification reconciliation behavior. Report exact results and reuse valid checks.
 
