@@ -126,7 +126,8 @@ test("SSE handles split UTF-8, CRLF, multiline payloads and cancellation", async
     { id: "2-0", event: "message", data: "你好\nworld" },
   ]);
   await assert.rejects(async () => {
-    for await (const _ of decodeSse(chunks("data: partial"))) {
+    for await (const frame of decodeSse(chunks("data: partial"))) {
+      assert.fail(`Unexpected incomplete frame: ${JSON.stringify(frame)}`);
     }
   }, ProtocolError);
   let canceled = false;
@@ -138,7 +139,10 @@ test("SSE handles split UTF-8, CRLF, multiline payloads and cancellation", async
       canceled = true;
     },
   });
-  for await (const _ of decodeSse(body)) break;
+  for await (const frame of decodeSse(body)) {
+    assert.equal(frame.data, "one");
+    break;
+  }
   assert.equal(canceled, true);
 });
 
