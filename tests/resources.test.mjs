@@ -271,3 +271,103 @@ test("public auth sends no credentials and shutdown wins over a pending token ca
   await assert.rejects(pending, { name: "AbortError" });
   assert.equal(dispatches, 0);
 });
+
+test("wait deadlines interrupt pending async bearer resolution without dispatch", async () => {
+  let resolveToken;
+  let dispatches = 0;
+  const token = new Promise((resolve) => {
+    resolveToken = resolve;
+  });
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: () => token },
+    fetch: async () => {
+      dispatches++;
+      return json({ status: "running" });
+    },
+  });
+  await assert.rejects(
+    client.workspaces
+      .ref("ws_1234567890abcdef")
+      .runs.ref("run_1234567890abcdef")
+      .wait({ timeoutMs: 20 }),
+    WaitTimeoutError,
+  );
+  assert.equal(dispatches, 0);
+  resolveToken("secret");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(dispatches, 0);
+});
+
+test("client shutdown interrupts resource wait polling sleep", async () => {
+  let dispatches = 0;
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: "secret" },
+    fetch: async () => {
+      dispatches++;
+      return json({ status: "running" });
+    },
+  });
+  const waiting = client.workspaces
+    .ref("ws_1234567890abcdef")
+    .runs.ref("run_1234567890abcdef")
+    .wait({ timeoutMs: 1_000, pollIntervalMs: 180 });
+  while (dispatches === 0)
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  client.close();
+  await assert.rejects(
+    Promise.race([
+      waiting,
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("wait did not observe shutdown")),
+          80,
+        ),
+      ),
+    ]),
+    { name: "AbortError" },
+  );
+});
+
+test("acceptance and queue receipts require object-shaped nonblank identities", async () => {
+  const responses = [
+    null,
+    acceptance({
+      run_id: { bad: true },
+      thread_id: 3,
+      session_id: true,
+    }),
+    {
+      outcome: "queued",
+      queue_version: 1,
+      run: null,
+      queued_submission: {
+        queued_submission_id: " ",
+        thread_id: "thread_1234567890abcdef",
+      },
+    },
+  ];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: "secret" },
+    fetch: async () => json(responses.shift(), { status: 202 }),
+  });
+  const workspace = client.workspaces.ref("ws_1234567890abcdef");
+  const agent = workspace.agents.ref("agent_1234567890abcdef");
+  await assert.rejects(
+    agent.start("one", { idempotencyKey: "one" }),
+    ProtocolError,
+  );
+  await assert.rejects(
+    agent.start("two", { idempotencyKey: "two" }),
+    ProtocolError,
+  );
+  await assert.rejects(
+    workspace.threads.ref("thread_1234567890abcdef").submit("three", {
+      idempotencyKey: "three",
+      body: { expected_thread_version: 1 },
+    }),
+    ProtocolError,
+  );
+});

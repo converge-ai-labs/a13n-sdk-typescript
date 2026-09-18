@@ -1,4 +1,4 @@
-import { ProtocolError, WaitTimeoutError } from "../errors.js";
+import { isRecord, ProtocolError, WaitTimeoutError } from "../errors.js";
 import type { components, operations } from "../schema.js";
 import {
   ResourceRunStream,
@@ -9,6 +9,7 @@ import { delay, type Transport } from "../transport.js";
 import {
   flattenPages,
   jsonRequest,
+  type IdempotentEtagOptions,
   type MutationOptions,
   normalizeInput,
   PageIterator,
@@ -19,6 +20,7 @@ import {
   snapshot,
   withCursor,
 } from "./base.js";
+import { workspaceManagement, type WorkspaceManagement } from "./management.js";
 
 type Schema = components["schemas"];
 type QueryOf<K extends keyof operations> = Exclude<
@@ -29,6 +31,9 @@ type QueryOf<K extends keyof operations> = Exclude<
 export type AgentInput = Schema["AgentInput"];
 export type AgentResource = Schema["Agent"];
 export type AgentCollectionPage = Schema["AgentCollection"];
+export type AgentRevision = Schema["AgentRevision"];
+export type AgentRevisionCollectionPage = Schema["AgentRevisionCollection"];
+export type AgentRevisionCreateResult = Schema["AgentRevisionCreateResult"];
 export type RunResource = Schema["RunResource"];
 export type RunCollectionPage = Schema["RunCollection"];
 export type ThreadResource = Schema["ThreadResource"];
@@ -77,24 +82,43 @@ function headers(options: MutationOptions): HeadersInit {
   return { "Idempotency-Key": options.idempotencyKey };
 }
 
+function guardedHeaders(options: IdempotentEtagOptions): HeadersInit {
+  return {
+    "Idempotency-Key": options.idempotencyKey,
+    "If-Match": options.ifMatch,
+  };
+}
+
+function identity(
+  value: Record<string, unknown>,
+  field: string,
+  context: string,
+): string {
+  const candidate = value[field];
+  if (typeof candidate !== "string" || !candidate.trim())
+    throw new ProtocolError(`${context} has an invalid ${field}.`);
+  return candidate;
+}
+
 function accepted<Receipt>(
   transport: Transport,
   workspaceId: string,
   receipt: ResourceResult<Receipt>,
-  value: RunAcceptanceReceipt,
+  value: unknown,
   sourceRunId?: string,
 ): RunAccepted<Receipt> {
-  if (!value.run_id || !value.thread_id || !value.session_id)
-    throw new ProtocolError(
-      "Run acceptance has incomplete resource identities.",
-    );
-  if (sourceRunId && value.run_id === sourceRunId)
+  if (!isRecord(value))
+    throw new ProtocolError("Run acceptance is not an object.");
+  const runId = identity(value, "run_id", "Run acceptance");
+  const threadId = identity(value, "thread_id", "Run acceptance");
+  const sessionId = identity(value, "session_id", "Run acceptance");
+  if (sourceRunId && runId === sourceRunId)
     throw new ProtocolError("Successor acceptance must identify a new Run.");
   return {
     outcome: "run_accepted",
-    run: new Run(transport, workspaceId, value.run_id),
-    thread: new Thread(transport, workspaceId, value.thread_id),
-    session: new Session(transport, workspaceId, value.session_id),
+    run: new Run(transport, workspaceId, runId),
+    thread: new Thread(transport, workspaceId, threadId),
+    session: new Session(transport, workspaceId, sessionId),
     receipt,
   };
 }
@@ -110,10 +134,15 @@ function validateWait(options: WaitOptions): number {
 
 function deadlineSignal(
   remaining: number,
+  transport: AbortSignal,
   caller: AbortSignal | undefined,
 ): AbortSignal {
-  const timeout = AbortSignal.timeout(Math.max(1, Math.ceil(remaining)));
-  return caller ? AbortSignal.any([caller, timeout]) : timeout;
+  const signals = [
+    transport,
+    AbortSignal.timeout(Math.max(1, Math.ceil(remaining))),
+  ];
+  if (caller) signals.push(caller);
+  return AbortSignal.any(signals);
 }
 
 export class Workspaces {
@@ -128,6 +157,31 @@ export class Workspace {
   readonly threads: Threads;
   readonly runs: Runs;
   readonly sessions: Sessions;
+  readonly models: WorkspaceManagement["models"];
+  readonly modelProviders: WorkspaceManagement["modelProviders"];
+  readonly webProviders: WorkspaceManagement["webProviders"];
+  readonly environmentProviders: WorkspaceManagement["environmentProviders"];
+  readonly environmentTemplates: WorkspaceManagement["environmentTemplates"];
+  readonly environments: WorkspaceManagement["environments"];
+  readonly assets: WorkspaceManagement["assets"];
+  readonly connections: WorkspaceManagement["connections"];
+  readonly connectorProviders: WorkspaceManagement["connectorProviders"];
+  readonly memoryProviders: WorkspaceManagement["memoryProviders"];
+  readonly skills: WorkspaceManagement["skills"];
+  readonly hookSubscriptions: WorkspaceManagement["hookSubscriptions"];
+  readonly traces: WorkspaceManagement["traces"];
+  readonly lifecycleEvents: WorkspaceManagement["lifecycleEvents"];
+  readonly configurationAssistant: WorkspaceManagement["configurationAssistant"];
+  readonly configurationSessions: WorkspaceManagement["configurationSessions"];
+  readonly configurationDrafts: WorkspaceManagement["configurationDrafts"];
+  readonly applicationAccounts: WorkspaceManagement["applicationAccounts"];
+  readonly bots: WorkspaceManagement["bots"];
+  readonly invitations: WorkspaceManagement["invitations"];
+  readonly roleBindings: WorkspaceManagement["roleBindings"];
+  readonly permissions: WorkspaceManagement["permissions"];
+  readonly members: WorkspaceManagement["members"];
+  readonly personalApiKeys: WorkspaceManagement["personalApiKeys"];
+  readonly serviceAccounts: WorkspaceManagement["serviceAccounts"];
 
   constructor(
     readonly transport: Transport,
@@ -137,6 +191,32 @@ export class Workspace {
     this.threads = new Threads(transport, id);
     this.runs = new Runs(transport, id);
     this.sessions = new Sessions(transport, id);
+    const management = workspaceManagement(transport, id);
+    this.models = management.models;
+    this.modelProviders = management.modelProviders;
+    this.webProviders = management.webProviders;
+    this.environmentProviders = management.environmentProviders;
+    this.environmentTemplates = management.environmentTemplates;
+    this.environments = management.environments;
+    this.assets = management.assets;
+    this.connections = management.connections;
+    this.connectorProviders = management.connectorProviders;
+    this.memoryProviders = management.memoryProviders;
+    this.skills = management.skills;
+    this.hookSubscriptions = management.hookSubscriptions;
+    this.traces = management.traces;
+    this.lifecycleEvents = management.lifecycleEvents;
+    this.configurationAssistant = management.configurationAssistant;
+    this.configurationSessions = management.configurationSessions;
+    this.configurationDrafts = management.configurationDrafts;
+    this.applicationAccounts = management.applicationAccounts;
+    this.bots = management.bots;
+    this.invitations = management.invitations;
+    this.roleBindings = management.roleBindings;
+    this.permissions = management.permissions;
+    this.members = management.members;
+    this.personalApiKeys = management.personalApiKeys;
+    this.serviceAccounts = management.serviceAccounts;
   }
 }
 
@@ -208,11 +288,15 @@ export class Agents {
 }
 
 export class Agent {
+  readonly revisions: AgentRevisions;
+
   constructor(
     private readonly transport: Transport,
     readonly workspaceId: string,
     readonly selector: string,
-  ) {}
+  ) {
+    this.revisions = new AgentRevisions(transport, workspaceId, selector);
+  }
 
   get(options: RequestOptions = {}): Promise<ResourceResult<AgentResource>> {
     return jsonRequest(
@@ -235,6 +319,20 @@ export class Agent {
       `/api/v1/workspaces/${encodeURIComponent(this.workspaceId)}/agents/${encodeURIComponent(this.selector)}`,
       body,
       { "If-Match": options.ifMatch },
+      { workspaceId: this.workspaceId, signal: options.signal },
+    );
+  }
+
+  changeLifecycle(
+    action: string,
+    options: IdempotentEtagOptions,
+  ): Promise<ResourceResult<AgentResource>> {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      `/api/v1/workspaces/${encodeURIComponent(this.workspaceId)}/agents/${encodeURIComponent(this.selector)}/${encodeURIComponent(selector(action, "action"))}`,
+      undefined,
+      guardedHeaders(options),
       { workspaceId: this.workspaceId, signal: options.signal },
     );
   }
@@ -262,6 +360,82 @@ export class Agent {
       { workspaceId: this.workspaceId, signal: options.signal },
     );
     return accepted(this.transport, this.workspaceId, receipt, receipt.data);
+  }
+}
+
+export type AgentRevisionListFilters = Omit<
+  QueryOf<"get_workspaces_workspace_agents_agent_revisions">,
+  "cursor"
+> & { cursor?: string | null };
+
+export class AgentRevisions {
+  private readonly path: string;
+
+  constructor(
+    private readonly transport: Transport,
+    readonly workspaceId: string,
+    readonly agent: string,
+  ) {
+    this.path = `/api/v1/workspaces/${encodeURIComponent(workspaceId)}/agents/${encodeURIComponent(agent)}/revisions`;
+  }
+
+  list(
+    filters: AgentRevisionListFilters = {},
+    options: RequestOptions = {},
+  ): Promise<ResourceResult<AgentRevisionCollectionPage>> {
+    return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
+      query: filters,
+      workspaceId: this.workspaceId,
+      signal: options.signal,
+    });
+  }
+
+  pages(
+    filters: AgentRevisionListFilters = {},
+    options: RequestOptions = {},
+  ): PageIterator<AgentRevisionCollectionPage, AgentRevision> {
+    const saved = snapshot(filters);
+    return new PageIterator(
+      saved.cursor,
+      (cursor) => this.list(withCursor(saved, cursor), options),
+      (page) => page,
+    );
+  }
+
+  iterate(
+    filters: AgentRevisionListFilters = {},
+    options: RequestOptions = {},
+  ): AsyncIterable<AgentRevision> {
+    return flattenPages(this.pages(filters, options), (page) => page);
+  }
+
+  create(
+    body: Schema["CreateAgentRevisionRequest"],
+    options: IdempotentEtagOptions,
+  ): Promise<ResourceResult<AgentRevisionCreateResult>> {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path,
+      body,
+      guardedHeaders(options),
+      { workspaceId: this.workspaceId, signal: options.signal },
+    );
+  }
+
+  setDefault(
+    revisionId: string,
+    body: Schema["SetDefaultAgentRevisionRequest"],
+    options: IdempotentEtagOptions,
+  ): Promise<ResourceResult<AgentRevisionCreateResult>> {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      `${this.path}/${encodeURIComponent(selector(revisionId, "revisionId"))}/default`,
+      body,
+      guardedHeaders(options),
+      { workspaceId: this.workspaceId, signal: options.signal },
+    );
   }
 }
 
@@ -320,21 +494,33 @@ export class Thread {
       headers(options),
       { workspaceId: this.workspaceId, signal: options.signal },
     );
-    const value = receipt.data;
+    const value: unknown = receipt.data;
+    if (!isRecord(value))
+      throw new ProtocolError("Thread submission receipt is not an object.");
     if (
       value.outcome === "run_accepted" &&
-      value.run &&
+      isRecord(value.run) &&
       !value.queued_submission
     ) {
-      if (value.run.thread_id !== this.id)
+      if (identity(value.run, "thread_id", "Accepted Run") !== this.id)
         throw new ProtocolError(
           "Accepted Run does not belong to the bound Thread.",
         );
       return accepted(this.transport, this.workspaceId, receipt, value.run);
     }
-    if (value.outcome === "queued" && value.queued_submission && !value.run) {
+    if (
+      value.outcome === "queued" &&
+      isRecord(value.queued_submission) &&
+      !value.run
+    ) {
       const queued = value.queued_submission;
-      if (queued.thread_id !== this.id || !queued.queued_submission_id)
+      const threadId = identity(queued, "thread_id", "Queued submission");
+      const queuedSubmissionId = identity(
+        queued,
+        "queued_submission_id",
+        "Queued submission",
+      );
+      if (threadId !== this.id)
         throw new ProtocolError(
           "Queued submission does not belong to the bound Thread.",
         );
@@ -343,7 +529,7 @@ export class Thread {
         queuedSubmission: new QueuedSubmission(
           this.transport,
           this.workspaceId,
-          queued.queued_submission_id,
+          queuedSubmissionId,
         ),
         thread: this,
         receipt,
@@ -433,9 +619,14 @@ export class Run {
     const deadline = performance.now() + options.timeoutMs;
     while (true) {
       options.signal?.throwIfAborted();
+      this.transport.signal.throwIfAborted();
       const remaining = deadline - performance.now();
       if (remaining <= 0) throw new WaitTimeoutError(options.timeoutMs);
-      const signal = deadlineSignal(remaining, options.signal);
+      const signal = deadlineSignal(
+        remaining,
+        this.transport.signal,
+        options.signal,
+      );
       try {
         const result = await this.get({ signal });
         if (sealedStatuses.has(result.data.status)) return result;
@@ -444,6 +635,7 @@ export class Run {
         await delay(sleep, signal);
       } catch (error) {
         if (options.signal?.aborted) throw options.signal.reason;
+        if (this.transport.signal.aborted) throw this.transport.signal.reason;
         if (performance.now() >= deadline || signal.aborted)
           throw new WaitTimeoutError(options.timeoutMs);
         throw error;
@@ -782,9 +974,14 @@ export class QueuedSubmission {
     const deadline = performance.now() + options.timeoutMs;
     while (true) {
       options.signal?.throwIfAborted();
+      this.transport.signal.throwIfAborted();
       const remaining = deadline - performance.now();
       if (remaining <= 0) throw new WaitTimeoutError(options.timeoutMs);
-      const signal = deadlineSignal(remaining, options.signal);
+      const signal = deadlineSignal(
+        remaining,
+        this.transport.signal,
+        options.signal,
+      );
       try {
         const result = await this.get({ signal });
         if (["consumed", "failed"].includes(result.data.state)) return result;
@@ -793,6 +990,7 @@ export class QueuedSubmission {
         await delay(sleep, signal);
       } catch (error) {
         if (options.signal?.aborted) throw options.signal.reason;
+        if (this.transport.signal.aborted) throw this.transport.signal.reason;
         if (performance.now() >= deadline || signal.aborted)
           throw new WaitTimeoutError(options.timeoutMs);
         throw error;

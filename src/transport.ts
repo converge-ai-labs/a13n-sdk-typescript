@@ -39,6 +39,28 @@ export function delay(
   });
 }
 
+async function abortable<T>(
+  promise: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
+  signal.throwIfAborted();
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener("abort", abort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", abort);
+        if (signal.aborted) reject(signal.reason);
+        else resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
+    );
+  });
+}
+
 export function retryAfterMilliseconds(
   value: string | null,
   now = Date.now(),
@@ -135,7 +157,9 @@ export class Transport {
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
     if (auth.type === "bearer") {
       const token =
-        typeof auth.token === "function" ? await auth.token() : auth.token;
+        typeof auth.token === "function"
+          ? await abortable(Promise.resolve(auth.token()), signal)
+          : auth.token;
       signal.throwIfAborted();
       headers.set("Authorization", `Bearer ${token}`);
     } else if (

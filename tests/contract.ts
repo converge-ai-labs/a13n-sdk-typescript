@@ -88,13 +88,13 @@ export async function resourceTypeContract(client: Client) {
     body: { expected_thread_version: 2 },
   });
   if (submission.outcome === "queued") {
-    submission.queuedSubmission;
+    void submission.queuedSubmission;
     // @ts-expect-error A queued disposition has no Run reference.
-    submission.run;
+    void submission.run;
   } else {
-    submission.run;
+    void submission.run;
     // @ts-expect-error An accepted disposition has no queued entry reference.
-    submission.queuedSubmission;
+    void submission.queuedSubmission;
   }
   await agent.start("bad", {
     idempotencyKey: "bad",
@@ -115,4 +115,60 @@ export async function resourceTypeContract(client: Client) {
   await accepted.run.wait({});
   // @ts-expect-error TypeScript exact optional fields do not accept explicit undefined.
   accepted.run.stream({ after: undefined });
+}
+
+export async function managementTypeContract(
+  client: Client,
+  modelBody: Schema["CreateModelRequest"],
+  modelPatch: Schema["UpdateModelRequest"],
+  revisionBody: Schema["CreateAgentRevisionRequest"],
+  defaultRevisionBody: Schema["SetDefaultAgentRevisionRequest"],
+  memoryWrite: Schema["MemoryWrite"],
+  connectionCommand: Schema["ConnectionCommandRequest"],
+) {
+  const workspace = client.workspaces.ref("ws_example");
+  const organization = client.organizations.ref("org_example");
+  await workspace.models.create(modelBody);
+  await organization.models.create(modelBody);
+  await workspace.models.ref("model_example").update(modelPatch, {
+    ifMatch: '"model-v1"',
+  });
+  workspace.models.pages({ limit: 10, cursor: null });
+  workspace.models.iterate({ query: "example" });
+
+  const agent = workspace.agents.ref("reviewer");
+  await agent.revisions.create(revisionBody, {
+    idempotencyKey: "revision",
+    ifMatch: '"agent-v1"',
+  });
+  await agent.revisions.setDefault("rev_example", defaultRevisionBody, {
+    idempotencyKey: "default-revision",
+    ifMatch: '"agent-v2"',
+  });
+
+  const memories = workspace.memoryProviders.ref("mem_example").memories;
+  await memories?.add(memoryWrite, {
+    scope: "agent",
+    subject_id: "agent_example",
+  });
+  memories?.pages({ scope: "agent", subject_id: "agent_example" });
+  // @ts-expect-error Memory scope is explicit and required.
+  memories?.list();
+
+  await workspace.connections.ref("conn_example").enable(connectionCommand, {
+    idempotencyKey: "enable",
+  });
+  await workspace.assets.ref("asset_example").delete();
+  // @ts-expect-error Asset bytes are immutable; replacement is not exported.
+  workspace.assets.ref("asset_example").replace(new Blob());
+  // @ts-expect-error Actual Environments are Workspace-owned, not Organization-owned.
+  void organization.environments;
+  // @ts-expect-error No direct EIP resource client is exported.
+  void workspace.environmentInstances;
+  // @ts-expect-error Model updates require an If-Match precondition.
+  await workspace.models.ref("model_example").update(modelPatch);
+  // @ts-expect-error Connection commands require an explicit command body.
+  await workspace.connections.ref("conn_example").enable({
+    idempotencyKey: "enable",
+  });
 }

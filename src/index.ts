@@ -29,6 +29,7 @@ export type {
 } from "./resources/base.js";
 export {
   Agent,
+  AgentRevisions,
   Agents,
   QueuedSubmission,
   QueuedSubmissions,
@@ -44,6 +45,10 @@ export {
 export type {
   AgentCollectionPage,
   AgentInput,
+  AgentRevision,
+  AgentRevisionCollectionPage,
+  AgentRevisionCreateResult,
+  AgentRevisionListFilters,
   AgentListFilters,
   AgentResource,
   AttemptCollection,
@@ -66,6 +71,7 @@ export type {
   ThreadSubmission,
   WaitOptions,
 } from "./resources/interaction.js";
+export * from "./resources/management.js";
 export type { paths, components, operations, Binary } from "./schema.js";
 export type {
   Notification,

@@ -203,10 +203,12 @@ export class ResourceRunStream implements RunStream {
 
   private async readNext(): Promise<IteratorResult<RunEvent, void>> {
     while (!this.isClosed) {
+      this.signal().throwIfAborted();
       await this.ensureAttachment();
       let result: IteratorResult<DetailedSseFrame>;
       try {
         result = await this.frames!.next();
+        this.signal().throwIfAborted();
       } catch (error) {
         if (this.signal().aborted) throw this.signal().reason;
         if (error instanceof ProtocolError || error instanceof ReplayGapError)
@@ -218,12 +220,21 @@ export class ResourceRunStream implements RunStream {
       }
       if (result.done) {
         await this.closeAttachment();
+        this.signal().throwIfAborted();
         if (this.isClosed || !this.reconnect)
           return this.finish().then(() => ({ done: true, value: undefined }));
-        if (
-          this.terminalReceived ||
-          (await this.confirmedTerminalProjection())
-        ) {
+        if (this.terminalReceived) {
+          await this.finish();
+          return { done: true, value: undefined };
+        }
+        let terminalProjection: boolean;
+        try {
+          terminalProjection = await this.confirmedTerminalProjection();
+        } catch (error) {
+          await this.recoverEvidenceFailure(error);
+          continue;
+        }
+        if (terminalProjection) {
           await this.finish();
           return { done: true, value: undefined };
         }
@@ -326,51 +337,51 @@ export class ResourceRunStream implements RunStream {
     await delay(Math.max(jitter, retryAfter ?? 0), this.signal());
   }
 
-  private async confirmedTerminalProjection(): Promise<boolean> {
-    try {
-      const run = await jsonRequest<RunResource>(
-        this.transport,
-        "GET",
-        `/api/v1/runs/${encodeURIComponent(this.run.id)}`,
-        undefined,
-        undefined,
-        {
-          workspaceId: this.run.workspaceId,
-          signal: this.signal(),
-          retryReads: false,
-        },
-      );
-      if (!sealedStatuses.has(run.data.status)) return false;
-      const items = await jsonRequest<ItemCollection>(
-        this.transport,
-        "GET",
-        `/api/v1/runs/${encodeURIComponent(this.run.id)}/items`,
-        undefined,
-        undefined,
-        {
-          workspaceId: this.run.workspaceId,
-          signal: this.signal(),
-          retryReads: false,
-        },
-      );
-      return (
-        items.data.complete &&
-        items.data.finalized &&
-        items.data.projection_cursor === this.acknowledgedCursor
-      );
-    } catch (error) {
-      if (error instanceof ReplayGapError || error instanceof ProtocolError)
-        throw error;
-      if (error instanceof ApiError) {
-        if (!retryableStatuses.has(error.status)) throw error;
-        await this.recover(error);
-        return false;
-      }
-      const failure = transportFailure(error);
-      if (!failure) throw error;
-      await this.recover(failure);
-      return false;
+  private async recoverEvidenceFailure(error: unknown): Promise<void> {
+    if (this.signal().aborted) throw this.signal().reason;
+    if (error instanceof ReplayGapError || error instanceof ProtocolError)
+      throw error;
+    if (error instanceof ApiError) {
+      if (!retryableStatuses.has(error.status)) throw error;
+      await this.recover(error);
+      return;
     }
+    const failure = transportFailure(error);
+    if (!failure) throw error;
+    await this.recover(failure);
+  }
+
+  private async confirmedTerminalProjection(): Promise<boolean> {
+    const run = await jsonRequest<RunResource>(
+      this.transport,
+      "GET",
+      `/api/v1/runs/${encodeURIComponent(this.run.id)}`,
+      undefined,
+      undefined,
+      {
+        workspaceId: this.run.workspaceId,
+        signal: this.signal(),
+        retryReads: false,
+      },
+    );
+    if (!sealedStatuses.has(run.data.status)) return false;
+    const items = await jsonRequest<ItemCollection>(
+      this.transport,
+      "GET",
+      `/api/v1/runs/${encodeURIComponent(this.run.id)}/items`,
+      undefined,
+      undefined,
+      {
+        workspaceId: this.run.workspaceId,
+        signal: this.signal(),
+        retryReads: false,
+      },
+    );
+    return (
+      items.data.complete &&
+      items.data.finalized &&
+      items.data.projection_cursor === this.acknowledgedCursor
+    );
   }
 
   private async closeAttachment(): Promise<void> {

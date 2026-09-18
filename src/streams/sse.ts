@@ -40,7 +40,12 @@ export async function* decodeSseDetailed(
   try {
     while (true) {
       const chunk = await reader.read();
-      buffer += decoder.decode(chunk.value, { stream: !chunk.done });
+      signal?.throwIfAborted();
+      try {
+        buffer += decoder.decode(chunk.value, { stream: !chunk.done });
+      } catch {
+        throw new ProtocolError("The SSE stream contains invalid UTF-8.");
+      }
       let boundary: number;
       while ((boundary = buffer.search(/[\r\n]/)) >= 0) {
         if (
@@ -85,6 +90,7 @@ export async function* decodeSseDetailed(
       if (buffer.length + size > maxFrameCharacters)
         throw new ProtocolError("SSE frame exceeds the size limit.");
       if (chunk.done) {
+        signal?.throwIfAborted();
         if (buffer || values.length)
           throw new ProtocolError("The stream ended inside an SSE frame.");
         return;

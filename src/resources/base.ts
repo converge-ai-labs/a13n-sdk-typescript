@@ -117,6 +117,39 @@ class ScopedBinaryResult implements BinaryResult {
   }
 }
 
+export async function uploadRequest<T>(
+  transport: Transport,
+  method: string,
+  path: string,
+  body: Blob | ReadableStream<Uint8Array>,
+  contentType: string,
+  headers: HeadersInit | undefined,
+  options: JsonRequestOptions = {},
+): Promise<ResourceResult<T>> {
+  const requestHeaders = new Headers(headers);
+  requestHeaders.set("Accept", "application/json");
+  requestHeaders.set("Content-Type", contentType);
+  if (options.workspaceId)
+    requestHeaders.set("X-A13N-Workspace-ID", options.workspaceId);
+  const init: RequestInit & { duplex?: "half" } = {
+    method,
+    headers: requestHeaders,
+    body,
+    signal: requestSignal(options.signal),
+  };
+  if (body instanceof ReadableStream) init.duplex = "half";
+  const response = await transport.fetch(
+    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
+  );
+  const text = await response.text();
+  if (!text) return { data: undefined as T, response };
+  try {
+    return { data: JSON.parse(text) as T, response };
+  } catch {
+    throw new ProtocolError("The Service returned invalid JSON.");
+  }
+}
+
 export async function binaryRequest(
   transport: Transport,
   path: string,

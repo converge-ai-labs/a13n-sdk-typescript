@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createClient, ReplayGapError, TransportError } from "../dist/index.js";
+import {
+  ApiError,
+  createClient,
+  ProtocolError,
+  ReplayGapError,
+  TransportError,
+} from "../dist/index.js";
 
 const baseUrl = "https://service.example";
 const workspaceId = "ws_1234567890abcdef";
@@ -220,4 +226,115 @@ test("unconfirmed EOF exhausts its bounded reconnect budget as TransportError", 
   const observation = run(client).stream({ maxReconnects: 1 });
   await assert.rejects(observation.next(), TransportError);
   assert.equal(requests, 4);
+});
+
+test("external abort wins over reconnect-disabled EOF from a canceled pending read", async () => {
+  const controller = new AbortController();
+  const reason = new Error("stop pending stream");
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async () => response(pendingStream()),
+  });
+  const observation = run(client).stream({
+    signal: controller.signal,
+    reconnect: false,
+  });
+  const pending = observation.next();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  controller.abort(reason);
+  await assert.rejects(pending, (error) => error === reason);
+});
+
+test("external abort wins over a buffered event and terminal drain", async () => {
+  const bufferedController = new AbortController();
+  const bufferedReason = { code: "buffered-abort" };
+  const bufferedClient = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async () => response(stream(event("1-0") + event("2-0"))),
+  });
+  const buffered = run(bufferedClient).stream({
+    signal: bufferedController.signal,
+  });
+  assert.equal((await buffered.next()).value.cursor, "1-0");
+  bufferedController.abort(bufferedReason);
+  await assert.rejects(buffered.next(), (error) => error === bufferedReason);
+
+  const terminalController = new AbortController();
+  const terminalReason = { code: "terminal-drain-abort" };
+  const terminalClient = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async () =>
+      response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(event("3-0", "run.completed")));
+          },
+        }),
+      ),
+  });
+  const terminal = run(terminalClient).stream({
+    signal: terminalController.signal,
+  });
+  assert.equal((await terminal.next()).value.cursor, "3-0");
+  const drain = terminal.next();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  terminalController.abort(terminalReason);
+  await assert.rejects(drain, (error) => error === terminalReason);
+});
+
+test("invalid UTF-8 is a non-retryable protocol failure", async () => {
+  let requests = 0;
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async () => {
+      requests++;
+      return response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array([0xff]));
+            controller.close();
+          },
+        }),
+      );
+    },
+  });
+  const observation = run(client).stream({ maxReconnects: 1 });
+  await assert.rejects(observation.next(), ProtocolError);
+  assert.equal(requests, 1);
+});
+
+test("terminal evidence failures consume one reconnect and preserve the final API error", async () => {
+  const paths = [];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async (request) => {
+      const path = new URL(request.url).pathname;
+      paths.push(path);
+      if (path.endsWith("/stream")) return response(stream(""));
+      if (path.endsWith(`/runs/${runId}`))
+        return Response.json(
+          { error: { code: "temporarily_unavailable", message: "retry" } },
+          { status: 503, headers: { "Retry-After": "0" } },
+        );
+      assert.fail(`Unexpected request: ${request.url}`);
+    },
+  });
+  const observation = run(client).stream({ maxReconnects: 1 });
+  await assert.rejects(observation.next(), (error) => {
+    assert.ok(error instanceof ApiError);
+    assert.equal(error.status, 503);
+    assert.equal(error.code, "temporarily_unavailable");
+    return true;
+  });
+  assert.deepEqual(paths, [
+    `/api/v1/runs/${runId}/stream`,
+    `/api/v1/runs/${runId}`,
+    `/api/v1/runs/${runId}/stream`,
+    `/api/v1/runs/${runId}`,
+  ]);
 });
