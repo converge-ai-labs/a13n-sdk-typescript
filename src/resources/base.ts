@@ -30,6 +30,7 @@ interface JsonRequestOptions {
   query?: Readonly<Record<string, unknown>>;
   signal?: AbortSignal | undefined;
   retryReads?: boolean;
+  classifyFetchFailures?: boolean;
 }
 
 function requestSignal(signal: AbortSignal | undefined): AbortSignal {
@@ -80,9 +81,14 @@ export async function jsonRequest<T>(
     signal: requestSignal(options.signal),
   };
   if (hasBody) init.body = JSON.stringify(body);
-  const response = await (
-    options.retryReads === false ? transport.fetchOnce : transport.fetch
-  )(new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init));
+  const fetcher = options.classifyFetchFailures
+    ? transport.fetchOnceForRecovery
+    : options.retryReads === false
+      ? transport.fetchOnce
+      : transport.fetch;
+  const response = await fetcher(
+    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
+  );
   if (response.status === 204 || response.status === 205)
     return { data: undefined as T, response };
   const text = await response.text();
@@ -102,18 +108,61 @@ export interface BinaryResult {
 }
 
 class ScopedBinaryResult implements BinaryResult {
+  readonly body: ReadableStream<Uint8Array>;
+  private readonly sourceReader: ReadableStreamDefaultReader<Uint8Array>;
   private isClosed = false;
+  private released = false;
+  private closePromise: Promise<void> | undefined;
+
   constructor(
     readonly response: Response,
-    readonly body: ReadableStream<Uint8Array>,
-  ) {}
+    source: ReadableStream<Uint8Array>,
+  ) {
+    this.sourceReader = source.getReader();
+    this.body = new ReadableStream<Uint8Array>({
+      pull: async (controller) => {
+        try {
+          const result = await this.sourceReader.read();
+          if (result.done) {
+            this.isClosed = true;
+            this.releaseSource();
+            controller.close();
+          } else controller.enqueue(result.value);
+        } catch (error) {
+          this.isClosed = true;
+          this.releaseSource();
+          controller.error(error);
+        }
+      },
+      cancel: (reason) => this.cancelSource(reason),
+    });
+  }
+
   get closed(): boolean {
     return this.isClosed;
   }
-  async close(): Promise<void> {
-    if (this.isClosed) return;
-    this.isClosed = true;
-    await this.body.cancel().catch(() => undefined);
+
+  close(): Promise<void> {
+    return this.cancelSource(
+      new DOMException("Binary download closed.", "AbortError"),
+    );
+  }
+
+  private cancelSource(reason: unknown): Promise<void> {
+    if (this.isClosed) return Promise.resolve();
+    if (!this.closePromise) {
+      this.closePromise = this.sourceReader.cancel(reason).then(() => {
+        this.isClosed = true;
+        this.releaseSource();
+      });
+    }
+    return this.closePromise;
+  }
+
+  private releaseSource(): void {
+    if (this.released) return;
+    this.released = true;
+    this.sourceReader.releaseLock();
   }
 }
 

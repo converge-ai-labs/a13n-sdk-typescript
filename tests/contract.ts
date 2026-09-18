@@ -125,6 +125,7 @@ export async function managementTypeContract(
   defaultRevisionBody: Schema["SetDefaultAgentRevisionRequest"],
   memoryWrite: Schema["MemoryWrite"],
   connectionCommand: Schema["ConnectionCommandRequest"],
+  environmentPatch: Schema["UpdateEnvironmentRequest"],
 ) {
   const workspace = client.workspaces.ref("ws_example");
   const organization = client.organizations.ref("org_example");
@@ -135,6 +136,44 @@ export async function managementTypeContract(
   });
   workspace.models.pages({ limit: 10, cursor: null });
   workspace.models.iterate({ query: "example" });
+  await workspace.models.ref("model_example").test();
+  await workspace.models.ref("model_example").test({});
+  await organization.models.ref("model_example").test(null);
+
+  const environment = workspace.environments.ref("env_example");
+  const environmentDetail = await environment.get();
+  void environmentDetail.data.supports_stop;
+  const updatedEnvironment = await environment.update(environmentPatch, {
+    ifMatch: '"environment-v1"',
+  });
+  // @ts-expect-error Mutation responses are base Environment projections.
+  void updatedEnvironment.data.supports_stop;
+
+  const workspacePermissions = await workspace.permissions.list();
+  void workspacePermissions.data.actions;
+  const organizationPermissions = await organization.permissions.list();
+  void organizationPermissions.data.organization_admin;
+  // @ts-expect-error Organization permissions do not contain Workspace actions.
+  void organizationPermissions.data.actions;
+
+  await workspace.invitations.create({
+    email: "workspace@example.com",
+    role: "admin",
+  });
+  await organization.invitations.create({
+    email: "organization@example.com",
+    grants: [],
+  });
+  await workspace.invitations.create({
+    email: "wrong@example.com",
+    // @ts-expect-error Workspace invitations require a Workspace role.
+    grants: [],
+  });
+  await organization.invitations.create({
+    email: "wrong@example.com",
+    // @ts-expect-error Organization invitations require Organization grants.
+    role: "admin",
+  });
 
   const agent = workspace.agents.ref("reviewer");
   await agent.revisions.create(revisionBody, {

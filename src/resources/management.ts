@@ -32,6 +32,12 @@ type BodyOf<K extends Operation> = operations[K] extends {
 }
   ? Body
   : never;
+type OptionalBodyOf<K extends Operation> =
+  Exclude<operations[K]["requestBody"], undefined> extends {
+    content: { "application/json": infer Body };
+  }
+    ? Body
+    : never;
 type ResponseOf<
   K extends Operation,
   Status extends number,
@@ -50,19 +56,19 @@ type FiltersOf<K extends Operation> = Omit<QueryOf<K>, "cursor"> & {
 
 type ScopeKind = "workspace" | "organization";
 
-interface ScopeContext {
+interface ScopeContext<Kind extends ScopeKind = ScopeKind> {
   readonly transport: Transport;
-  readonly kind: ScopeKind;
+  readonly kind: Kind;
   readonly id: string;
   readonly prefix: string;
   readonly workspaceId?: string;
 }
 
-function scopeContext(
+function scopeContext<Kind extends ScopeKind>(
   transport: Transport,
-  kind: ScopeKind,
+  kind: Kind,
   id: string,
-): ScopeContext {
+): ScopeContext<Kind> {
   const safeId = encodeURIComponent(selector(id, `${kind}Id`));
   return {
     transport,
@@ -165,7 +171,7 @@ export type CreateModelRequest = BodyOf<"post_workspaces_workspace_models">;
 export type UpdateModelRequest =
   BodyOf<"patch_workspaces_workspace_models_model_id">;
 export type ModelTestRequest =
-  BodyOf<"post_workspaces_workspace_models_model_id_test">;
+  OptionalBodyOf<"post_workspaces_workspace_models_model_id_test">;
 export type ModelTestResult = ResponseOf<
   "post_workspaces_workspace_models_model_id_test",
   200
@@ -231,7 +237,7 @@ export class ModelResource {
   }
 
   test(
-    body: ModelTestRequest,
+    body?: ModelTestRequest,
     options: RequestOptions = {},
   ): Promise<ResourceResult<ModelTestResult>> {
     return jsonRequest(
@@ -702,7 +708,11 @@ export class EnvironmentTemplateResource {
   }
 }
 
-export type Environment = ResponseOf<"get_environments_resource_id", 200>;
+export type Environment = ResponseOf<
+  "post_workspaces_workspace_environments",
+  201
+>;
+export type EnvironmentDetail = ResponseOf<"get_environments_resource_id", 200>;
 export type EnvironmentCollectionPage = ResponseOf<
   "get_workspaces_workspace_environments",
   200
@@ -765,7 +775,9 @@ export class EnvironmentResource {
     private readonly path: string,
   ) {}
 
-  get(options: RequestOptions = {}): Promise<ResourceResult<Environment>> {
+  get(
+    options: RequestOptions = {},
+  ): Promise<ResourceResult<EnvironmentDetail>> {
     return jsonRequest(
       this.context.transport,
       "GET",
@@ -779,7 +791,9 @@ export class EnvironmentResource {
   update(
     body: UpdateEnvironmentRequest,
     options: EtagOptions,
-  ): Promise<ResourceResult<Environment>> {
+  ): Promise<
+    ResourceResult<ResponseOf<"patch_environments_environment_id", 200>>
+  > {
     return jsonRequest(
       this.context.transport,
       "PATCH",
@@ -2178,26 +2192,34 @@ export type Invitation =
   InvitationCollectionPage extends PageLike<infer Item> ? Item : never;
 export type InvitationListFilters =
   FiltersOf<"get_workspaces_workspace_invitations">;
-export type CreateInvitationRequest =
-  | BodyOf<"post_workspaces_workspace_invitations">
-  | BodyOf<"post_organizations_organization_invitations">;
-export type InvitationCreateResult =
-  | ResponseOf<"post_workspaces_workspace_invitations", 201>
-  | ResponseOf<"post_organizations_organization_invitations", 201>;
+export type WorkspaceCreateInvitationRequest =
+  BodyOf<"post_workspaces_workspace_invitations">;
+export type OrganizationCreateInvitationRequest =
+  BodyOf<"post_organizations_organization_invitations">;
+export type CreateInvitationRequest<Kind extends ScopeKind = ScopeKind> =
+  Kind extends "workspace"
+    ? WorkspaceCreateInvitationRequest
+    : OrganizationCreateInvitationRequest;
+export type InvitationCreateResult<Kind extends ScopeKind = ScopeKind> =
+  Kind extends "workspace"
+    ? ResponseOf<"post_workspaces_workspace_invitations", 201>
+    : ResponseOf<"post_organizations_organization_invitations", 201>;
 
-export class Invitations extends PagedCollection<
+export class Invitations<
+  Kind extends ScopeKind = ScopeKind,
+> extends PagedCollection<
   InvitationCollectionPage,
   Invitation,
   InvitationListFilters
 > {
-  constructor(context: ScopeContext) {
+  constructor(context: ScopeContext<Kind>) {
     super(context, `${context.prefix}/invitations`);
   }
 
   create(
-    body: CreateInvitationRequest,
+    body: CreateInvitationRequest<Kind>,
     options: RequestOptions = {},
-  ): Promise<ResourceResult<InvitationCreateResult>> {
+  ): Promise<ResourceResult<InvitationCreateResult<Kind>>> {
     return jsonRequest(
       this.context.transport,
       "POST",
@@ -2244,19 +2266,35 @@ export class RoleBindings extends PagedCollection<
   }
 }
 
-export type PermissionCollection = ResponseOf<
+export type WorkspacePermissionCollection = ResponseOf<
   "get_workspaces_workspace_permissions",
   200
 >;
-export type PermissionFilters = QueryOf<"get_workspaces_workspace_permissions">;
+export type OrganizationPermissionCollection = ResponseOf<
+  "get_organizations_organization_permissions",
+  200
+>;
+export type PermissionCollection = WorkspacePermissionCollection;
+export type WorkspacePermissionFilters =
+  QueryOf<"get_workspaces_workspace_permissions">;
+export type OrganizationPermissionFilters =
+  QueryOf<"get_organizations_organization_permissions">;
+export type PermissionFilters = WorkspacePermissionFilters;
+type ScopedPermissionCollection<Kind extends ScopeKind> =
+  Kind extends "workspace"
+    ? WorkspacePermissionCollection
+    : OrganizationPermissionCollection;
+type ScopedPermissionFilters<Kind extends ScopeKind> = Kind extends "workspace"
+  ? WorkspacePermissionFilters
+  : OrganizationPermissionFilters;
 
-export class Permissions {
-  constructor(private readonly context: ScopeContext) {}
+export class Permissions<Kind extends ScopeKind = ScopeKind> {
+  constructor(private readonly context: ScopeContext<Kind>) {}
 
   list(
-    filters: PermissionFilters = {},
+    filters: ScopedPermissionFilters<Kind> = {} as ScopedPermissionFilters<Kind>,
     options: RequestOptions = {},
-  ): Promise<ResourceResult<PermissionCollection>> {
+  ): Promise<ResourceResult<ScopedPermissionCollection<Kind>>> {
     return jsonRequest(
       this.context.transport,
       "GET",
@@ -2380,9 +2418,9 @@ export class Organization {
   readonly environmentTemplates: EnvironmentTemplates;
   readonly connectorProviders: ConnectorProviders;
   readonly memoryProviders: MemoryProviders;
-  readonly invitations: Invitations;
+  readonly invitations: Invitations<"organization">;
   readonly roleBindings: RoleBindings;
-  readonly permissions: Permissions;
+  readonly permissions: Permissions<"organization">;
 
   constructor(
     readonly transport: Transport,
@@ -2422,9 +2460,9 @@ export interface WorkspaceManagement {
   readonly configurationDrafts: ConfigurationDrafts;
   readonly applicationAccounts: ApplicationAccounts;
   readonly bots: Bots;
-  readonly invitations: Invitations;
+  readonly invitations: Invitations<"workspace">;
   readonly roleBindings: RoleBindings;
-  readonly permissions: Permissions;
+  readonly permissions: Permissions<"workspace">;
   readonly members: Members;
   readonly personalApiKeys: PersonalApiKeys;
   readonly serviceAccounts: ServiceAccounts;

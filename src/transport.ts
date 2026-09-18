@@ -13,6 +13,13 @@ export interface ClientOptions {
   maxReadRetries?: number;
 }
 
+export class RecoverableFetchError extends Error {
+  override readonly name = "RecoverableFetchError";
+  constructor(readonly failure: unknown) {
+    super("The dispatched request transport failed.", { cause: failure });
+  }
+}
+
 const publicMutations = new Set([
   "/api/v1/auth/login",
   "/api/v1/auth/password-reset",
@@ -135,11 +142,14 @@ export class Transport {
     this.request(input, { retryReads: true });
 
   fetchOnce = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: false });
+    this.request(input, { retryReads: false, classifyFetchFailures: false });
+
+  fetchOnceForRecovery = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: false, classifyFetchFailures: true });
 
   private async request(
     input: Request,
-    options: { retryReads: boolean },
+    options: { retryReads: boolean; classifyFetchFailures?: boolean },
   ): Promise<Response> {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
@@ -190,7 +200,12 @@ export class Transport {
       try {
         response = await this.fetcher(retries ? request.clone() : request);
       } catch (error) {
-        if (signal.aborted || attempt >= retries) throw error;
+        if (signal.aborted) throw error;
+        if (attempt >= retries) {
+          if (options.classifyFetchFailures)
+            throw new RecoverableFetchError(error);
+          throw error;
+        }
         await delay(250 * 2 ** attempt, signal);
         continue;
       }

@@ -285,6 +285,38 @@ test("external abort wins over a buffered event and terminal drain", async () =>
   await assert.rejects(drain, (error) => error === terminalReason);
 });
 
+test("Bearer token callback TypeErrors are not retried as stream transport failures", async () => {
+  for (const asynchronous of [false, true]) {
+    const original = new TypeError(
+      asynchronous ? "async token failure" : "sync token failure",
+    );
+    let tokenCalls = 0;
+    let fetches = 0;
+    const token = asynchronous
+      ? async () => {
+          tokenCalls++;
+          throw original;
+        }
+      : () => {
+          tokenCalls++;
+          throw original;
+        };
+    const client = createClient({
+      baseUrl,
+      auth: { type: "bearer", token },
+      fetch: async () => {
+        fetches++;
+        return response(pendingStream());
+      },
+    });
+    const observation = run(client).stream({ maxReconnects: 1 });
+    await assert.rejects(observation.next(), (error) => error === original);
+    assert.equal(tokenCalls, 1);
+    assert.equal(fetches, 0);
+    client.close();
+  }
+});
+
 test("invalid UTF-8 is a non-retryable protocol failure", async () => {
   let requests = 0;
   const client = createClient({

@@ -8,7 +8,12 @@ import {
 import { jsonRequest } from "../resources/base.js";
 import type { Run } from "../resources/interaction.js";
 import type { components } from "../schema.js";
-import { delay, retryAfterMilliseconds, type Transport } from "../transport.js";
+import {
+  delay,
+  RecoverableFetchError,
+  retryAfterMilliseconds,
+  type Transport,
+} from "../transport.js";
 import { parseRunEvent, type RunEvent } from "./run-event.js";
 import { decodeSseDetailed, type DetailedSseFrame } from "./sse.js";
 
@@ -48,8 +53,19 @@ const localClose = Symbol("run-stream-local-close");
 type ItemCollection = components["schemas"]["ItemCollection"];
 type RunResource = components["schemas"]["RunResource"];
 
-function transportFailure(error: unknown): TransportError | undefined {
+function recoverableFetchFailure(error: unknown): TransportError | undefined {
   if (error instanceof TransportError) return error;
+  if (error instanceof RecoverableFetchError)
+    return new TransportError(
+      "Run stream transport failed; the Run outcome is unchanged.",
+      { cause: error.failure },
+    );
+  return undefined;
+}
+
+function streamReadFailure(error: unknown): TransportError | undefined {
+  const classified = recoverableFetchFailure(error);
+  if (classified) return classified;
   if (error instanceof TypeError)
     return new TransportError(
       "Run stream transport failed; the Run outcome is unchanged.",
@@ -213,7 +229,7 @@ export class ResourceRunStream implements RunStream {
         if (this.signal().aborted) throw this.signal().reason;
         if (error instanceof ProtocolError || error instanceof ReplayGapError)
           throw error;
-        const failure = transportFailure(error);
+        const failure = streamReadFailure(error);
         if (!failure) throw error;
         await this.recover(failure);
         continue;
@@ -289,7 +305,7 @@ export class ResourceRunStream implements RunStream {
           continue;
         }
         if (error instanceof ProtocolError) throw error;
-        const failure = transportFailure(error);
+        const failure = recoverableFetchFailure(error);
         if (!failure) throw error;
         await this.recover(failure);
       }
@@ -301,7 +317,7 @@ export class ResourceRunStream implements RunStream {
     headers.set("X-A13N-Workspace-ID", this.run.workspaceId);
     if (this.acknowledgedCursor)
       headers.set("Last-Event-ID", this.acknowledgedCursor);
-    const response = await this.transport.fetchOnce(
+    const response = await this.transport.fetchOnceForRecovery(
       new Request(
         `${this.transport.baseUrl}/api/v1/runs/${encodeURIComponent(this.run.id)}/stream`,
         { headers, signal: this.signal() },
@@ -346,7 +362,7 @@ export class ResourceRunStream implements RunStream {
       await this.recover(error);
       return;
     }
-    const failure = transportFailure(error);
+    const failure = recoverableFetchFailure(error);
     if (!failure) throw error;
     await this.recover(failure);
   }
@@ -362,6 +378,7 @@ export class ResourceRunStream implements RunStream {
         workspaceId: this.run.workspaceId,
         signal: this.signal(),
         retryReads: false,
+        classifyFetchFailures: true,
       },
     );
     if (!sealedStatuses.has(run.data.status)) return false;
@@ -375,6 +392,7 @@ export class ResourceRunStream implements RunStream {
         workspaceId: this.run.workspaceId,
         signal: this.signal(),
         retryReads: false,
+        classifyFetchFailures: true,
       },
     );
     return (
