@@ -1273,6 +1273,23 @@ export interface paths {
     patch: operations["patch_environment_providers_provider_id"];
     trace?: never;
   };
+  "/api/v1/environment-providers/{provider_id}/connectivity": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Provider Connectivity */
+    get: operations["get_environment_providers_provider_id_connectivity"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/environment-providers/{provider_id}/credential": {
     parameters: {
       query?: never;
@@ -1284,6 +1301,40 @@ export interface paths {
     /** Replace Credential */
     put: operations["put_environment_providers_provider_id_credential"];
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environment-providers/{provider_id}/test-image": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test Image */
+    post: operations["post_environment_providers_provider_id_test_image"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environment-providers/{provider_id}/test-image/{request_id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel Image Test */
+    post: operations["post_environment_providers_provider_id_test_image_request_id_cancel"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1409,6 +1460,40 @@ export interface paths {
     head?: never;
     /** Update Environment */
     patch: operations["patch_environments_environment_id"];
+    trace?: never;
+  };
+  "/api/v1/environments/{environment_id}/connection": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Connection Status */
+    get: operations["get_environments_environment_id_connection"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environments/{environment_id}/connection-tickets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Issue Ticket */
+    post: operations["post_environments_environment_id_connection_tickets"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/environments/{environment_id}/delete": {
@@ -2228,6 +2313,24 @@ export interface paths {
     get: operations["get_runs_run_id_attempts"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/runs/{run_id}/environment-mounts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Mounts */
+    get: operations["get_runs_run_id_environment_mounts"];
+    put?: never;
+    /** Add Mount */
+    post: operations["post_runs_run_id_environment_mounts"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3088,7 +3191,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/workspaces/{workspace}/agents/{agent}/revisions/{revision_id}/restore": {
+  "/api/v1/workspaces/{workspace}/agents/{agent}/revisions/{revision_id}/default": {
     parameters: {
       query?: never;
       header?: never;
@@ -3097,8 +3200,8 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Restore Agent Revision */
-    post: operations["post_workspaces_workspace_agents_agent_revisions_revision_id_restore"];
+    /** Set Default Agent Revision */
+    post: operations["post_workspaces_workspace_agents_agent_revisions_revision_id_default"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3220,6 +3323,23 @@ export interface paths {
     put?: never;
     /** Discover Feishu Installation */
     post: operations["post_workspaces_workspace_bots_feishu_installation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/workspaces/{workspace}/bots/github/user": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Discover Github User */
+    post: operations["post_workspaces_workspace_bots_github_user"];
     delete?: never;
     options?: never;
     head?: never;
@@ -4253,7 +4373,10 @@ export interface components {
       execution_service_account_id: string;
       /** Expected Version */
       expected_version: number;
-      policy: components["schemas"]["MessagingPolicy"];
+      /** Policy */
+      policy:
+        | components["schemas"]["MessagingPolicy"]
+        | components["schemas"]["GitHubReceptionPolicy"];
       /** Target Id */
       target_id: string;
       /** Target Version */
@@ -4284,6 +4407,14 @@ export interface components {
     ActorRef:
       | components["schemas"]["PrincipalRef"]
       | components["schemas"]["SystemActorRef"];
+    /** AddEnvironmentMountRequest */
+    AddEnvironmentMountRequest: {
+      access: components["schemas"]["EnvironmentAccess"];
+      /** Environment Id */
+      environment_id: string;
+      /** Name */
+      name: string;
+    };
     /** Agent */
     Agent: {
       /** Archived At */
@@ -4294,10 +4425,8 @@ export interface components {
        */
       created_at: string;
       created_by: components["schemas"]["ActorRef"];
-      /** Current Revision Id */
-      current_revision_id: string | null;
-      /** Default Environment Template Id */
-      default_environment_template_id?: string | null;
+      /** Default Revision Id */
+      default_revision_id: string | null;
       /** Description */
       description: string | null;
       /** Duplicated From Agent Id */
@@ -4329,8 +4458,6 @@ export interface components {
        */
       updated_at: string;
       updated_by: components["schemas"]["ActorRef"];
-      /** Version */
-      version: number;
       /** Workspace Id */
       workspace_id: string;
     };
@@ -4353,6 +4480,8 @@ export interface components {
        * @default []
        */
       connection_tools?: components["schemas"]["ConnectionToolSelection"][];
+      /** Default Environment Template Id */
+      default_environment_template_id?: string | null;
       input_adapter: components["schemas"]["InputAdapterConfig"];
       /**
        * Instructions
@@ -4407,6 +4536,8 @@ export interface components {
        * @default []
        */
       connection_tools?: components["schemas"]["ConnectionToolSelection"][];
+      /** Default Environment Template Id */
+      default_environment_template_id?: string | null;
       input_adapter: components["schemas"]["InputAdapterConfig"];
       /**
        * Instructions
@@ -4545,6 +4676,8 @@ export interface components {
     AgentRevision: {
       /** Agent Id */
       agent_id: string;
+      /** Change Summary */
+      change_summary?: string | null;
       config: components["schemas"]["AgentConfig-Output"];
       /** Config Digest */
       config_digest: string;
@@ -4693,12 +4826,12 @@ export interface components {
     };
     /** ApplyDraftRequest */
     ApplyDraftRequest: {
+      /** Change Summary */
+      change_summary?: string | null;
       /** Content Digest */
       content_digest: string;
       /** Dependency Digest */
       dependency_digest: string;
-      /** Expected Target Version */
-      expected_target_version?: number | null;
       /** Expected Version */
       expected_version: number;
       verification_acknowledgement?:
@@ -5037,11 +5170,12 @@ export interface components {
        * Provider Key
        * @enum {string}
        */
-      provider_key: "slack" | "lark";
+      provider_key: "slack" | "lark" | "github";
       /** Receipt */
       receipt:
         | components["schemas"]["SlackReplyReceipt"]
         | components["schemas"]["LarkReplyReceipt"]
+        | components["schemas"]["GitHubCommentReceipt"]
         | null;
       /** Run Attempt Id */
       run_attempt_id: string;
@@ -5067,9 +5201,19 @@ export interface components {
       /** Account Id */
       account_id: string;
       /** Event Path */
-      event_path: string;
+      event_path: string | null;
       /** Event Url */
       event_url: string | null;
+      /** Poll Checked At */
+      poll_checked_at?: string | null;
+      /** Poll Error Code */
+      poll_error_code?: string | null;
+      /**
+       * Reception Mode
+       * @default webhook
+       * @enum {string}
+       */
+      reception_mode?: "webhook" | "polling";
     };
     /** BotSummary */
     BotSummary: {
@@ -5184,6 +5328,11 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    /** CancelDockerImageRequest */
+    CancelDockerImageRequest: {
+      /** Workspace Id */
+      workspace_id: string | null;
+    };
     /** CatalogModel */
     CatalogModel: {
       declarations: components["schemas"]["ModelDeclarations-Output"];
@@ -5243,6 +5392,43 @@ export interface components {
       mode?: "none" | "shared" | "dedicated";
       /** Template Revision Id */
       template_revision_id?: string | null;
+    };
+    /** ClientConnectionStatus */
+    ClientConnectionStatus: {
+      /** Connection Id */
+      connection_id: string | null;
+      /** Error */
+      error:
+        | (
+            | "environment_unavailable"
+            | "environment_initialization_failed"
+            | "control_draining"
+          )
+        | null;
+      /**
+       * Observed At
+       * Format: date-time
+       */
+      observed_at: string;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "online" | "connecting" | "offline";
+    };
+    /** ClientConnectionTicket */
+    ClientConnectionTicket: {
+      /** Connection Id */
+      connection_id: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Ticket */
+      ticket: string;
+      /** Websocket Url */
+      websocket_url: string;
     };
     /**
      * ClientToolDefinition
@@ -5315,6 +5501,13 @@ export interface components {
       /** Next Cursor */
       next_cursor?: string | null;
     };
+    /** Collection_RunEnvironmentMount_ */
+    Collection_RunEnvironmentMount_: {
+      /** Items */
+      items: components["schemas"]["RunEnvironmentMount"][];
+      /** Next Cursor */
+      next_cursor?: string | null;
+    };
     /** CompleteAuthorizationRequest */
     CompleteAuthorizationRequest: {
       /** Code */
@@ -5375,8 +5568,8 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string;
-      /** Agent Version */
-      agent_version: number;
+      /** Agent Revision Version */
+      agent_revision_version: number;
       /**
        * Applied At
        * Format: date-time
@@ -5390,8 +5583,6 @@ export interface components {
       no_change: boolean;
       /** Reviewed Base Agent Revision Id */
       reviewed_base_agent_revision_id: string | null;
-      /** Reviewed Base Agent Version */
-      reviewed_base_agent_version: number | null;
       reviewed_creation_metadata:
         components["schemas"]["CreationMetadata"] | null;
       /** Reviewed Digest */
@@ -5426,10 +5617,10 @@ export interface components {
     };
     /** ConfigurationDraft */
     ConfigurationDraft: {
+      /** Base Agent Etag */
+      base_agent_etag?: string | null;
       /** Base Agent Revision Id */
       base_agent_revision_id: string | null;
-      /** Base Agent Version */
-      base_agent_version?: number | null;
       config: components["schemas"]["AgentConfig-Output"] | null;
       /** Content Digest */
       content_digest: string;
@@ -5471,6 +5662,8 @@ export interface components {
        * @enum {string}
        */
       status: "open" | "discarded" | "expired";
+      /** Suggested Change Summary */
+      suggested_change_summary?: string | null;
       /** Target Agent Id */
       target_agent_id: string | null;
       /** Terminal Reason */
@@ -5488,10 +5681,10 @@ export interface components {
     /** ConfigurationDraftReview */
     ConfigurationDraftReview: {
       base: components["schemas"]["ConfigurationRevisionView"] | null;
+      /** Base Agent Etag */
+      base_agent_etag?: string | null;
       /** Base Agent Revision Id */
       base_agent_revision_id: string | null;
-      /** Base Agent Version */
-      base_agent_version?: number | null;
       /** Base To Candidate */
       base_to_candidate: components["schemas"]["ConfigurationDifference"][];
       /** Base To Current Target */
@@ -5506,6 +5699,8 @@ export interface components {
       created_at: string;
       creation_metadata?: components["schemas"]["CreationMetadata"] | null;
       current_target: components["schemas"]["ConfigurationRevisionView"] | null;
+      /** Current Target Etag */
+      current_target_etag: string | null;
       /** Current Target To Candidate */
       current_target_to_candidate: components["schemas"]["ConfigurationDifference"][];
       /**
@@ -5545,6 +5740,8 @@ export interface components {
        * @enum {string}
        */
       status: "open" | "discarded" | "expired";
+      /** Suggested Change Summary */
+      suggested_change_summary?: string | null;
       /** Target Agent Id */
       target_agent_id: string | null;
       /** Target Conflict */
@@ -6005,8 +6202,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Input"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       /** Expected Thread Version */
       expected_thread_version: number;
       hook_subscription?:
@@ -6087,8 +6284,6 @@ export interface components {
     /** CreateAgentRequest */
     CreateAgentRequest: {
       config: components["schemas"]["AgentConfig-Input"];
-      /** Default Environment Template Id */
-      default_environment_template_id?: string | null;
       /** Description */
       description?: string | null;
       /** Key */
@@ -6102,9 +6297,9 @@ export interface components {
     };
     /** CreateAgentRevisionRequest */
     CreateAgentRevisionRequest: {
+      /** Change Summary */
+      change_summary?: string | null;
       config: components["schemas"]["AgentConfig-Input"];
-      /** Expected Version */
-      expected_version: number;
     };
     /** CreateAuthorizationRequest */
     CreateAuthorizationRequest: {
@@ -6436,9 +6631,9 @@ export interface components {
         [key: string]: unknown;
       };
       /** Credential */
-      credential: {
+      credential?: {
         [key: string]: unknown;
-      };
+      } | null;
       /**
        * Enabled
        * @default true
@@ -6534,6 +6729,14 @@ export interface components {
        * Format: password
        */
       app_secret: string;
+    };
+    /** DiscoverGitHubUserRequest */
+    DiscoverGitHubUserRequest: {
+      /**
+       * Personal Access Token
+       * Format: password
+       */
+      personal_access_token: string;
     };
     /** Document */
     Document: {
@@ -6674,8 +6877,6 @@ export interface components {
     DuplicateAgentRequest: {
       /** Description */
       description?: string | null;
-      /** Expected Version */
-      expected_version: number;
       /** Key */
       key?: string | null;
       /** Labels */
@@ -6774,6 +6975,59 @@ export interface components {
        * @enum {string}
        */
       status: "pending" | "completed" | "failed";
+    };
+    /** EnvironmentDetail */
+    EnvironmentDetail: {
+      access: components["schemas"]["EnvironmentAccess"];
+      /**
+       * Condition Since
+       * Format: date-time
+       */
+      condition_since: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Generation */
+      generation: number;
+      /** Id */
+      id: string;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      };
+      /** Name */
+      name: string;
+      /** Organization Id */
+      organization_id: string;
+      /**
+       * Ownership
+       * @enum {string}
+       */
+      ownership: "managed" | "external";
+      /** Provider Id */
+      provider_id: string;
+      retention: components["schemas"]["RetentionPolicy"] | null;
+      /**
+       * Retention Condition
+       * @enum {string}
+       */
+      retention_condition: "active" | "idle";
+      status: components["schemas"]["EnvironmentStatus"];
+      /** Supports Destroy */
+      supports_destroy: boolean;
+      /** Supports Stop */
+      supports_stop: boolean;
+      /** Template Revision Id */
+      template_revision_id: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Workspace Id */
+      workspace_id: string;
     };
     /** EnvironmentProvider */
     EnvironmentProvider: {
@@ -7008,8 +7262,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Input"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       hook_subscription?:
         components["schemas"]["InlineHookSubscriptionInput"] | null;
       input: components["schemas"]["AgentInput"];
@@ -7033,6 +7287,32 @@ export interface components {
       name: string;
     } & {
       [key: string]: unknown;
+    };
+    /** GitHubCommentReceipt */
+    GitHubCommentReceipt: {
+      /** Comment Id */
+      comment_id: number;
+      /** Html Url */
+      html_url: string;
+      /** Node Id */
+      node_id: string;
+      /** Request Id */
+      request_id: string;
+    };
+    /** GitHubReceptionPolicy */
+    GitHubReceptionPolicy: {
+      /**
+       * Allowed Senders
+       * @default [
+       *       "*"
+       *     ]
+       */
+      allowed_senders?: string[];
+      /**
+       * Event Actions
+       * @default []
+       */
+      event_actions?: string[];
     };
     /** GitHubRevisionSource */
     GitHubRevisionSource: {
@@ -7198,6 +7478,22 @@ export interface components {
       type: "image";
     } & {
       [key: string]: unknown;
+    };
+    /** ImageTestResponse */
+    ImageTestResponse: {
+      /**
+       * Checks
+       * @default []
+       */
+      checks?: string[];
+      /** Configuration Hash */
+      configuration_hash?: string | null;
+      /** Error */
+      error?: string | null;
+      /** Image Id */
+      image_id?: string | null;
+      /** Image Source */
+      image_source?: ("local" | "pulled") | null;
     };
     /** InlineHookSubscriptionInput */
     InlineHookSubscriptionInput: {
@@ -7393,10 +7689,20 @@ export interface components {
     };
     /** ItemCollection */
     ItemCollection: {
+      /** Complete */
+      complete: boolean;
+      /** Finalized */
+      finalized: boolean;
+      /** Incomplete Reason */
+      incomplete_reason: string | null;
       /** Items */
       items: components["schemas"]["ItemResource"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Projection Cursor */
+      projection_cursor: string | null;
+      /** Snapshot Version */
+      snapshot_version: number;
     };
     /** ItemResource */
     ItemResource: {
@@ -8184,6 +8490,11 @@ export interface components {
      * @description Model tests use the saved API and settings without a request selector.
      */
     ModelTestRequest: Record<string, never>;
+    /**
+     * MountApplicationStatus
+     * @enum {string}
+     */
+    MountApplicationStatus: "pending" | "preparing" | "ready" | "failed";
     /** NewEnvironmentSelection */
     NewEnvironmentSelection: {
       /** Labels */
@@ -8551,6 +8862,16 @@ export interface components {
        */
       max_output_bytes?: number;
     };
+    /** ProviderConnectivity */
+    ProviderConnectivity: {
+      /** Error */
+      error?: string | null;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "connected" | "unavailable" | "unknown";
+    };
     /** QueuedSubmission */
     QueuedSubmission: {
       authority_principal: components["schemas"]["PrincipalRef"];
@@ -8641,8 +8962,8 @@ export interface components {
     /** RebaseDraftRequest */
     RebaseDraftRequest: {
       config: components["schemas"]["AgentConfig-Input"];
-      /** Expected Target Version */
-      expected_target_version: number;
+      /** Expected Target Etag */
+      expected_target_etag: string;
       /** Expected Version */
       expected_version: number;
     };
@@ -8844,11 +9165,6 @@ export interface components {
       call_id: string;
       response: components["schemas"]["JsonValue"];
     };
-    /** RestoreAgentRevisionRequest */
-    RestoreAgentRevisionRequest: {
-      /** Expected Version */
-      expected_version: number;
-    };
     /**
      * ResumeEntry
      * @description A per-interrupt response in the resume array of a RunAgentInput.
@@ -9049,6 +9365,33 @@ export interface components {
       items: components["schemas"]["RunResource"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** RunEnvironmentMount */
+    RunEnvironmentMount: {
+      accepting_principal: components["schemas"]["PrincipalRef"];
+      access: components["schemas"]["EnvironmentAccess"];
+      /** @default pending */
+      application_status?: components["schemas"]["MountApplicationStatus"];
+      /** Applied Attempt Fence */
+      applied_attempt_fence?: number | null;
+      /** Applied Attempt Id */
+      applied_attempt_id?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Environment Id */
+      environment_id: string;
+      error?: components["schemas"]["SafeFailure"] | null;
+      /** Name */
+      name: string;
+      /** Observed At */
+      observed_at?: string | null;
+      /** Run Id */
+      run_id: string;
+      /** Use Started At */
+      use_started_at?: string | null;
     };
     /** RunLineage */
     RunLineage: {
@@ -9438,6 +9781,8 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** SetDefaultAgentRevisionRequest */
+    SetDefaultAgentRevisionRequest: Record<string, never>;
     /** SetOperation */
     SetOperation: {
       /**
@@ -9688,8 +10033,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Input"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       hook_subscription?:
         components["schemas"]["InlineHookSubscriptionInput"] | null;
       input: components["schemas"]["AgentInput"];
@@ -9886,6 +10231,17 @@ export interface components {
        */
       target_kind: "conversation" | "repository";
     };
+    /** TestDockerImageRequest */
+    TestDockerImageRequest: {
+      /** Configuration */
+      configuration: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Request Id */
+      request_id: string;
+      /** Workspace Id */
+      workspace_id: string | null;
+    };
     /** TextContent */
     TextContent: {
       /** Text */
@@ -10023,8 +10379,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Input"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       hook_subscription?:
         components["schemas"]["InlineHookSubscriptionInput"] | null;
       input: components["schemas"]["AgentInput"];
@@ -10041,8 +10397,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Output"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       hook_subscription?:
         components["schemas"]["InlineHookSubscriptionInput"] | null;
       input: components["schemas"]["AgentInput"];
@@ -10071,8 +10427,8 @@ export interface components {
       agent_revision_id?: string | null;
       config_override?: components["schemas"]["AgentRunOverride-Input"] | null;
       environment?: components["schemas"]["EnvironmentSelection"] | null;
-      /** Expected Current Revision Id */
-      expected_current_revision_id?: string | null;
+      /** Expected Default Revision Id */
+      expected_default_revision_id?: string | null;
       /** Expected Thread Version */
       expected_thread_version: number;
       hook_subscription?:
@@ -10468,8 +10824,6 @@ export interface components {
     };
     /** UpdateAgentRequest */
     UpdateAgentRequest: {
-      /** Default Environment Template Id */
-      default_environment_template_id?: string | null;
       /** Description */
       description?: string | null;
       /** Key */
@@ -10493,6 +10847,8 @@ export interface components {
         | components["schemas"]["RemoveOperation"]
         | components["schemas"]["ReplaceTextOperation"]
       )[];
+      /** Suggested Change Summary */
+      suggested_change_summary?: string | null;
     };
     /** UpdateConnectionRequest */
     UpdateConnectionRequest: {
@@ -15210,6 +15566,50 @@ export interface operations {
       };
     };
   };
+  get_environment_providers_provider_id_connectivity: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderConnectivity"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
   put_environment_providers_provider_id_credential: {
     parameters: {
       query?: never;
@@ -15236,6 +15636,101 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["EnvironmentProvider"];
         };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_environment_providers_provider_id_test_image: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TestDockerImageRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImageTestResponse"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_environment_providers_provider_id_test_image_request_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        provider_id: string;
+        request_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CancelDockerImageRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Invalid request. */
       400: {
@@ -15681,6 +16176,94 @@ export interface operations {
       };
     };
   };
+  get_environments_environment_id_connection: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClientConnectionStatus"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_environments_environment_id_connection_tickets: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClientConnectionTicket"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
   post_environments_environment_id_delete: {
     parameters: {
       query?: never;
@@ -15885,7 +16468,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Environment"];
+          "application/json": components["schemas"]["EnvironmentDetail"];
         };
       };
       /** @description Invalid request. */
@@ -18989,6 +19572,103 @@ export interface operations {
       };
     };
   };
+  get_runs_run_id_environment_mounts: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: never;
+      path: {
+        run_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Collection_RunEnvironmentMount_"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_runs_run_id_environment_mounts: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        run_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AddEnvironmentMountRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RunEnvironmentMount"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
   get_runs_run_id_events: {
     parameters: {
       query?: {
@@ -19191,6 +19871,7 @@ export interface operations {
       query?: {
         limit?: number;
         cursor?: string | null;
+        order?: "asc" | "desc";
       };
       header?: never;
       path: {
@@ -22008,6 +22689,7 @@ export interface operations {
       query?: never;
       header: {
         "Idempotency-Key": string;
+        "If-Match": string;
       };
       path: {
         workspace: string;
@@ -22203,6 +22885,7 @@ export interface operations {
       query?: never;
       header: {
         "Idempotency-Key": string;
+        "If-Match": string;
       };
       path: {
         workspace: string;
@@ -22249,11 +22932,12 @@ export interface operations {
       };
     };
   };
-  post_workspaces_workspace_agents_agent_revisions_revision_id_restore: {
+  post_workspaces_workspace_agents_agent_revisions_revision_id_default: {
     parameters: {
       query?: never;
       header: {
         "Idempotency-Key": string;
+        "If-Match": string;
       };
       path: {
         revision_id: string;
@@ -22264,12 +22948,12 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["RestoreAgentRevisionRequest"];
+        "application/json": components["schemas"]["SetDefaultAgentRevisionRequest"];
       };
     };
     responses: {
       /** @description Successful Response */
-      201: {
+      200: {
         headers: {
           "X-Request-ID"?: string;
           [name: string]: unknown;
@@ -22645,7 +23329,7 @@ export interface operations {
       query?: {
         limit?: number;
         cursor?: string | null;
-        platform?: ("slack" | "lark") | null;
+        platform?: ("slack" | "lark" | "github") | null;
         condition?:
           | (
               | "disabled"
@@ -22710,6 +23394,54 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": components["schemas"]["DiscoverFeishuInstallationRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstallationInfo"];
+        };
+      };
+      /** @description Invalid request. */
+      400: {
+        headers: {
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service error. */
+      default: {
+        headers: {
+          "Retry-After"?: string;
+          "X-Request-ID"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_workspaces_workspace_bots_github_user: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspace: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DiscoverGitHubUserRequest"];
       };
     };
     responses: {
