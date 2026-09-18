@@ -17,12 +17,56 @@ export class ProtocolError extends Error {
   override readonly name = "ProtocolError";
 }
 
+/** A locally recognized transport failure with no claim about remote mutation outcome. */
+export class TransportError extends Error {
+  override readonly name = "TransportError";
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+  }
+}
+
+export class WaitTimeoutError extends Error {
+  override readonly name = "WaitTimeoutError";
+  constructor(readonly timeoutMs: number) {
+    super(
+      `The resource did not reach a terminal state within ${timeoutMs} ms.`,
+    );
+  }
+}
+
 export class ReplayGapError extends ApiError {
   override readonly name = "ReplayGapError";
+  readonly runId: string | undefined;
+  readonly requestedCursor: string | undefined;
+  readonly retainedFloor: string | undefined;
+  readonly highWatermark: string | undefined;
+
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    details: Record<string, unknown>,
+    requestId: string | null,
+    retryAfter: string | null = null,
+  ) {
+    super(status, code, message, details, requestId, retryAfter);
+    this.runId = optionalString(details, "run_id");
+    this.requestedCursor = optionalString(details, "requested_cursor");
+    this.retainedFloor = optionalString(details, "retained_floor");
+    this.highWatermark = optionalString(details, "high_watermark");
+  }
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function optionalString(
+  value: Record<string, unknown>,
+  key: string,
+): string | undefined {
+  const field = value[key];
+  return typeof field === "string" ? field : undefined;
 }
 
 export async function requireSuccess(response: Response): Promise<void> {

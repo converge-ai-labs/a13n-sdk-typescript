@@ -1,6 +1,7 @@
 import { requireSuccess } from "./errors.js";
 
 export type Authentication =
+  | { type: "public" }
   | { type: "session"; csrfToken?: string }
   | { type: "bearer"; token: string | (() => string | Promise<string>) };
 
@@ -12,11 +13,20 @@ export interface ClientOptions {
   maxReadRetries?: number;
 }
 
+export class RecoverableFetchError extends Error {
+  override readonly name = "RecoverableFetchError";
+  constructor(readonly failure: unknown) {
+    super("The dispatched request transport failed.", { cause: failure });
+  }
+}
+
 const publicMutations = new Set([
   "/api/v1/auth/login",
   "/api/v1/auth/password-reset",
   "/api/v1/auth/password-reset/complete",
 ]);
+
+const retryableStatuses = new Set([429, 502, 503, 504]);
 
 export function delay(
   milliseconds: number,
@@ -34,6 +44,41 @@ export function delay(
     }, milliseconds);
     signal.addEventListener("abort", abort, { once: true });
   });
+}
+
+async function abortable<T>(
+  promise: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
+  signal.throwIfAborted();
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener("abort", abort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", abort);
+        if (signal.aborted) reject(signal.reason);
+        else resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener("abort", abort);
+        reject(error);
+      },
+    );
+  });
+}
+
+export function retryAfterMilliseconds(
+  value: string | null,
+  now = Date.now(),
+): number | undefined {
+  if (value === null) return undefined;
+  const seconds = Number(value);
+  const milliseconds = Number.isFinite(seconds)
+    ? seconds * 1000
+    : Date.parse(value) - now;
+  if (!Number.isFinite(milliseconds) || milliseconds < 0) return undefined;
+  return Math.min(milliseconds, 30_000);
 }
 
 export class Transport {
@@ -79,15 +124,33 @@ export class Transport {
   setCsrfToken(token: string | undefined): void {
     this.csrfToken = token;
   }
+
   get signal(): AbortSignal {
     return this.shutdown.signal;
   }
+
+  get closed(): boolean {
+    return this.shutdown.signal.aborted;
+  }
+
   close(): void {
     this.csrfToken = undefined;
     this.shutdown.abort();
   }
 
-  fetch = async (input: Request): Promise<Response> => {
+  fetch = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: true });
+
+  fetchOnce = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: false, classifyFetchFailures: false });
+
+  fetchOnceForRecovery = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: false, classifyFetchFailures: true });
+
+  private async request(
+    input: Request,
+    options: { retryReads: boolean; classifyFetchFailures?: boolean },
+  ): Promise<Response> {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
     if (
@@ -100,16 +163,17 @@ export class Transport {
     signal.throwIfAborted();
     const headers = new Headers(input.headers);
     const auth = this.options.auth;
-    const path = new URL(input.url).pathname.slice(
-      new URL(this.baseUrl).pathname.replace(/\/$/, "").length,
-    );
+    const path = target.pathname.slice(base.pathname.replace(/\/$/, "").length);
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
     if (auth.type === "bearer") {
-      headers.set(
-        "Authorization",
-        `Bearer ${typeof auth.token === "function" ? await auth.token() : auth.token}`,
-      );
+      const token =
+        typeof auth.token === "function"
+          ? await abortable(Promise.resolve(auth.token()), signal)
+          : auth.token;
+      signal.throwIfAborted();
+      headers.set("Authorization", `Bearer ${token}`);
     } else if (
+      auth.type === "session" &&
       mutation &&
       !publicMutations.has(path) &&
       !/^\/api\/v1\/invitations\/[^/]+\/accept$/.test(path)
@@ -127,32 +191,34 @@ export class Transport {
       redirect: "error",
     });
     const retries =
-      request.method === "GET" || request.method === "HEAD" ? this.retries : 0;
+      options.retryReads &&
+      (request.method === "GET" || request.method === "HEAD")
+        ? this.retries
+        : 0;
     for (let attempt = 0; ; attempt++) {
       let response: Response;
       try {
         response = await this.fetcher(retries ? request.clone() : request);
       } catch (error) {
-        if (signal.aborted || attempt >= retries) throw error;
+        if (signal.aborted) throw error;
+        if (attempt >= retries) {
+          if (options.classifyFetchFailures)
+            throw new RecoverableFetchError(error);
+          throw error;
+        }
         await delay(250 * 2 ** attempt, signal);
         continue;
       }
-      if ([429, 502, 503, 504].includes(response.status) && attempt < retries) {
-        const retryAfter = response.headers.get("Retry-After");
-        const seconds = retryAfter === null ? NaN : Number(retryAfter);
-        const milliseconds = Number.isFinite(seconds)
-          ? seconds * 1000
-          : retryAfter
-            ? Date.parse(retryAfter) - Date.now()
-            : 250 * 2 ** attempt;
-        if (milliseconds <= 30_000 && milliseconds >= 0) {
-          await response.body?.cancel();
-          await delay(milliseconds, signal);
-          continue;
-        }
+      if (retryableStatuses.has(response.status) && attempt < retries) {
+        const milliseconds =
+          retryAfterMilliseconds(response.headers.get("Retry-After")) ??
+          250 * 2 ** attempt;
+        await response.body?.cancel();
+        await delay(milliseconds, signal);
+        continue;
       }
       await requireSuccess(response);
       return response;
     }
-  };
+  }
 }

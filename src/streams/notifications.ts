@@ -42,6 +42,8 @@ export function notifications(
   lifetime: AbortSignal,
   options: NotificationOptions,
 ): { close(): void } {
+  if (client.auth.type === "public")
+    throw new TypeError("Public clients cannot open notification attachments.");
   if (client.auth.type === "bearer" && !options.socketFactory) {
     throw new TypeError(
       "Bearer notifications require a socketFactory that supports authorization headers.",
