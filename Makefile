@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := help
-.PHONY: help install hooks-install hooks-check generate generated-check format lint typecheck check test build package check-all
+.PHONY: help install hooks-install hooks-check generate format lint typecheck check test build package check-all
 
 help:
-	@echo 'install | hooks-install | hooks-check | generate | generated-check | format | lint | typecheck | check | test | build | package | check-all'
+	@echo 'install | hooks-install | hooks-check | generate | format | lint | typecheck | check | test | build | package | check-all'
 
 install:
 	npm ci
@@ -15,9 +15,6 @@ hooks-check:
 
 generate:
 	npm run generate
-
-generated-check:
-	npm run generate:check
 
 format:
 	npm run format

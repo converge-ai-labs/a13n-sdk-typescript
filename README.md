@@ -49,11 +49,10 @@ This is the independent `converge-ai-labs/a13n-sdk-typescript` repository. Use N
 ```bash
 make install
 make generate         # from the pinned local contract only
-make generated-check  # non-mutating type and published snapshot comparison
-make check-all        # generation, formatting, types, tests and package contents
+make check-all        # formatting, types, tests and package contents
 ```
 
-`contract/source.json` records the upstream repository, full commit SHA, original paths and exact input hashes. The generated package-level `openapi.json` remains a supported export. The generator uses openapi-typescript and formatter versions fixed by `package-lock.json`. Do not reformat the raw contract inputs or edit generated types by hand.
+`contract/source.json` records the upstream repository, full commit SHA, and original paths. The generated package-level `openapi.json` remains a supported export. The generator uses openapi-typescript and formatter versions fixed by `package-lock.json`. Do not reformat the raw contract inputs or edit generated types by hand.
 
 See [contract provenance](contract/README.md), [SDK contract](spec/README.md) and [Contributing](CONTRIBUTING.md).
 

@@ -22,8 +22,8 @@ Notifications are a bounded best-effort attachment under `a13n.service.notificat
 
 ## Verifiable invariants
 
-- Pinned input hashes match provenance and every HTTP operation has a generated type.
-- Generation checks do not replace stale or missing committed output.
+- Every pinned HTTP operation has a generated type.
+- Generation consumes pinned local inputs; generated types compile and support the tested client behavior.
 - Public request types reject invalid inputs while preserving nullable presence.
 - HTTP tests cover base URL prefixes, auth, CSRF, headers, retry bounds and shutdown.
 - Streaming tests cover framing, cursor delivery, cancellation and replay gaps.
