@@ -1,5 +1,5 @@
 import { ProtocolError } from "../errors.js";
-import type { Transport } from "../transport.js";
+import { RecoverableFetchError, type Transport } from "../transport.js";
 
 export interface ResourceResult<T> {
   readonly data: T;
@@ -91,7 +91,14 @@ export async function jsonRequest<T>(
   );
   if (response.status === 204 || response.status === 205)
     return { data: undefined as T, response };
-  const text = await response.text();
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (error) {
+    if (options.signal?.aborted) throw options.signal.reason;
+    if (options.classifyFetchFailures) throw new RecoverableFetchError(error);
+    throw error;
+  }
   if (!text) return { data: undefined as T, response };
   try {
     return { data: JSON.parse(text) as T, response };

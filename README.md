@@ -183,12 +183,12 @@ for await (const model of workspace.models.iterate({ enabled: true })) {
   console.log(model.id);
 }
 
-await workspace.models
-  .ref("model_1234567890abcdef")
-  .update(
-    { enabled: false },
-    { ifMatch: firstPage.response.headers.get("ETag")! },
-  );
+const model = workspace.models.ref("model_1234567890abcdef");
+const current = await model.get();
+await model.update(
+  { enabled: false },
+  { ifMatch: current.response.headers.get("ETag")! },
+);
 
 await organization.modelProviders.list();
 ```

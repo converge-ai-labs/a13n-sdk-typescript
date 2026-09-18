@@ -339,6 +339,43 @@ test("invalid UTF-8 is a non-retryable protocol failure", async () => {
   assert.equal(requests, 1);
 });
 
+test("completion-evidence response body transport loss shares bounded recovery", async () => {
+  const original = new TypeError("terminated");
+  let attachments = 0;
+  let evidenceReads = 0;
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session" },
+    fetch: async (request) => {
+      const path = new URL(request.url).pathname;
+      if (path.endsWith("/stream")) {
+        attachments++;
+        return response(stream(""));
+      }
+      if (path.endsWith(`/runs/${runId}`)) {
+        evidenceReads++;
+        return new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.error(original);
+            },
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      assert.fail(`Unexpected request: ${request.url}`);
+    },
+  });
+  const observation = run(client).stream({ maxReconnects: 1 });
+  await assert.rejects(observation.next(), (error) => {
+    assert.ok(error instanceof TransportError);
+    assert.equal(error.cause, original);
+    return true;
+  });
+  assert.equal(attachments, 2);
+  assert.equal(evidenceReads, 2);
+});
+
 test("terminal evidence failures consume one reconnect and preserve the final API error", async () => {
   const paths = [];
   const client = createClient({
