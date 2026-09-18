@@ -564,6 +564,29 @@
         ],
         "title": "ActorRef"
       },
+      "AddEnvironmentMountRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/EnvironmentAccess"
+          },
+          "environment_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Environment Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 63,
+            "pattern": "^[a-z][a-z0-9-]{0,62}$",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name", "environment_id", "access"],
+        "title": "AddEnvironmentMountRequest",
+        "type": "object"
+      },
       "Agent": {
         "additionalProperties": false,
         "properties": {
@@ -587,7 +610,7 @@
           "created_by": {
             "$ref": "#/components/schemas/ActorRef"
           },
-          "current_revision_id": {
+          "default_revision_id": {
             "anyOf": [
               {
                 "maxLength": 72,
@@ -598,20 +621,7 @@
                 "type": "null"
               }
             ],
-            "title": "Current Revision Id"
-          },
-          "default_environment_template_id": {
-            "anyOf": [
-              {
-                "maxLength": 72,
-                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Default Environment Template Id"
+            "title": "Default Revision Id"
           },
           "description": {
             "anyOf": [
@@ -726,11 +736,6 @@
           "updated_by": {
             "$ref": "#/components/schemas/ActorRef"
           },
-          "version": {
-            "minimum": 1.0,
-            "title": "Version",
-            "type": "integer"
-          },
           "workspace_id": {
             "maxLength": 72,
             "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
@@ -746,8 +751,7 @@
           "name",
           "key",
           "description",
-          "version",
-          "current_revision_id",
+          "default_revision_id",
           "enabled",
           "archived_at",
           "duplicated_from_agent_id",
@@ -806,6 +810,19 @@
             "maxItems": 128,
             "title": "Connection Tools",
             "type": "array"
+          },
+          "default_environment_template_id": {
+            "anyOf": [
+              {
+                "maxLength": 72,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Environment Template Id"
           },
           "input_adapter": {
             "$ref": "#/components/schemas/InputAdapterConfig"
@@ -940,6 +957,19 @@
             "maxItems": 128,
             "title": "Connection Tools",
             "type": "array"
+          },
+          "default_environment_template_id": {
+            "anyOf": [
+              {
+                "maxLength": 72,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Environment Template Id"
           },
           "input_adapter": {
             "$ref": "#/components/schemas/InputAdapterConfig"
@@ -1265,6 +1295,18 @@
             "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
             "title": "Agent Id",
             "type": "string"
+          },
+          "change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Summary"
           },
           "config": {
             "$ref": "#/components/schemas/AgentConfig-Output"
@@ -1871,6 +1913,18 @@
       "ApplyDraftRequest": {
         "additionalProperties": false,
         "properties": {
+          "change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Summary"
+          },
           "content_digest": {
             "pattern": "^[0-9a-f]{64}$",
             "title": "Content Digest",
@@ -1880,18 +1934,6 @@
             "pattern": "^[0-9a-f]{64}$",
             "title": "Dependency Digest",
             "type": "string"
-          },
-          "expected_target_version": {
-            "anyOf": [
-              {
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected Target Version"
           },
           "expected_version": {
             "minimum": 1.0,
@@ -3442,6 +3484,80 @@
         "title": "ChildEnvironmentPolicy",
         "type": "object"
       },
+      "ClientConnectionStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "connection_id": {
+            "anyOf": [
+              {
+                "maxLength": 72,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "enum": [
+                  "environment_unavailable",
+                  "environment_initialization_failed",
+                  "control_draining"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "title": "Observed At",
+            "type": "string"
+          },
+          "status": {
+            "enum": ["online", "connecting", "offline"],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": ["status", "connection_id", "observed_at", "error"],
+        "title": "ClientConnectionStatus",
+        "type": "object"
+      },
+      "ClientConnectionTicket": {
+        "additionalProperties": false,
+        "properties": {
+          "connection_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          },
+          "websocket_url": {
+            "title": "Websocket Url",
+            "type": "string"
+          }
+        },
+        "required": ["ticket", "expires_at", "websocket_url", "connection_id"],
+        "title": "ClientConnectionTicket",
+        "type": "object"
+      },
       "ClientToolDefinition": {
         "additionalProperties": false,
         "description": "Portable model guidance for one externally executed client tool.",
@@ -3645,6 +3761,32 @@
         "title": "Collection_Environment_",
         "type": "object"
       },
+      "Collection_RunEnvironmentMount_": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RunEnvironmentMount"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": ["items"],
+        "title": "Collection_RunEnvironmentMount_",
+        "type": "object"
+      },
       "CompleteAuthorizationRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3834,9 +3976,9 @@
             "title": "Agent Revision Id",
             "type": "string"
           },
-          "agent_version": {
+          "agent_revision_version": {
             "minimum": 1.0,
-            "title": "Agent Version",
+            "title": "Agent Revision Version",
             "type": "integer"
           },
           "applied_at": {
@@ -3872,18 +4014,6 @@
               }
             ],
             "title": "Reviewed Base Agent Revision Id"
-          },
-          "reviewed_base_agent_version": {
-            "anyOf": [
-              {
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reviewed Base Agent Version"
           },
           "reviewed_creation_metadata": {
             "anyOf": [
@@ -3952,11 +4082,10 @@
           "reviewed_mode",
           "reviewed_target_agent_id",
           "reviewed_base_agent_revision_id",
-          "reviewed_base_agent_version",
           "reviewed_creation_metadata",
           "agent_id",
           "agent_revision_id",
-          "agent_version",
+          "agent_revision_version",
           "applied_by_user_id",
           "applied_at",
           "no_change"
@@ -4002,6 +4131,17 @@
       "ConfigurationDraft": {
         "additionalProperties": false,
         "properties": {
+          "base_agent_etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Agent Etag"
+          },
           "base_agent_revision_id": {
             "anyOf": [
               {
@@ -4014,18 +4154,6 @@
               }
             ],
             "title": "Base Agent Revision Id"
-          },
-          "base_agent_version": {
-            "anyOf": [
-              {
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Agent Version"
           },
           "config": {
             "anyOf": [
@@ -4136,6 +4264,18 @@
             "title": "Status",
             "type": "string"
           },
+          "suggested_change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Change Summary"
+          },
           "target_agent_id": {
             "anyOf": [
               {
@@ -4210,6 +4350,17 @@
               }
             ]
           },
+          "base_agent_etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Agent Etag"
+          },
           "base_agent_revision_id": {
             "anyOf": [
               {
@@ -4222,18 +4373,6 @@
               }
             ],
             "title": "Base Agent Revision Id"
-          },
-          "base_agent_version": {
-            "anyOf": [
-              {
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Agent Version"
           },
           "base_to_candidate": {
             "items": {
@@ -4288,6 +4427,17 @@
                 "type": "null"
               }
             ]
+          },
+          "current_target_etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Target Etag"
           },
           "current_target_to_candidate": {
             "items": {
@@ -4402,6 +4552,18 @@
             "title": "Status",
             "type": "string"
           },
+          "suggested_change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Change Summary"
+          },
           "target_agent_id": {
             "anyOf": [
               {
@@ -4467,6 +4629,7 @@
           "source",
           "base",
           "current_target",
+          "current_target_etag",
           "source_to_candidate",
           "base_to_candidate",
           "current_target_to_candidate",
@@ -5607,7 +5770,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -5616,7 +5779,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "expected_thread_version": {
             "minimum": 1.0,
@@ -5893,19 +6056,6 @@
           "config": {
             "$ref": "#/components/schemas/AgentConfig-Input"
           },
-          "default_environment_template_id": {
-            "anyOf": [
-              {
-                "maxLength": 72,
-                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Default Environment Template Id"
-          },
           "description": {
             "anyOf": [
               {
@@ -5959,16 +6109,23 @@
       "CreateAgentRevisionRequest": {
         "additionalProperties": false,
         "properties": {
+          "change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Summary"
+          },
           "config": {
             "$ref": "#/components/schemas/AgentConfig-Input"
-          },
-          "expected_version": {
-            "minimum": 1.0,
-            "title": "Expected Version",
-            "type": "integer"
           }
         },
-        "required": ["expected_version", "config"],
+        "required": ["config"],
         "title": "CreateAgentRevisionRequest",
         "type": "object"
       },
@@ -7555,11 +7712,6 @@
             ],
             "title": "Description"
           },
-          "expected_version": {
-            "minimum": 1.0,
-            "title": "Expected Version",
-            "type": "integer"
-          },
           "key": {
             "anyOf": [
               {
@@ -7594,7 +7746,7 @@
             "type": "string"
           }
         },
-        "required": ["expected_version", "name"],
+        "required": ["name"],
         "title": "DuplicateAgentRequest",
         "type": "object"
       },
@@ -7794,6 +7946,143 @@
         "title": "EnvironmentCommand",
         "type": "object"
       },
+      "EnvironmentDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/EnvironmentAccess"
+          },
+          "condition_since": {
+            "format": "date-time",
+            "title": "Condition Since",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "generation": {
+            "title": "Generation",
+            "type": "integer"
+          },
+          "id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "labels": {
+            "maxProperties": 32,
+            "patternProperties": {
+              "^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$": {
+                "maxLength": 256,
+                "type": "string"
+              }
+            },
+            "propertyNames": {
+              "maxLength": 63,
+              "minLength": 1
+            },
+            "title": "Labels",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "organization_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "ownership": {
+            "enum": ["managed", "external"],
+            "title": "Ownership",
+            "type": "string"
+          },
+          "provider_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retention_condition": {
+            "enum": ["active", "idle"],
+            "title": "Retention Condition",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EnvironmentStatus"
+          },
+          "supports_destroy": {
+            "title": "Supports Destroy",
+            "type": "boolean"
+          },
+          "supports_stop": {
+            "title": "Supports Stop",
+            "type": "boolean"
+          },
+          "template_revision_id": {
+            "anyOf": [
+              {
+                "maxLength": 72,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Revision Id"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "workspace_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "organization_id",
+          "workspace_id",
+          "provider_id",
+          "template_revision_id",
+          "ownership",
+          "access",
+          "generation",
+          "status",
+          "retention_condition",
+          "condition_since",
+          "created_at",
+          "updated_at",
+          "retention",
+          "supports_stop",
+          "supports_destroy"
+        ],
+        "title": "EnvironmentDetail",
+        "type": "object"
+      },
       "EnvironmentProvider": {
         "additionalProperties": false,
         "properties": {
@@ -7983,7 +8272,7 @@
           "provider_key": {
             "maxLength": 128,
             "minLength": 3,
-            "pattern": "^(?:docker|e2b|direct-local|[a-z0-9]+(?:[._-][a-z0-9]+)+)$",
+            "pattern": "^(?:docker|e2b|sprites|daytona|modal|vercel|runloop|direct-local|[a-z0-9]+(?:[._-][a-z0-9]+)+)$",
             "title": "Provider Key",
             "type": "string"
           },
@@ -8382,7 +8671,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -8391,7 +8680,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "hook_subscription": {
             "anyOf": [
@@ -11599,6 +11888,11 @@
         "title": "ModelTestRequest",
         "type": "object"
       },
+      "MountApplicationStatus": {
+        "enum": ["pending", "preparing", "ready", "failed"],
+        "title": "MountApplicationStatus",
+        "type": "string"
+      },
       "NewEnvironmentSelection": {
         "additionalProperties": false,
         "properties": {
@@ -12981,10 +13275,11 @@
           "config": {
             "$ref": "#/components/schemas/AgentConfig-Input"
           },
-          "expected_target_version": {
-            "minimum": 1.0,
-            "title": "Expected Target Version",
-            "type": "integer"
+          "expected_target_etag": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Expected Target Etag",
+            "type": "string"
           },
           "expected_version": {
             "minimum": 1.0,
@@ -12992,7 +13287,7 @@
             "type": "integer"
           }
         },
-        "required": ["expected_version", "expected_target_version", "config"],
+        "required": ["expected_version", "expected_target_etag", "config"],
         "title": "RebaseDraftRequest",
         "type": "object"
       },
@@ -13566,19 +13861,6 @@
         },
         "required": ["call_id", "response"],
         "title": "RespondPendingResolution",
-        "type": "object"
-      },
-      "RestoreAgentRevisionRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "expected_version": {
-            "minimum": 1.0,
-            "title": "Expected Version",
-            "type": "integer"
-          }
-        },
-        "required": ["expected_version"],
-        "title": "RestoreAgentRevisionRequest",
         "type": "object"
       },
       "ResumeEntry": {
@@ -14174,6 +14456,112 @@
         },
         "required": ["items", "next_cursor"],
         "title": "RunCollection",
+        "type": "object"
+      },
+      "RunEnvironmentMount": {
+        "additionalProperties": false,
+        "properties": {
+          "accepting_principal": {
+            "$ref": "#/components/schemas/PrincipalRef"
+          },
+          "access": {
+            "$ref": "#/components/schemas/EnvironmentAccess"
+          },
+          "application_status": {
+            "$ref": "#/components/schemas/MountApplicationStatus",
+            "default": "pending"
+          },
+          "applied_attempt_fence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Attempt Fence"
+          },
+          "applied_attempt_id": {
+            "anyOf": [
+              {
+                "maxLength": 72,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Attempt Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "environment_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Environment Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SafeFailure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 63,
+            "pattern": "^[a-z][a-z0-9-]{0,62}$",
+            "title": "Name",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "run_id": {
+            "maxLength": 72,
+            "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "use_started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use Started At"
+          }
+        },
+        "required": [
+          "run_id",
+          "name",
+          "environment_id",
+          "access",
+          "created_at",
+          "accepting_principal"
+        ],
+        "title": "RunEnvironmentMount",
         "type": "object"
       },
       "RunLineage": {
@@ -15281,6 +15669,12 @@
         "title": "SessionResource",
         "type": "object"
       },
+      "SetDefaultAgentRevisionRequest": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "SetDefaultAgentRevisionRequest",
+        "type": "object"
+      },
       "SetOperation": {
         "additionalProperties": false,
         "properties": {
@@ -16013,7 +16407,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -16022,7 +16416,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "hook_subscription": {
             "anyOf": [
@@ -17167,7 +17561,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "maxLength": 72,
@@ -17178,7 +17572,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "hook_subscription": {
             "anyOf": [
@@ -17262,7 +17656,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "maxLength": 72,
@@ -17273,7 +17667,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "hook_subscription": {
             "anyOf": [
@@ -17395,7 +17789,7 @@
               }
             ]
           },
-          "expected_current_revision_id": {
+          "expected_default_revision_id": {
             "anyOf": [
               {
                 "maxLength": 72,
@@ -17406,7 +17800,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expected Current Revision Id"
+            "title": "Expected Default Revision Id"
           },
           "expected_thread_version": {
             "minimum": 1.0,
@@ -18429,19 +18823,6 @@
       "UpdateAgentRequest": {
         "additionalProperties": false,
         "properties": {
-          "default_environment_template_id": {
-            "anyOf": [
-              {
-                "maxLength": 72,
-                "pattern": "^[a-z][a-z0-9]{1,7}_[a-z0-9]{16,64}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Default Environment Template Id"
-          },
           "description": {
             "anyOf": [
               {
@@ -18539,6 +18920,18 @@
             "maxItems": 32,
             "title": "Operations",
             "type": "array"
+          },
+          "suggested_change_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Change Summary"
           }
         },
         "required": ["expected_version"],
@@ -30011,6 +30404,174 @@
         "tags": ["environments"]
       }
     },
+    "/api/v1/environments/{environment_id}/connection": {
+      "get": {
+        "operationId": "get_environments_environment_id_connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "environment_id",
+            "required": true,
+            "schema": {
+              "title": "Environment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientConnectionStatus"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service error.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "SessionAuth": []
+          }
+        ],
+        "summary": "Connection Status",
+        "tags": ["environments"]
+      }
+    },
+    "/api/v1/environments/{environment_id}/connection-tickets": {
+      "post": {
+        "operationId": "post_environments_environment_id_connection_tickets",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "environment_id",
+            "required": true,
+            "schema": {
+              "title": "Environment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientConnectionTicket"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service error.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "SessionAuth": []
+          }
+        ],
+        "summary": "Issue Ticket",
+        "tags": ["environments"]
+      }
+    },
     "/api/v1/environments/{environment_id}/delete": {
       "post": {
         "operationId": "post_environments_environment_id_delete",
@@ -30406,7 +30967,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Environment"
+                  "$ref": "#/components/schemas/EnvironmentDetail"
                 }
               }
             },
@@ -37109,6 +37670,221 @@
         "tags": ["protocol-gateway"]
       }
     },
+    "/api/v1/runs/{run_id}/environment-mounts": {
+      "get": {
+        "operationId": "get_runs_run_id_environment_mounts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection_RunEnvironmentMount_"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service error.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "SessionAuth": []
+          }
+        ],
+        "summary": "List Mounts",
+        "tags": ["environments"]
+      },
+      "post": {
+        "operationId": "post_runs_run_id_environment_mounts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 512,
+              "minLength": 1,
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEnvironmentMountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunEnvironmentMount"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service error.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "SessionAuth": []
+          }
+        ],
+        "summary": "Add Mount",
+        "tags": ["environments"]
+      }
+    },
     "/api/v1/runs/{run_id}/events": {
       "get": {
         "operationId": "get_runs_run_id_events",
@@ -43407,6 +44183,16 @@
               "title": "Idempotency-Key",
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -43845,6 +44631,16 @@
               "title": "Idempotency-Key",
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -43927,9 +44723,9 @@
         "tags": ["agent-management"]
       }
     },
-    "/api/v1/workspaces/{workspace}/agents/{agent}/revisions/{revision_id}/restore": {
+    "/api/v1/workspaces/{workspace}/agents/{agent}/revisions/{revision_id}/default": {
       "post": {
-        "operationId": "post_workspaces_workspace_agents_agent_revisions_revision_id_restore",
+        "operationId": "post_workspaces_workspace_agents_agent_revisions_revision_id_default",
         "parameters": [
           {
             "in": "path",
@@ -43968,20 +44764,30 @@
               "title": "Idempotency-Key",
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RestoreAgentRevisionRequest"
+                "$ref": "#/components/schemas/SetDefaultAgentRevisionRequest"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -44046,7 +44852,7 @@
             "SessionAuth": []
           }
         ],
-        "summary": "Restore Agent Revision",
+        "summary": "Set Default Agent Revision",
         "tags": ["agent-management"]
       }
     },
