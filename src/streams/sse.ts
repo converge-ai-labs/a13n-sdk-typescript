@@ -5,17 +5,36 @@ export interface SseFrame {
   event: string;
   data: string;
 }
+export interface DetailedSseFrame extends SseFrame {
+  idPresent: boolean;
+}
 const maxFrameCharacters = 1024 * 1024;
 
 /** Decode incremental UTF-8 and LF/CRLF/CR framing, including split delimiters. */
 export async function* decodeSse(
   body: ReadableStream<Uint8Array>,
 ): AsyncGenerator<SseFrame> {
+  for await (const frame of decodeSseDetailed(body)) {
+    yield { id: frame.id, event: frame.event, data: frame.data };
+  }
+}
+
+/** Internal framing details retain whether this event carried an explicit id field. */
+export async function* decodeSseDetailed(
+  body: ReadableStream<Uint8Array>,
+  signal?: AbortSignal,
+): AsyncGenerator<DetailedSseFrame> {
   const reader = body.getReader();
+  const abort = () => {
+    void reader.cancel(signal?.reason).catch(() => undefined);
+  };
+  signal?.throwIfAborted();
+  signal?.addEventListener("abort", abort, { once: true });
   const decoder = new TextDecoder("utf-8", { fatal: true });
   let buffer = "",
     id = "",
     event = "",
+    idPresent = false,
     values: string[] = [],
     size = 0;
   try {
@@ -39,9 +58,15 @@ export async function* decodeSse(
           throw new ProtocolError("SSE frame exceeds the size limit.");
         if (!line) {
           if (values.length)
-            yield { id, event: event || "message", data: values.join("\n") };
+            yield {
+              id,
+              event: event || "message",
+              data: values.join("\n"),
+              idPresent,
+            };
           values = [];
           event = "";
+          idPresent = false;
           size = 0;
           continue;
         }
@@ -52,7 +77,10 @@ export async function* decodeSse(
           separator < 0 ? "" : line.slice(separator + 1).replace(/^ /, "");
         if (field === "data") values.push(value);
         if (field === "event") event = value;
-        if (field === "id" && !value.includes("\0")) id = value;
+        if (field === "id" && !value.includes("\0")) {
+          id = value;
+          idPresent = true;
+        }
       }
       if (buffer.length + size > maxFrameCharacters)
         throw new ProtocolError("SSE frame exceeds the size limit.");
@@ -63,6 +91,7 @@ export async function* decodeSse(
       }
     }
   } finally {
+    signal?.removeEventListener("abort", abort);
     await reader.cancel().catch(() => undefined);
     reader.releaseLock();
   }

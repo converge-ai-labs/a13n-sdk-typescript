@@ -1,6 +1,7 @@
 import { requireSuccess } from "./errors.js";
 
 export type Authentication =
+  | { type: "public" }
   | { type: "session"; csrfToken?: string }
   | { type: "bearer"; token: string | (() => string | Promise<string>) };
 
@@ -18,6 +19,8 @@ const publicMutations = new Set([
   "/api/v1/auth/password-reset/complete",
 ]);
 
+const retryableStatuses = new Set([429, 502, 503, 504]);
+
 export function delay(
   milliseconds: number,
   signal: AbortSignal,
@@ -34,6 +37,19 @@ export function delay(
     }, milliseconds);
     signal.addEventListener("abort", abort, { once: true });
   });
+}
+
+export function retryAfterMilliseconds(
+  value: string | null,
+  now = Date.now(),
+): number | undefined {
+  if (value === null) return undefined;
+  const seconds = Number(value);
+  const milliseconds = Number.isFinite(seconds)
+    ? seconds * 1000
+    : Date.parse(value) - now;
+  if (!Number.isFinite(milliseconds) || milliseconds < 0) return undefined;
+  return Math.min(milliseconds, 30_000);
 }
 
 export class Transport {
@@ -79,15 +95,30 @@ export class Transport {
   setCsrfToken(token: string | undefined): void {
     this.csrfToken = token;
   }
+
   get signal(): AbortSignal {
     return this.shutdown.signal;
   }
+
+  get closed(): boolean {
+    return this.shutdown.signal.aborted;
+  }
+
   close(): void {
     this.csrfToken = undefined;
     this.shutdown.abort();
   }
 
-  fetch = async (input: Request): Promise<Response> => {
+  fetch = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: true });
+
+  fetchOnce = (input: Request): Promise<Response> =>
+    this.request(input, { retryReads: false });
+
+  private async request(
+    input: Request,
+    options: { retryReads: boolean },
+  ): Promise<Response> {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
     if (
@@ -100,16 +131,15 @@ export class Transport {
     signal.throwIfAborted();
     const headers = new Headers(input.headers);
     const auth = this.options.auth;
-    const path = new URL(input.url).pathname.slice(
-      new URL(this.baseUrl).pathname.replace(/\/$/, "").length,
-    );
+    const path = target.pathname.slice(base.pathname.replace(/\/$/, "").length);
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
     if (auth.type === "bearer") {
-      headers.set(
-        "Authorization",
-        `Bearer ${typeof auth.token === "function" ? await auth.token() : auth.token}`,
-      );
+      const token =
+        typeof auth.token === "function" ? await auth.token() : auth.token;
+      signal.throwIfAborted();
+      headers.set("Authorization", `Bearer ${token}`);
     } else if (
+      auth.type === "session" &&
       mutation &&
       !publicMutations.has(path) &&
       !/^\/api\/v1\/invitations\/[^/]+\/accept$/.test(path)
@@ -127,7 +157,10 @@ export class Transport {
       redirect: "error",
     });
     const retries =
-      request.method === "GET" || request.method === "HEAD" ? this.retries : 0;
+      options.retryReads &&
+      (request.method === "GET" || request.method === "HEAD")
+        ? this.retries
+        : 0;
     for (let attempt = 0; ; attempt++) {
       let response: Response;
       try {
@@ -137,22 +170,16 @@ export class Transport {
         await delay(250 * 2 ** attempt, signal);
         continue;
       }
-      if ([429, 502, 503, 504].includes(response.status) && attempt < retries) {
-        const retryAfter = response.headers.get("Retry-After");
-        const seconds = retryAfter === null ? NaN : Number(retryAfter);
-        const milliseconds = Number.isFinite(seconds)
-          ? seconds * 1000
-          : retryAfter
-            ? Date.parse(retryAfter) - Date.now()
-            : 250 * 2 ** attempt;
-        if (milliseconds <= 30_000 && milliseconds >= 0) {
-          await response.body?.cancel();
-          await delay(milliseconds, signal);
-          continue;
-        }
+      if (retryableStatuses.has(response.status) && attempt < retries) {
+        const milliseconds =
+          retryAfterMilliseconds(response.headers.get("Retry-After")) ??
+          250 * 2 ** attempt;
+        await response.body?.cancel();
+        await delay(milliseconds, signal);
+        continue;
       }
       await requireSuccess(response);
       return response;
     }
-  };
+  }
 }

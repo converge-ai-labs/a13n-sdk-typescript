@@ -70,3 +70,49 @@ export const patchStates: Schema["UpdateAgentRequest"][] = [
 export const invalidPatch: Schema["UpdateAgentRequest"] = { name: 42 };
 // @ts-expect-error Message content is a typed string-or-multimodal union.
 export const invalidMessage: Schema["UserMessage"] = { id: "m1", content: 42 };
+
+export async function resourceTypeContract(client: Client) {
+  const workspace = client.workspaces.ref("ws_example");
+  const agent = workspace.agents.ref("reviewer");
+  const accepted = await agent.start("hello", {
+    idempotencyKey: "start",
+    body: { environment: null },
+  });
+  accepted.run.stream({ after: "1-0", maxReconnects: 5 });
+  await accepted.run.cancel(
+    { expected_run_version: 1, expected_thread_version: 2 },
+    { idempotencyKey: "cancel" },
+  );
+  const submission = await accepted.thread.submit(ordinaryInput, {
+    idempotencyKey: "submit",
+    body: { expected_thread_version: 2 },
+  });
+  if (submission.outcome === "queued") {
+    submission.queuedSubmission;
+    // @ts-expect-error A queued disposition has no Run reference.
+    submission.run;
+  } else {
+    submission.run;
+    // @ts-expect-error An accepted disposition has no queued entry reference.
+    submission.queuedSubmission;
+  }
+  await agent.start("bad", {
+    idempotencyKey: "bad",
+    // @ts-expect-error agent_id is bound by the Agent reference.
+    body: { agent_id: "agent_other" },
+  });
+  await accepted.thread.submit("bad", {
+    idempotencyKey: "bad",
+    // @ts-expect-error input is bound by the convenience argument.
+    body: { expected_thread_version: 2, input: ordinaryInput },
+  });
+  await accepted.thread.submit("bad", {
+    idempotencyKey: "bad",
+    // @ts-expect-error expected_thread_version remains required.
+    body: {},
+  });
+  // @ts-expect-error timeoutMs is a required bounded-wait argument.
+  await accepted.run.wait({});
+  // @ts-expect-error TypeScript exact optional fields do not accept explicit undefined.
+  accepted.run.stream({ after: undefined });
+}
