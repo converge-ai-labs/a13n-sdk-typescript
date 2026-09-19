@@ -1,49 +1,13 @@
-import {
-  ApiError,
-  isRecord,
-  ProtocolError,
-  ReplayGapError,
-} from "../errors.js";
-import type { components } from "../schema.js";
+import { ApiError, ProtocolError, ReplayGapError } from "../errors.js";
 import { delay, type Transport } from "../transport.js";
+import { parseRunEvent, type RunEvent } from "./run-event.js";
 import { decodeSse } from "./sse.js";
 
-export type RunStreamEvent = components["schemas"]["RunStreamEvent"];
-export interface RunEvent {
-  cursor: string;
-  event: RunStreamEvent;
-}
+export type { RunEvent, RunStreamEvent } from "./run-event.js";
 export interface RunStreamOptions {
   signal?: AbortSignal;
   after?: string;
   workspaceId?: string;
-}
-
-function parseEvent(
-  text: string,
-  runId: string,
-  eventType: string,
-): RunStreamEvent {
-  let event: unknown;
-  try {
-    event = JSON.parse(text);
-  } catch {
-    throw new ProtocolError("Invalid Run event JSON.");
-  }
-  if (
-    !isRecord(event) ||
-    event.schema_version !== "1" ||
-    event.run_id !== runId ||
-    event.event_type !== eventType ||
-    typeof event.event_id !== "string" ||
-    typeof event.thread_id !== "string" ||
-    typeof event.occurred_at !== "string" ||
-    !isRecord(event.payload)
-  ) {
-    throw new ProtocolError("Invalid Run event envelope.");
-  }
-  // The envelope is checked here; event-specific payloads belong to their consumers.
-  return event as RunStreamEvent;
 }
 
 export async function* runStream(
@@ -95,7 +59,7 @@ export async function* runStream(
         if (frame.id === cursor) continue;
         yield {
           cursor: frame.id,
-          event: parseEvent(frame.data, runId, frame.event),
+          event: parseRunEvent(frame.data, runId, frame.event),
         };
         // Resume advances only when the consumer requests the next applied event.
         cursor = frame.id;
