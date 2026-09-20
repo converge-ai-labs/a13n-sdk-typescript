@@ -6427,8 +6427,7 @@
             "type": "string"
           },
           "kind": {
-            "default": "long_term",
-            "enum": ["daily", "long_term"],
+            "enum": ["semantic", "procedural", "episodic"],
             "title": "Kind",
             "type": "string"
           },
@@ -6447,7 +6446,7 @@
             "type": "string"
           }
         },
-        "required": ["text", "title"],
+        "required": ["text", "title", "kind"],
         "title": "CreateDocument",
         "type": "object"
       },
@@ -7558,9 +7557,28 @@
             "type": "string"
           },
           "kind": {
-            "enum": ["daily", "long_term"],
-            "title": "Kind",
-            "type": "string"
+            "anyOf": [
+              {
+                "enum": ["semantic", "procedural", "episodic"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "legacy_kind": {
+            "anyOf": [
+              {
+                "enum": ["daily", "long_term"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Kind"
           },
           "owner_name": {
             "anyOf": [
@@ -7723,9 +7741,28 @@
             "type": "string"
           },
           "kind": {
-            "enum": ["daily", "long_term"],
-            "title": "Kind",
-            "type": "string"
+            "anyOf": [
+              {
+                "enum": ["semantic", "procedural", "episodic"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "legacy_kind": {
+            "anyOf": [
+              {
+                "enum": ["daily", "long_term"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Kind"
           },
           "path": {
             "title": "Path",
@@ -24270,7 +24307,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "enum": ["daily", "long_term"],
+                  "enum": ["semantic", "procedural", "episodic"],
                   "type": "string"
                 },
                 {
