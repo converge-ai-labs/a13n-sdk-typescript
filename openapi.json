@@ -842,6 +842,9 @@
             "title": "Instructions",
             "type": "string"
           },
+          "media_understanding": {
+            "$ref": "#/components/schemas/MediaUnderstandingSelection"
+          },
           "memory": {
             "anyOf": [
               {
@@ -988,6 +991,9 @@
             "maxLength": 262144,
             "title": "Instructions",
             "type": "string"
+          },
+          "media_understanding": {
+            "$ref": "#/components/schemas/MediaUnderstandingSelection"
           },
           "memory": {
             "anyOf": [
@@ -1504,6 +1510,16 @@
             ],
             "title": "Instructions"
           },
+          "media_understanding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaUnderstandingSelection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "memory": {
             "anyOf": [
               {
@@ -1673,6 +1689,16 @@
               }
             ],
             "title": "Instructions"
+          },
+          "media_understanding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaUnderstandingSelection"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "memory": {
             "anyOf": [
@@ -11488,6 +11514,7 @@
       },
       "MediaUnderstandingSelection": {
         "additionalProperties": false,
+        "description": "Per-kind auxiliary Model choice shared by Workspace, Agent, and Run levels.",
         "properties": {
           "audio": {
             "anyOf": [
