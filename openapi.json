@@ -5144,7 +5144,13 @@
             "type": "string"
           },
           "local_status": {
-            "enum": ["disabled", "deleted"],
+            "enum": [
+              "pending",
+              "ready",
+              "action_required",
+              "disabled",
+              "deleted"
+            ],
             "title": "Local Status",
             "type": "string"
           },
