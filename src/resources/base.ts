@@ -71,8 +71,6 @@ export async function jsonRequest<T>(
 ): Promise<ResourceResult<T>> {
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
-  if (options.workspaceId)
-    requestHeaders.set("X-A13N-Workspace-ID", options.workspaceId);
   const hasBody = body !== undefined;
   if (hasBody) requestHeaders.set("Content-Type", "application/json");
   const init: RequestInit = {
@@ -185,8 +183,6 @@ export async function uploadRequest<T>(
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
   requestHeaders.set("Content-Type", contentType);
-  if (options.workspaceId)
-    requestHeaders.set("X-A13N-Workspace-ID", options.workspaceId);
   const init: RequestInit & { duplex?: "half" } = {
     method,
     headers: requestHeaders,
@@ -212,8 +208,6 @@ export async function binaryRequest(
   options: JsonRequestOptions = {},
 ): Promise<BinaryResult> {
   const headers = new Headers();
-  if (options.workspaceId)
-    headers.set("X-A13N-Workspace-ID", options.workspaceId);
   const response = await transport.fetch(
     new Request(`${transport.baseUrl}${path}`, {
       headers,
@@ -226,13 +220,9 @@ export async function binaryRequest(
 }
 
 export function textInput(text: string): {
-  schema_version: "2";
   content: [{ type: "text"; text: string }];
 } {
-  return {
-    schema_version: "2",
-    content: [{ type: "text", text }],
-  };
+  return { content: [{ type: "text", text }] };
 }
 
 export function normalizeInput<T>(input: string | T): T {
