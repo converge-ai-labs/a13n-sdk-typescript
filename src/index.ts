@@ -9,16 +9,12 @@ export {
   WaitTimeoutError,
   data,
 } from "./errors.js";
+export { threadStream } from "./streams/thread-stream.js";
 export type {
-  RunEvent,
-  RunStreamEvent,
-  RunStreamOptions,
-} from "./streams/run-stream.js";
-export type {
-  ObserveRunOptions,
-  RunStream,
-  StreamResponse,
-} from "./streams/resource-run-stream.js";
+  ThreadEvent,
+  ThreadStreamFrame,
+  ThreadStreamOptions,
+} from "./streams/thread-stream.js";
 export type {
   BinaryResult,
   EtagOptions,
@@ -29,53 +25,37 @@ export type {
 } from "./resources/base.js";
 export {
   Agent,
+  AgentRevisionRef,
   AgentRevisions,
   Agents,
-  QueuedSubmission,
-  QueuedSubmissions,
+  Inbox,
+  InboxEntry,
   Run,
   Runs,
   Session,
   Sessions,
   Thread,
+  ThreadRuns,
   Threads,
   Workspace,
   Workspaces,
 } from "./resources/interaction.js";
 export type {
-  AgentCollectionPage,
-  AgentInput,
-  AgentRevision,
-  AgentRevisionCollectionPage,
-  AgentRevisionCreateResult,
-  AgentRevisionListFilters,
-  AgentListFilters,
   AgentResource,
-  AttemptCollection,
-  ItemCollectionPage,
-  ItemListFilters,
-  PendingActionCollection,
-  QueuedSubmissionResource,
-  RunAcceptanceReceipt,
-  RunAccepted,
-  RunCollectionPage,
-  RunListFilters,
+  AgentRevision,
   RunResource,
-  SessionListFilters,
-  StartOptions,
-  SubmissionQueued,
-  SubmitOptions,
+  Submitted,
   ThreadResource,
-  ThreadRunListFilters,
-  ThreadRunSubmissionReceipt,
-  ThreadSubmission,
   WaitOptions,
 } from "./resources/interaction.js";
-export * from "./resources/management.js";
-export type { paths, components, operations, Binary } from "./schema.js";
+export {
+  Collection,
+  Resource,
+  Organization,
+  Organizations,
+} from "./resources/management.js";
 export type {
-  Notification,
-  NotificationOptions,
-  NotificationState,
-  NotificationSubscription,
-} from "./streams/notifications.js";
+  OrganizationManagement,
+  WorkspaceManagement,
+} from "./resources/management.js";
+export type { paths, components, operations, Binary } from "./schema.js";

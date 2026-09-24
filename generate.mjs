@@ -12,6 +12,8 @@ export async function generate({ root = new URL("./", import.meta.url) } = {}) {
     transform(schema) {
       if (schema.format === "binary")
         return ts.factory.createTypeReferenceNode("Binary");
+      if (schema.contentMediaType === "application/octet-stream")
+        return ts.factory.createTypeReferenceNode("Blob");
     },
   });
   const content = await prettier.format(

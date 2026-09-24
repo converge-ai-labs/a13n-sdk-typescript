@@ -53,7 +53,7 @@ assert.equal(typeof createClient, "function");
 assert.equal(typeof ApiError, "function");
 const client = createClient({
   baseUrl: "https://service.example.test",
-  auth: { type: "public" },
+  auth: { type: "bearer", token: "test-token" },
 });
 assert.equal(client.workspaces.ref("ws_example").id, "ws_example");
 assert.equal(client.organizations.ref("org_example").id, "org_example");
@@ -79,8 +79,8 @@ const client: Client = createClient({
 });
 const workspace = client.workspaces.ref("ws_example");
 const organization = client.organizations.ref("org_example");
-void workspace.runs.ref("run_example").stream;
-void workspace.models.pages({ limit: 10 });
+void workspace.runs.ref("run_example").get;
+void workspace.threads.pages({ limit: 10 });
 void organization.modelProviders;
 const result: ResourceResult<{ ok: true }> = {
   data: { ok: true },

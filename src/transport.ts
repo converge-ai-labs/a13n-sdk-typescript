@@ -1,7 +1,6 @@
 import { requireSuccess } from "./errors.js";
 
 export type Authentication =
-  | { type: "public" }
   | { type: "session"; csrfToken?: string }
   | { type: "bearer"; token: string | (() => string | Promise<string>) };
 
@@ -23,7 +22,8 @@ export class RecoverableFetchError extends Error {
 const publicMutations = new Set([
   "/api/v1/auth/login",
   "/api/v1/auth/password-reset",
-  "/api/v1/auth/password-reset/complete",
+  "/api/v1/auth/password-reset/confirm",
+  "/api/v1/auth/email-change/confirm",
 ]);
 
 const retryableStatuses = new Set([429, 502, 503, 504]);
@@ -114,10 +114,26 @@ export class Transport {
     return {
       baseUrl,
       fetch: this.fetch,
-      bodySerializer: (body: unknown) =>
-        body instanceof Blob || body instanceof ReadableStream
-          ? body
-          : JSON.stringify(body),
+      bodySerializer: (body: unknown) => {
+        if (
+          body instanceof Blob ||
+          body instanceof ReadableStream ||
+          body instanceof FormData
+        )
+          return body;
+        if (
+          typeof body === "object" &&
+          body !== null &&
+          "file" in body &&
+          body.file instanceof Blob &&
+          Object.keys(body).length === 1
+        ) {
+          const form = new FormData();
+          form.append("file", body.file);
+          return form;
+        }
+        return JSON.stringify(body);
+      },
     };
   }
 
@@ -182,7 +198,7 @@ export class Transport {
         throw new Error(
           "Restore the browser CSRF token before mutating Service resources.",
         );
-      headers.set("X-A13N-CSRF-Token", this.csrfToken);
+      headers.set("X-CSRF-Token", this.csrfToken);
     }
     const request = new Request(input, {
       headers,
