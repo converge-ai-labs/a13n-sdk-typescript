@@ -12,13 +12,6 @@ export interface ClientOptions {
   maxReadRetries?: number;
 }
 
-export class RecoverableFetchError extends Error {
-  override readonly name = "RecoverableFetchError";
-  constructor(readonly failure: unknown) {
-    super("The dispatched request transport failed.", { cause: failure });
-  }
-}
-
 const publicMutations = new Set([
   "/api/v1/auth/bootstrap",
   "/api/v1/auth/login",
@@ -47,7 +40,7 @@ export function delay(
   });
 }
 
-async function abortable<T>(
+export async function abortable<T>(
   promise: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
@@ -155,19 +148,7 @@ export class Transport {
     this.shutdown.abort();
   }
 
-  fetch = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: true });
-
-  fetchOnce = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: false, classifyFetchFailures: false });
-
-  fetchOnceForRecovery = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: false, classifyFetchFailures: true });
-
-  private async request(
-    input: Request,
-    options: { retryReads: boolean; classifyFetchFailures?: boolean },
-  ): Promise<Response> {
+  fetch = async (input: Request): Promise<Response> => {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
     const prefix = base.pathname.replace(/\/$/, "");
@@ -214,10 +195,7 @@ export class Transport {
       redirect: "error",
     });
     const retries =
-      options.retryReads &&
-      (request.method === "GET" || request.method === "HEAD")
-        ? this.retries
-        : 0;
+      request.method === "GET" || request.method === "HEAD" ? this.retries : 0;
     for (let attempt = 0; ; attempt++) {
       let response: Response;
       try {
@@ -225,8 +203,6 @@ export class Transport {
       } catch (error) {
         if (signal.aborted) throw error;
         if (attempt >= retries) {
-          if (options.classifyFetchFailures)
-            throw new RecoverableFetchError(error);
           throw error;
         }
         await delay(250 * 2 ** attempt, signal);
@@ -243,5 +219,5 @@ export class Transport {
       await requireSuccess(response);
       return response;
     }
-  }
+  };
 }

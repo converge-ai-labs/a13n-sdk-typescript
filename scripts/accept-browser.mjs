@@ -57,7 +57,7 @@ try {
     `${process.env.A13N_SERVICE_URL}/api/v1/auth/configuration`,
   ]);
   const code = `(async () => { const result = await (async () => {
-    const { createClient } = await import(${JSON.stringify(moduleUrl(join(root, "dist/index.js")))});
+    const { createClient, textPayload } = await import(${JSON.stringify(moduleUrl(join(root, "dist/index.js")))});
     const login = await fetch('/api/v1/auth/login', {
       method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({email: ${JSON.stringify(email)}, password: ${JSON.stringify(password)}}),
@@ -70,14 +70,14 @@ try {
       client.setCsrfToken(csrf);
       const session = await client.http.GET('/api/v1/auth/session');
       if (session.response.status !== 200) throw new Error('Browser session unavailable');
-      const workspace = client.workspaces.ref(${JSON.stringify(process.env.A13N_WORKSPACE)});
-      const result = await workspace.agents.ref(${JSON.stringify(process.env.A13N_AGENT)}).start(
-        'Reply briefly to this browser SDK probe.', {idempotencyKey: ${JSON.stringify(`ts-browser-${randomUUID()}`)}}
+      const workspace = client.resources.workspaces.ref(${JSON.stringify(process.env.A13N_WORKSPACE)});
+      const result = await workspace.threads.create(
+        {agent_id: ${JSON.stringify(process.env.A13N_AGENT)}, payload: textPayload('Reply briefly to this browser SDK probe.')}, {idempotencyKey: ${JSON.stringify(`ts-browser-${randomUUID()}`)}}
       );
-      if (result.response.status !== 201 || !result.data.run) throw new Error('Browser managed submission failed');
+      if (result.response.status !== 201 || !result.data.run) throw new Error('Browser resource submission failed');
       const run = await workspace.runs.ref(result.data.run.id).wait({timeoutMs: 30000, pollIntervalMs: 250});
       if (run.data.status !== 'completed') throw new Error('Browser Run did not complete: ' + run.data.status);
-      const items = await workspace.runs.ref(result.data.run.id).items();
+      const items = await workspace.runs.ref(result.data.run.id).items.get();
       if (!Array.isArray(items.data.items)) throw new Error('Browser Run Items unavailable');
       return {login: login.status, session: session.response.status, submission: result.response.status, run: run.data.status, items: items.data.items.length};
     } finally { client.close(); }

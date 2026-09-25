@@ -17,9 +17,12 @@ test("gap-only connections exhaust reconnect budget without a cursor advance", a
     },
   });
   try {
-    const stream = client.streamThread("ws_one", "thread_one", {
-      after: "1-0",
-    });
+    const stream = client.resources.workspaces
+      .ref("ws_one")
+      .threads.ref("thread_one")
+      .events({
+        after: "1-0",
+      });
     for (let i = 0; i < 3; i++) {
       const value = (await stream.next()).value;
       assert.deepEqual(value, {

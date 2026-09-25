@@ -1,6 +1,11 @@
 /** Generated resource bindings. Do not edit; run npm run generate. */
 import type { operations, Binary } from "../schema.js";
 import type { Transport } from "../transport.js";
+import { waitForRun, type WaitOptions } from "./interaction.js";
+import {
+  threadStream,
+  type ThreadStreamOptions,
+} from "../streams/thread-stream.js";
 import {
   jsonRequest,
   uploadRequest,
@@ -65,7 +70,9 @@ type Operation15 =
   operations["update_organization_api_v1_organizations__organization_id__patch"];
 type Operation15Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation15["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation15["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation16 =
   operations["list_organization_audit_events_api_v1_organizations__organization_id__audit_events_get"];
@@ -89,7 +96,9 @@ type Operation20 =
   operations["update_provider_api_v1_organizations__organization_id__connector_providers__provider_id__patch"];
 type Operation20Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation20["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation20["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation21 =
   operations["test_provider_api_v1_organizations__organization_id__connector_providers__provider_id__test_post"];
@@ -110,7 +119,9 @@ type Operation25 =
   operations["update_provider_api_v1_organizations__organization_id__environment_providers__provider_id__patch"];
 type Operation25Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation25["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation25["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation26 =
   operations["test_provider_api_v1_organizations__organization_id__environment_providers__provider_id__test_post"];
@@ -132,14 +143,18 @@ type Operation31 =
   operations["delete_organization_icon_api_v1_organizations__organization_id__icon_delete"];
 type Operation31Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation31["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation31["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation32Options = { signal?: AbortSignal };
 type Operation33 =
   operations["put_organization_icon_api_v1_organizations__organization_id__icon_put"];
 type Operation33Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation33["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation33["parameters"]["header"]>["If-Match"]
+  >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
 type Operation34 =
@@ -155,13 +170,17 @@ type Operation36 =
   operations["resend_organization_invitation_api_v1_organizations__organization_id__invitations__invitation_id__resend_post"];
 type Operation36Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation36["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation36["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation37 =
   operations["revoke_organization_invitation_api_v1_organizations__organization_id__invitations__invitation_id__revoke_post"];
 type Operation37Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation37["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation37["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation38 =
   operations["list_members_api_v1_organizations__organization_id__members_get"];
@@ -185,7 +204,9 @@ type Operation42 =
   operations["update_provider_api_v1_organizations__organization_id__memory_providers__provider_id__patch"];
 type Operation42Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation42["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation42["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation43 =
   operations["test_provider_api_v1_organizations__organization_id__memory_providers__provider_id__test_post"];
@@ -206,7 +227,9 @@ type Operation47 =
   operations["update_provider_api_v1_organizations__organization_id__model_providers__provider_id__patch"];
 type Operation47Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation47["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation47["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation48 =
   operations["test_provider_api_v1_organizations__organization_id__model_providers__provider_id__test_post"];
@@ -227,7 +250,9 @@ type Operation52 =
   operations["update_model_api_v1_organizations__organization_id__models__model_id__patch"];
 type Operation52Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation52["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation52["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation53 =
   operations["list_providers_api_v1_organizations__organization_id__web_providers_get"];
@@ -245,7 +270,9 @@ type Operation56 =
   operations["update_provider_api_v1_organizations__organization_id__web_providers__provider_id__patch"];
 type Operation56Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation56["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation56["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation57 =
   operations["test_provider_api_v1_organizations__organization_id__web_providers__provider_id__test_post"];
@@ -267,7 +294,9 @@ type Operation61Options = { signal?: AbortSignal };
 type Operation62 = operations["update_profile_api_v1_users_me_patch"];
 type Operation62Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation62["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation62["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation66 = operations["disable_account_api_v1_users_me_disable_post"];
 type Operation66Options = { signal?: AbortSignal };
@@ -282,12 +311,16 @@ type Operation63Options = {
 type Operation64 = operations["delete_avatar_api_v1_users_me_avatar_delete"];
 type Operation64Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation64["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation64["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation65 = operations["put_avatar_api_v1_users_me_avatar_put"];
 type Operation65Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation65["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation65["parameters"]["header"]>["If-Match"]
+  >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
 type Operation67 = operations["list_user_keys_api_v1_users_me_keys_get"];
@@ -301,7 +334,9 @@ type Operation69 =
   operations["revoke_user_key_api_v1_users_me_keys__key_id__delete"];
 type Operation69Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation69["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation69["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation70 =
   operations["list_login_sessions_api_v1_users_me_login_sessions_get"];
@@ -323,13 +358,17 @@ type Operation76 =
   operations["update_workspace_api_v1_workspaces__workspace_id__patch"];
 type Operation76Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation76["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation76["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation92 =
   operations["archive_workspace_api_v1_workspaces__workspace_id__archive_post"];
 type Operation92Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation92["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation92["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation99 =
   operations["prepare_assistant_api_v1_workspaces__workspace_id__configuration_assistant_post"];
@@ -353,13 +392,17 @@ type Operation81 =
   operations["update_agent_api_v1_workspaces__workspace_id__agents__agent_id__patch"];
 type Operation81Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation81["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation81["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation82 =
   operations["archive_agent_api_v1_workspaces__workspace_id__agents__agent_id__archive_post"];
 type Operation82Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation82["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation82["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation86 =
   operations["duplicate_agent_api_v1_workspaces__workspace_id__agents__agent_id__duplicate_post"];
@@ -368,20 +411,26 @@ type Operation91 =
   operations["unarchive_agent_api_v1_workspaces__workspace_id__agents__agent_id__unarchive_post"];
 type Operation91Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation91["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation91["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation83 =
   operations["delete_avatar_api_v1_workspaces__workspace_id__agents__agent_id__avatar_delete"];
 type Operation83Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation83["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation83["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation84Options = { signal?: AbortSignal };
 type Operation85 =
   operations["put_avatar_api_v1_workspaces__workspace_id__agents__agent_id__avatar_put"];
 type Operation85Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation85["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation85["parameters"]["header"]>["If-Match"]
+  >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
 type Operation87 =
@@ -394,7 +443,9 @@ type Operation88 =
   operations["create_revision_api_v1_workspaces__workspace_id__agents__agent_id__revisions_post"];
 type Operation88Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation88["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation88["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation89 =
   operations["get_revision_api_v1_workspaces__workspace_id__agents__agent_id__revisions__revision_id__get"];
@@ -403,7 +454,9 @@ type Operation90 =
   operations["set_default_api_v1_workspaces__workspace_id__agents__agent_id__revisions__revision_id__set_default_post"];
 type Operation90Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation90["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation90["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation93 =
   operations["list_assets_api_v1_workspaces__workspace_id__assets_get"];
@@ -418,7 +471,9 @@ type Operation95 =
   operations["retire_asset_api_v1_workspaces__workspace_id__assets__asset_id__delete"];
 type Operation95Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation95["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation95["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation96 =
   operations["get_asset_api_v1_workspaces__workspace_id__assets__asset_id__get"];
@@ -446,19 +501,25 @@ type Operation103 =
   operations["update_connection_api_v1_workspaces__workspace_id__connections__connection_id__patch"];
 type Operation103Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation103["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation103["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation104 =
   operations["authorize_connection_api_v1_workspaces__workspace_id__connections__connection_id__authorize_post"];
 type Operation104Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation104["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation104["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation105 =
   operations["revoke_connection_api_v1_workspaces__workspace_id__connections__connection_id__revoke_post"];
 type Operation105Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation105["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation105["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation106 =
   operations["test_connection_api_v1_workspaces__workspace_id__connections__connection_id__test_post"];
@@ -494,7 +555,9 @@ type Operation114 =
   operations["update_template_api_v1_workspaces__workspace_id__environment_templates__template_id__patch"];
 type Operation114Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation114["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation114["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation115 =
   operations["list_environments_api_v1_workspaces__workspace_id__environments_get"];
@@ -509,7 +572,9 @@ type Operation117 =
   operations["delete_environment_api_v1_workspaces__workspace_id__environments__environment_id__delete"];
 type Operation117Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation117["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation117["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation118 =
   operations["get_environment_api_v1_workspaces__workspace_id__environments__environment_id__get"];
@@ -518,13 +583,17 @@ type Operation119 =
   operations["update_environment_api_v1_workspaces__workspace_id__environments__environment_id__patch"];
 type Operation119Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation119["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation119["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation120 =
   operations["stop_environment_api_v1_workspaces__workspace_id__environments__environment_id__stop_post"];
 type Operation120Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation120["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation120["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation121 =
   operations["list_workspace_grants_api_v1_workspaces__workspace_id__grants_get"];
@@ -543,14 +612,18 @@ type Operation125 =
   operations["delete_workspace_icon_api_v1_workspaces__workspace_id__icon_delete"];
 type Operation125Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation125["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation125["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation126Options = { signal?: AbortSignal };
 type Operation127 =
   operations["put_workspace_icon_api_v1_workspaces__workspace_id__icon_put"];
 type Operation127Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation127["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation127["parameters"]["header"]>["If-Match"]
+  >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
 type Operation128 =
@@ -566,13 +639,17 @@ type Operation130 =
   operations["resend_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__resend_post"];
 type Operation130Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation130["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation130["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation131 =
   operations["revoke_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__revoke_post"];
 type Operation131Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation131["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation131["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation132 =
   operations["list_workspace_keys_api_v1_workspaces__workspace_id__keys_get"];
@@ -584,7 +661,9 @@ type Operation133 =
   operations["revoke_workspace_key_api_v1_workspaces__workspace_id__keys__key_id__delete"];
 type Operation133Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation133["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation133["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation134 =
   operations["get_media_defaults_api_v1_workspaces__workspace_id__media_understanding_defaults_get"];
@@ -593,7 +672,9 @@ type Operation135 =
   operations["replace_media_defaults_api_v1_workspaces__workspace_id__media_understanding_defaults_put"];
 type Operation135Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation135["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation135["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation136 =
   operations["list_memories_api_v1_workspaces__workspace_id__memories_get"];
@@ -608,7 +689,9 @@ type Operation138 =
   operations["delete_memory_api_v1_workspaces__workspace_id__memories__memory_id__delete"];
 type Operation138Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation138["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation138["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation139 =
   operations["get_memory_api_v1_workspaces__workspace_id__memories__memory_id__get"];
@@ -617,7 +700,9 @@ type Operation140 =
   operations["update_memory_api_v1_workspaces__workspace_id__memories__memory_id__patch"];
 type Operation140Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation140["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation140["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation141 =
   operations["list_files_api_v1_workspaces__workspace_id__memories__memory_id__files_get"];
@@ -632,13 +717,17 @@ type Operation143 =
   operations["move_file_api_v1_workspaces__workspace_id__memories__memory_id__files_move_post"];
 type Operation143Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation143["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation143["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation144 =
   operations["delete_file_api_v1_workspaces__workspace_id__memories__memory_id__files__path__delete"];
 type Operation144Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation144["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation144["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation145 =
   operations["read_file_api_v1_workspaces__workspace_id__memories__memory_id__files__path__get"];
@@ -647,7 +736,9 @@ type Operation146 =
   operations["replace_file_api_v1_workspaces__workspace_id__memories__memory_id__files__path__put"];
 type Operation146Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation146["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation146["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation147 =
   operations["list_records_api_v1_workspaces__workspace_id__memories__memory_id__records_get"];
@@ -693,15 +784,17 @@ type Operation157 =
   operations["update_run_api_v1_workspaces__workspace_id__runs__run_id__patch"];
 type Operation157Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation157["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation157["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation160 =
   operations["fork_run_api_v1_workspaces__workspace_id__runs__run_id__fork_post"];
 type Operation160Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
-    Operation160["parameters"]["header"]
-  >["Idempotency-Key"];
+    NonNullable<Operation160["parameters"]["header"]>["Idempotency-Key"]
+  >;
 };
 type Operation161 =
   operations["interrupt_run_api_v1_workspaces__workspace_id__runs__run_id__interrupt_post"];
@@ -711,8 +804,8 @@ type Operation164 =
 type Operation164Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
-    Operation164["parameters"]["header"]
-  >["Idempotency-Key"];
+    NonNullable<Operation164["parameters"]["header"]>["Idempotency-Key"]
+  >;
 };
 type Operation158 =
   operations["run_attempts_api_v1_workspaces__workspace_id__runs__run_id__attempts_get"];
@@ -745,7 +838,9 @@ type Operation167 =
   operations["delete_secret_api_v1_workspaces__workspace_id__secrets__secret_id__delete"];
 type Operation167Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation167["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation167["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation168 =
   operations["get_secret_api_v1_workspaces__workspace_id__secrets__secret_id__get"];
@@ -754,7 +849,9 @@ type Operation169 =
   operations["replace_secret_api_v1_workspaces__workspace_id__secrets__secret_id__put"];
 type Operation169Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation169["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation169["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation170 =
   operations["list_service_accounts_api_v1_workspaces__workspace_id__service_accounts_get"];
@@ -769,7 +866,9 @@ type Operation172 =
   operations["delete_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__delete"];
 type Operation172Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation172["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation172["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation173 =
   operations["get_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__get"];
@@ -778,7 +877,9 @@ type Operation174 =
   operations["update_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__patch"];
 type Operation174Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation174["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation174["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation175 =
   operations["list_service_account_keys_api_v1_workspaces__workspace_id__service_accounts__account_id__keys_get"];
@@ -805,7 +906,9 @@ type Operation180 =
   operations["update_session_api_v1_workspaces__workspace_id__sessions__session_id__patch"];
 type Operation180Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation180["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation180["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation181 =
   operations["list_skills_api_v1_workspaces__workspace_id__skills_get"];
@@ -826,19 +929,25 @@ type Operation185 =
   operations["update_skill_api_v1_workspaces__workspace_id__skills__skill_id__patch"];
 type Operation185Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation185["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation185["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation186 =
   operations["archive_skill_api_v1_workspaces__workspace_id__skills__skill_id__archive_post"];
 type Operation186Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation186["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation186["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation193 =
   operations["unarchive_skill_api_v1_workspaces__workspace_id__skills__skill_id__unarchive_post"];
 type Operation193Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation193["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation193["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation187 =
   operations["list_revisions_api_v1_workspaces__workspace_id__skills__skill_id__revisions_get"];
@@ -850,7 +959,9 @@ type Operation188 =
   operations["create_revision_api_v1_workspaces__workspace_id__skills__skill_id__revisions_post"];
 type Operation188Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation188["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation188["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation189 =
   operations["get_revision_api_v1_workspaces__workspace_id__skills__skill_id__revisions__revision_id__get"];
@@ -859,7 +970,9 @@ type Operation192 =
   operations["set_default_revision_api_v1_workspaces__workspace_id__skills__skill_id__revisions__revision_id__set_default_post"];
 type Operation192Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation192["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation192["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation190Options = { signal?: AbortSignal };
 type Operation191Options = { signal?: AbortSignal };
@@ -876,7 +989,9 @@ type Operation196 =
   operations["delete_subscription_api_v1_workspaces__workspace_id__subscriptions__subscription_id__delete"];
 type Operation196Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation196["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation196["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation197 =
   operations["get_subscription_api_v1_workspaces__workspace_id__subscriptions__subscription_id__get"];
@@ -885,7 +1000,9 @@ type Operation198 =
   operations["update_subscription_api_v1_workspaces__workspace_id__subscriptions__subscription_id__patch"];
 type Operation198Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation198["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation198["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation199 =
   operations["list_deliveries_api_v1_workspaces__workspace_id__subscriptions__subscription_id__deliveries_get"];
@@ -907,8 +1024,8 @@ type Operation202 =
 type Operation202Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
-    Operation202["parameters"]["header"]
-  >["Idempotency-Key"];
+    NonNullable<Operation202["parameters"]["header"]>["Idempotency-Key"]
+  >;
 };
 type Operation203 =
   operations["get_thread_api_v1_workspaces__workspace_id__threads__thread_id__get"];
@@ -917,13 +1034,17 @@ type Operation204 =
   operations["update_thread_api_v1_workspaces__workspace_id__threads__thread_id__patch"];
 type Operation204Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation204["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation204["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation205 =
   operations["archive_thread_api_v1_workspaces__workspace_id__threads__thread_id__archive_post"];
 type Operation205Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation205["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation205["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation206 =
   operations["list_mounts_api_v1_workspaces__workspace_id__threads__thread_id__environments_get"];
@@ -932,13 +1053,17 @@ type Operation207 =
   operations["add_mount_api_v1_workspaces__workspace_id__threads__thread_id__environments_post"];
 type Operation207Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation207["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation207["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation208 =
   operations["remove_mount_api_v1_workspaces__workspace_id__threads__thread_id__environments__name__delete"];
 type Operation208Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation208["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation208["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation209 =
   operations["list_inbox_api_v1_workspaces__workspace_id__threads__thread_id__inbox_get"];
@@ -951,20 +1076,24 @@ type Operation210 =
 type Operation210Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
-    Operation210["parameters"]["header"]
-  >["Idempotency-Key"];
+    NonNullable<Operation210["parameters"]["header"]>["Idempotency-Key"]
+  >;
 };
 type Operation211 =
   operations["reorder_inbox_api_v1_workspaces__workspace_id__threads__thread_id__inbox_order_put"];
 type Operation211Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation211["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation211["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation212 =
   operations["withdraw_entry_api_v1_workspaces__workspace_id__threads__thread_id__inbox__entry_id__delete"];
 type Operation212Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation212["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation212["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation213 =
   operations["get_entry_api_v1_workspaces__workspace_id__threads__thread_id__inbox__entry_id__get"];
@@ -973,7 +1102,9 @@ type Operation214 =
   operations["edit_entry_api_v1_workspaces__workspace_id__threads__thread_id__inbox__entry_id__patch"];
 type Operation214Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation214["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation214["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation215 =
   operations["list_mounts_api_v1_workspaces__workspace_id__threads__thread_id__memories_get"];
@@ -982,19 +1113,25 @@ type Operation216 =
   operations["add_mount_api_v1_workspaces__workspace_id__threads__thread_id__memories_post"];
 type Operation216Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation216["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation216["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation217 =
   operations["remove_mount_api_v1_workspaces__workspace_id__threads__thread_id__memories__name__delete"];
 type Operation217Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation217["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation217["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation218 =
   operations["update_mount_api_v1_workspaces__workspace_id__threads__thread_id__memories__name__patch"];
 type Operation218Options = {
   signal?: AbortSignal;
-  ifMatch?: NonNullable<Operation218["parameters"]["header"]>["If-Match"];
+  ifMatch: NonNullable<
+    NonNullable<Operation218["parameters"]["header"]>["If-Match"]
+  >;
 };
 type Operation219 =
   operations["list_thread_runs_api_v1_workspaces__workspace_id__threads__thread_id__runs_get"];
@@ -1036,8 +1173,8 @@ type Operation226 =
 type Operation226Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
-    Operation226["parameters"]["header"]
-  >["Idempotency-Key"];
+    NonNullable<Operation226["parameters"]["header"]>["Idempotency-Key"]
+  >;
 };
 type Operation227 =
   operations["summarize_usage_api_v1_workspaces__workspace_id__usage_get"];
@@ -1439,7 +1576,7 @@ export class OrganizationsOrganizationIdResource {
     body: NonNullable<
       Operation15["requestBody"]
     >["content"]["application/json"],
-    options: Operation15Options = {},
+    options: Operation15Options,
   ): Promise<
     ResourceResult<Operation15["responses"][200]["content"]["application/json"]>
   > {
@@ -1629,7 +1766,7 @@ export class OrganizationsOrganizationIdConnectorProvidersProviderIdResource {
     body: NonNullable<
       Operation20["requestBody"]
     >["content"]["application/json"],
-    options: Operation20Options = {},
+    options: Operation20Options,
   ): Promise<
     ResourceResult<Operation20["responses"][200]["content"]["application/json"]>
   > {
@@ -1733,7 +1870,7 @@ export class OrganizationsOrganizationIdEnvironmentProvidersProviderIdResource {
     body: NonNullable<
       Operation25["requestBody"]
     >["content"]["application/json"],
-    options: Operation25Options = {},
+    options: Operation25Options,
   ): Promise<
     ResourceResult<Operation25["responses"][200]["content"]["application/json"]>
   > {
@@ -1855,7 +1992,7 @@ export class OrganizationsOrganizationIdIconResource {
   ) {}
   /** DELETE /api/v1/organizations/{organization_id}/icon. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation31Options = {},
+    options: Operation31Options,
   ): Promise<
     ResourceResult<Operation31["responses"][200]["content"]["application/json"]>
   > {
@@ -1960,7 +2097,7 @@ export class OrganizationsOrganizationIdInvitationsInvitationIdResource {
   ) {}
   /** POST /api/v1/organizations/{organization_id}/invitations/{invitation_id}/resend. Preserves response metadata; mutations are not replayed. */
   resend(
-    options: Operation36Options = {},
+    options: Operation36Options,
   ): Promise<
     ResourceResult<Operation36["responses"][200]["content"]["application/json"]>
   > {
@@ -1979,7 +2116,7 @@ export class OrganizationsOrganizationIdInvitationsInvitationIdResource {
   }
   /** POST /api/v1/organizations/{organization_id}/invitations/{invitation_id}/revoke. Preserves response metadata; mutations are not replayed. */
   revoke(
-    options: Operation37Options = {},
+    options: Operation37Options,
   ): Promise<
     ResourceResult<Operation37["responses"][200]["content"]["application/json"]>
   > {
@@ -2097,7 +2234,7 @@ export class OrganizationsOrganizationIdMemoryProvidersProviderIdResource {
     body: NonNullable<
       Operation42["requestBody"]
     >["content"]["application/json"],
-    options: Operation42Options = {},
+    options: Operation42Options,
   ): Promise<
     ResourceResult<Operation42["responses"][200]["content"]["application/json"]>
   > {
@@ -2201,7 +2338,7 @@ export class OrganizationsOrganizationIdModelProvidersProviderIdResource {
     body: NonNullable<
       Operation47["requestBody"]
     >["content"]["application/json"],
-    options: Operation47Options = {},
+    options: Operation47Options,
   ): Promise<
     ResourceResult<Operation47["responses"][200]["content"]["application/json"]>
   > {
@@ -2305,7 +2442,7 @@ export class OrganizationsOrganizationIdModelsModelIdResource {
     body: NonNullable<
       Operation52["requestBody"]
     >["content"]["application/json"],
-    options: Operation52Options = {},
+    options: Operation52Options,
   ): Promise<
     ResourceResult<Operation52["responses"][200]["content"]["application/json"]>
   > {
@@ -2394,7 +2531,7 @@ export class OrganizationsOrganizationIdWebProvidersProviderIdResource {
     body: NonNullable<
       Operation56["requestBody"]
     >["content"]["application/json"],
-    options: Operation56Options = {},
+    options: Operation56Options,
   ): Promise<
     ResourceResult<Operation56["responses"][200]["content"]["application/json"]>
   > {
@@ -2540,7 +2677,7 @@ export class UsersMeResource {
     body: NonNullable<
       Operation62["requestBody"]
     >["content"]["application/json"],
-    options: Operation62Options = {},
+    options: Operation62Options,
   ): Promise<
     ResourceResult<Operation62["responses"][200]["content"]["application/json"]>
   > {
@@ -2645,7 +2782,7 @@ export class UsersMeAvatarResource {
   ) {}
   /** DELETE /api/v1/users/me/avatar. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation64Options = {},
+    options: Operation64Options,
   ): Promise<
     ResourceResult<Operation64["responses"][200]["content"]["application/json"]>
   > {
@@ -2742,7 +2879,7 @@ export class UsersMeKeysKeyIdResource {
   ) {}
   /** DELETE /api/v1/users/me/keys/{key_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation69Options = {},
+    options: Operation69Options,
   ): Promise<
     ResourceResult<Operation69["responses"][200]["content"]["application/json"]>
   > {
@@ -2898,7 +3035,7 @@ export class WorkspacesWorkspaceIdResource {
     body: NonNullable<
       Operation76["requestBody"]
     >["content"]["application/json"],
-    options: Operation76Options = {},
+    options: Operation76Options,
   ): Promise<
     ResourceResult<Operation76["responses"][200]["content"]["application/json"]>
   > {
@@ -2923,7 +3060,7 @@ export class WorkspacesWorkspaceIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation92Options = {},
+    options: Operation92Options,
   ): Promise<
     ResourceResult<Operation92["responses"][200]["content"]["application/json"]>
   > {
@@ -3187,7 +3324,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdResource {
     body: NonNullable<
       Operation81["requestBody"]
     >["content"]["application/json"],
-    options: Operation81Options = {},
+    options: Operation81Options,
   ): Promise<
     ResourceResult<Operation81["responses"][200]["content"]["application/json"]>
   > {
@@ -3206,7 +3343,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/agents/{agent_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation82Options = {},
+    options: Operation82Options,
   ): Promise<
     ResourceResult<Operation82["responses"][200]["content"]["application/json"]>
   > {
@@ -3255,7 +3392,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/agents/{agent_id}/unarchive. Preserves response metadata; mutations are not replayed. */
   unarchive(
-    options: Operation91Options = {},
+    options: Operation91Options,
   ): Promise<
     ResourceResult<Operation91["responses"][200]["content"]["application/json"]>
   > {
@@ -3281,7 +3418,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdAvatarResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/agents/{agent_id}/avatar. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation83Options = {},
+    options: Operation83Options,
   ): Promise<
     ResourceResult<Operation83["responses"][200]["content"]["application/json"]>
   > {
@@ -3361,7 +3498,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdRevisionsResource {
     body: NonNullable<
       Operation88["requestBody"]
     >["content"]["application/json"],
-    options: Operation88Options = {},
+    options: Operation88Options,
   ): Promise<
     ResourceResult<Operation88["responses"][201]["content"]["application/json"]>
   > {
@@ -3405,7 +3542,7 @@ export class WorkspacesWorkspaceIdAgentsAgentIdRevisionsRevisionIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/agents/{agent_id}/revisions/{revision_id}/set-default. Preserves response metadata; mutations are not replayed. */
   setDefault(
-    options: Operation90Options = {},
+    options: Operation90Options,
   ): Promise<
     ResourceResult<Operation90["responses"][200]["content"]["application/json"]>
   > {
@@ -3484,7 +3621,7 @@ export class WorkspacesWorkspaceIdAssetsAssetIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/assets/{asset_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation95Options = {},
+    options: Operation95Options,
   ): Promise<
     ResourceResult<Operation95["responses"][200]["content"]["application/json"]>
   > {
@@ -3639,7 +3776,7 @@ export class WorkspacesWorkspaceIdConnectionsConnectionIdResource {
     body: NonNullable<
       Operation103["requestBody"]
     >["content"]["application/json"],
-    options: Operation103Options = {},
+    options: Operation103Options,
   ): Promise<
     ResourceResult<
       Operation103["responses"][200]["content"]["application/json"]
@@ -3663,7 +3800,7 @@ export class WorkspacesWorkspaceIdConnectionsConnectionIdResource {
     body: NonNullable<
       Operation104["requestBody"]
     >["content"]["application/json"],
-    options: Operation104Options = {},
+    options: Operation104Options,
   ): Promise<
     ResourceResult<
       Operation104["responses"][200]["content"]["application/json"]
@@ -3684,7 +3821,7 @@ export class WorkspacesWorkspaceIdConnectionsConnectionIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/connections/{connection_id}/revoke. Preserves response metadata; mutations are not replayed. */
   revoke(
-    options: Operation105Options = {},
+    options: Operation105Options,
   ): Promise<
     ResourceResult<
       Operation105["responses"][200]["content"]["application/json"]
@@ -3934,7 +4071,7 @@ export class WorkspacesWorkspaceIdEnvironmentTemplatesTemplateIdResource {
     body: NonNullable<
       Operation114["requestBody"]
     >["content"]["application/json"],
-    options: Operation114Options = {},
+    options: Operation114Options,
   ): Promise<
     ResourceResult<
       Operation114["responses"][200]["content"]["application/json"]
@@ -4016,7 +4153,7 @@ export class WorkspacesWorkspaceIdEnvironmentsEnvironmentIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/environments/{environment_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation117Options = {},
+    options: Operation117Options,
   ): Promise<
     ResourceResult<
       Operation117["responses"][202]["content"]["application/json"]
@@ -4052,7 +4189,7 @@ export class WorkspacesWorkspaceIdEnvironmentsEnvironmentIdResource {
     body: NonNullable<
       Operation119["requestBody"]
     >["content"]["application/json"],
-    options: Operation119Options = {},
+    options: Operation119Options,
   ): Promise<
     ResourceResult<
       Operation119["responses"][200]["content"]["application/json"]
@@ -4073,7 +4210,7 @@ export class WorkspacesWorkspaceIdEnvironmentsEnvironmentIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/environments/{environment_id}/stop. Preserves response metadata; mutations are not replayed. */
   stop(
-    options: Operation120Options = {},
+    options: Operation120Options,
   ): Promise<
     ResourceResult<
       Operation120["responses"][202]["content"]["application/json"]
@@ -4190,7 +4327,7 @@ export class WorkspacesWorkspaceIdIconResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/icon. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation125Options = {},
+    options: Operation125Options,
   ): Promise<
     ResourceResult<
       Operation125["responses"][200]["content"]["application/json"]
@@ -4303,7 +4440,7 @@ export class WorkspacesWorkspaceIdInvitationsInvitationIdResource {
   ) {}
   /** POST /api/v1/workspaces/{workspace_id}/invitations/{invitation_id}/resend. Preserves response metadata; mutations are not replayed. */
   resend(
-    options: Operation130Options = {},
+    options: Operation130Options,
   ): Promise<
     ResourceResult<
       Operation130["responses"][200]["content"]["application/json"]
@@ -4324,7 +4461,7 @@ export class WorkspacesWorkspaceIdInvitationsInvitationIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/invitations/{invitation_id}/revoke. Preserves response metadata; mutations are not replayed. */
   revoke(
-    options: Operation131Options = {},
+    options: Operation131Options,
   ): Promise<
     ResourceResult<
       Operation131["responses"][200]["content"]["application/json"]
@@ -4391,7 +4528,7 @@ export class WorkspacesWorkspaceIdKeysKeyIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/keys/{key_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation133Options = {},
+    options: Operation133Options,
   ): Promise<
     ResourceResult<
       Operation133["responses"][200]["content"]["application/json"]
@@ -4434,7 +4571,7 @@ export class WorkspacesWorkspaceIdMediaUnderstandingDefaultsResource {
     body: NonNullable<
       Operation135["requestBody"]
     >["content"]["application/json"],
-    options: Operation135Options = {},
+    options: Operation135Options,
   ): Promise<
     ResourceResult<
       Operation135["responses"][200]["content"]["application/json"]
@@ -4515,9 +4652,7 @@ export class WorkspacesWorkspaceIdMemoriesMemoryIdResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/memories/{memory_id}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation138Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation138Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -4548,7 +4683,7 @@ export class WorkspacesWorkspaceIdMemoriesMemoryIdResource {
     body: NonNullable<
       Operation140["requestBody"]
     >["content"]["application/json"],
-    options: Operation140Options = {},
+    options: Operation140Options,
   ): Promise<
     ResourceResult<
       Operation140["responses"][200]["content"]["application/json"]
@@ -4636,7 +4771,7 @@ export class WorkspacesWorkspaceIdMemoriesMemoryIdFilesResource {
     body: NonNullable<
       Operation143["requestBody"]
     >["content"]["application/json"],
-    options: Operation143Options = {},
+    options: Operation143Options,
   ): Promise<
     ResourceResult<
       Operation143["responses"][200]["content"]["application/json"]
@@ -4671,9 +4806,7 @@ export class WorkspacesWorkspaceIdMemoriesMemoryIdFilesPathResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/memories/{memory_id}/files/{path}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation144Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation144Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -4704,7 +4837,7 @@ export class WorkspacesWorkspaceIdMemoriesMemoryIdFilesPathResource {
     body: NonNullable<
       Operation146["requestBody"]
     >["content"]["application/json"],
-    options: Operation146Options = {},
+    options: Operation146Options,
   ): Promise<
     ResourceResult<
       Operation146["responses"][200]["content"]["application/json"]
@@ -4967,7 +5100,7 @@ export class WorkspacesWorkspaceIdRunsRunIdResource {
     body: NonNullable<
       Operation157["requestBody"]
     >["content"]["application/json"],
-    options: Operation157Options = {},
+    options: Operation157Options,
   ): Promise<
     ResourceResult<
       Operation157["responses"][200]["content"]["application/json"]
@@ -5071,6 +5204,13 @@ export class WorkspacesWorkspaceIdRunsRunIdResource {
       { signal: options.signal },
     );
   }
+  wait(options: WaitOptions) {
+    return waitForRun(
+      (options) => this.get(options),
+      this.transport.signal,
+      options,
+    );
+  }
 }
 
 export class WorkspacesWorkspaceIdRunsRunIdAttemptsResource {
@@ -5150,7 +5290,7 @@ export class WorkspacesWorkspaceIdRunsRunIdItemsResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/runs/{run_id}/items. Preserves response metadata; mutations are not replayed. */
-  list(
+  get(
     options: Operation162Options = {},
   ): Promise<
     ResourceResult<
@@ -5254,9 +5394,7 @@ export class WorkspacesWorkspaceIdSecretsSecretIdResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/secrets/{secret_id}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation167Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation167Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -5287,7 +5425,7 @@ export class WorkspacesWorkspaceIdSecretsSecretIdResource {
     body: NonNullable<
       Operation169["requestBody"]
     >["content"]["application/json"],
-    options: Operation169Options = {},
+    options: Operation169Options,
   ): Promise<
     ResourceResult<
       Operation169["responses"][200]["content"]["application/json"]
@@ -5369,7 +5507,7 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation172Options = {},
+    options: Operation172Options,
   ): Promise<
     ResourceResult<
       Operation172["responses"][200]["content"]["application/json"]
@@ -5405,7 +5543,7 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
     body: NonNullable<
       Operation174["requestBody"]
     >["content"]["application/json"],
-    options: Operation174Options = {},
+    options: Operation174Options,
   ): Promise<
     ResourceResult<
       Operation174["responses"][200]["content"]["application/json"]
@@ -5554,7 +5692,7 @@ export class WorkspacesWorkspaceIdSessionsSessionIdResource {
     body: NonNullable<
       Operation180["requestBody"]
     >["content"]["application/json"],
-    options: Operation180Options = {},
+    options: Operation180Options,
   ): Promise<
     ResourceResult<
       Operation180["responses"][200]["content"]["application/json"]
@@ -5671,7 +5809,7 @@ export class WorkspacesWorkspaceIdSkillsSkillIdResource {
     body: NonNullable<
       Operation185["requestBody"]
     >["content"]["application/json"],
-    options: Operation185Options = {},
+    options: Operation185Options,
   ): Promise<
     ResourceResult<
       Operation185["responses"][200]["content"]["application/json"]
@@ -5692,7 +5830,7 @@ export class WorkspacesWorkspaceIdSkillsSkillIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/skills/{skill_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation186Options = {},
+    options: Operation186Options,
   ): Promise<
     ResourceResult<
       Operation186["responses"][200]["content"]["application/json"]
@@ -5719,7 +5857,7 @@ export class WorkspacesWorkspaceIdSkillsSkillIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/skills/{skill_id}/unarchive. Preserves response metadata; mutations are not replayed. */
   unarchive(
-    options: Operation193Options = {},
+    options: Operation193Options,
   ): Promise<
     ResourceResult<
       Operation193["responses"][200]["content"]["application/json"]
@@ -5774,7 +5912,7 @@ export class WorkspacesWorkspaceIdSkillsSkillIdRevisionsResource {
     body: NonNullable<
       Operation188["requestBody"]
     >["content"]["application/json"],
-    options: Operation188Options = {},
+    options: Operation188Options,
   ): Promise<
     ResourceResult<
       Operation188["responses"][201]["content"]["application/json"]
@@ -5834,7 +5972,7 @@ export class WorkspacesWorkspaceIdSkillsSkillIdRevisionsRevisionIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/skills/{skill_id}/revisions/{revision_id}/set-default. Preserves response metadata; mutations are not replayed. */
   setDefault(
-    options: Operation192Options = {},
+    options: Operation192Options,
   ): Promise<
     ResourceResult<
       Operation192["responses"][200]["content"]["application/json"]
@@ -5960,9 +6098,7 @@ export class WorkspacesWorkspaceIdSubscriptionsSubscriptionIdResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/subscriptions/{subscription_id}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation196Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation196Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -5993,7 +6129,7 @@ export class WorkspacesWorkspaceIdSubscriptionsSubscriptionIdResource {
     body: NonNullable<
       Operation198["requestBody"]
     >["content"]["application/json"],
-    options: Operation198Options = {},
+    options: Operation198Options,
   ): Promise<
     ResourceResult<
       Operation198["responses"][200]["content"]["application/json"]
@@ -6169,7 +6305,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdResource {
     body: NonNullable<
       Operation204["requestBody"]
     >["content"]["application/json"],
-    options: Operation204Options = {},
+    options: Operation204Options,
   ): Promise<
     ResourceResult<
       Operation204["responses"][200]["content"]["application/json"]
@@ -6190,7 +6326,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/threads/{thread_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation205Options = {},
+    options: Operation205Options,
   ): Promise<
     ResourceResult<
       Operation205["responses"][200]["content"]["application/json"]
@@ -6239,6 +6375,13 @@ export class WorkspacesWorkspaceIdThreadsThreadIdResource {
       this.path + "/stream",
     );
   }
+  events(options?: ThreadStreamOptions) {
+    return threadStream(
+      (options) => this.stream.get(options),
+      this.transport.signal,
+      options,
+    );
+  }
 }
 
 export class WorkspacesWorkspaceIdThreadsThreadIdEnvironmentsResource {
@@ -6263,7 +6406,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdEnvironmentsResource {
     body: NonNullable<
       Operation207["requestBody"]
     >["content"]["application/json"],
-    options: Operation207Options = {},
+    options: Operation207Options,
   ): Promise<
     ResourceResult<
       Operation207["responses"][201]["content"]["application/json"]
@@ -6298,9 +6441,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdEnvironmentsNameResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/threads/{thread_id}/environments/{name}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation208Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation208Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -6396,7 +6537,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdInboxOrderResource {
     body: NonNullable<
       Operation211["requestBody"]
     >["content"]["application/json"],
-    options: Operation211Options = {},
+    options: Operation211Options,
   ): Promise<
     ResourceResult<
       Operation211["responses"][200]["content"]["application/json"]
@@ -6424,7 +6565,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdInboxEntryIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox/{entry_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation212Options = {},
+    options: Operation212Options,
   ): Promise<
     ResourceResult<
       Operation212["responses"][200]["content"]["application/json"]
@@ -6460,7 +6601,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdInboxEntryIdResource {
     body: NonNullable<
       Operation214["requestBody"]
     >["content"]["application/json"],
-    options: Operation214Options = {},
+    options: Operation214Options,
   ): Promise<
     ResourceResult<
       Operation214["responses"][200]["content"]["application/json"]
@@ -6503,7 +6644,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdMemoriesResource {
     body: NonNullable<
       Operation216["requestBody"]
     >["content"]["application/json"],
-    options: Operation216Options = {},
+    options: Operation216Options,
   ): Promise<
     ResourceResult<
       Operation216["responses"][201]["content"]["application/json"]
@@ -6538,9 +6679,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdMemoriesNameResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/threads/{thread_id}/memories/{name}. Preserves response metadata; mutations are not replayed. */
-  delete(
-    options: Operation217Options = {},
-  ): Promise<ResourceResult<undefined>> {
+  delete(options: Operation217Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -6559,7 +6698,7 @@ export class WorkspacesWorkspaceIdThreadsThreadIdMemoriesNameResource {
     body: NonNullable<
       Operation218["requestBody"]
     >["content"]["application/json"],
-    options: Operation218Options = {},
+    options: Operation218Options,
   ): Promise<
     ResourceResult<
       Operation218["responses"][200]["content"]["application/json"]

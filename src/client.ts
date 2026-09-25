@@ -1,31 +1,16 @@
 import createFetchClient from "openapi-fetch";
 import type { paths } from "./schema.js";
-import { workspaceHttp } from "./workspace.js";
 import { Transport, type ClientOptions } from "./transport.js";
-import {
-  threadStream,
-  type ThreadStreamOptions,
-} from "./streams/thread-stream.js";
-import { Workspaces } from "./resources/interaction.js";
-import { Organizations } from "./resources/management.js";
 import { ServiceResources } from "./resources/generated.js";
 
-/** Typed OpenAPI operations and workspace/organization-bound resource conveniences. */
+/** One complete resource tree, sharing authentication and lifetime with the raw HTTP escape hatch. */
 export function createClient(options: ClientOptions) {
   const transport = new Transport(options);
   return {
-    http: createFetchClient<paths>(transport.httpOptions()),
     resources: new ServiceResources(transport),
-    workspaces: new Workspaces(transport),
-    organizations: new Organizations(transport),
-    workspaceHttp: (workspaceId: string) =>
-      workspaceHttp(transport, workspaceId),
+    /** Advanced request headers, middleware and response parsing; ordinary calls use resources. */
+    http: createFetchClient<paths>(transport.httpOptions()),
     setCsrfToken: (token: string | undefined) => transport.setCsrfToken(token),
-    streamThread: (
-      workspaceId: string,
-      threadId: string,
-      streamOptions?: ThreadStreamOptions,
-    ) => threadStream(transport, workspaceId, threadId, streamOptions),
     close: () => transport.close(),
   };
 }

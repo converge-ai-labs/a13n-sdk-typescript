@@ -1,5 +1,6 @@
 import { ApiError, isRecord, ProtocolError } from "../errors.js";
-import { delay, type Transport } from "../transport.js";
+import { delay } from "../transport.js";
+import type { BinaryResult } from "../resources/base.js";
 import { decodeSse, type SseFrame } from "./sse.js";
 
 export interface ThreadStreamOptions {
@@ -107,48 +108,38 @@ function parseFrame(frame: SseFrame): ThreadEvent {
 
 /** Observe one thread. Signals require durable readback; neither stream delivery nor close changes execution. */
 export async function* threadStream(
-  transport: Transport,
-  workspaceId: string,
-  threadId: string,
+  open: (options: {
+    signal: AbortSignal;
+    lastEventId?: string;
+  }) => Promise<BinaryResult>,
+  shutdown: AbortSignal,
   options: ThreadStreamOptions = {},
 ): AsyncGenerator<ThreadEvent> {
-  if (
-    !workspaceId ||
-    !threadId ||
-    workspaceId.includes("/") ||
-    threadId.includes("/") ||
-    [".", ".."].includes(workspaceId) ||
-    [".", ".."].includes(threadId)
-  )
-    throw new TypeError("A workspace and thread ID are required.");
   if (options.after && !cursorPattern.test(options.after))
     throw new TypeError("after must be a Redis stream entry ID.");
   const signal = options.signal
-    ? AbortSignal.any([options.signal, transport.signal])
-    : transport.signal;
+    ? AbortSignal.any([options.signal, shutdown])
+    : shutdown;
   let cursor = options.after;
   let failures = 0;
   while (true) {
     signal.throwIfAborted();
-    const headers = new Headers({ Accept: "text/event-stream" });
-    if (cursor) headers.set("Last-Event-ID", cursor);
+    let stream: BinaryResult | undefined;
     try {
-      const response = await transport.fetch(
-        new Request(
-          `${transport.baseUrl}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/threads/${encodeURIComponent(threadId)}/stream`,
-          { headers, signal },
-        ),
-      );
+      stream = await open({
+        signal,
+        ...(cursor ? { lastEventId: cursor } : {}),
+      });
+      const response = stream.response;
       if (
         !response.headers
           .get("Content-Type")
           ?.startsWith("text/event-stream") ||
         !response.body
       ) {
-        await response.body?.cancel();
         throw new ProtocolError("Expected a Thread event stream.");
       }
-      for await (const raw of decodeSse(response.body)) {
+      for await (const raw of decodeSse(stream.body)) {
         const event = parseFrame(raw);
         if (event.cursor && event.cursor === cursor) continue;
         yield event;
@@ -166,6 +157,8 @@ export async function* threadStream(
         failures >= 2
       )
         throw error;
+    } finally {
+      await stream?.close();
     }
     if (failures >= 2)
       throw new ProtocolError(

@@ -52,24 +52,25 @@ try {
   assert.equal(replay.response.status, 200);
   assert.equal(data(replay).entry.id, created.entry.id);
   assert.equal(data(replay).thread.id, created.thread.id);
-  const scope = client.workspaceHttp(workspaceId);
   const threadId = created.thread.id;
   const runId = created.run.id;
   const thread = data(
-    await scope.GET("/threads/{thread_id}", {
-      params: { path: { thread_id: threadId } },
-    }),
+    await client.http.GET(
+      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}",
+      {
+        params: { path: { workspace_id: workspaceId, thread_id: threadId } },
+      },
+    ),
   );
   assert.equal(thread.id, threadId);
 
   const deadline = AbortSignal.timeout(20_000);
   const output = [];
   try {
-    for await (const { cursor, frame } of client.streamThread(
-      workspaceId,
-      threadId,
-      { signal: deadline },
-    )) {
+    for await (const { cursor, frame } of client.resources.workspaces
+      .ref(workspaceId)
+      .threads.ref(threadId)
+      .events({ signal: deadline })) {
       output.push(frame.type);
       assert.equal(
         cursor === null,
@@ -90,8 +91,8 @@ try {
   );
   const run = await wait(async () => {
     const current = data(
-      await scope.GET("/runs/{run_id}", {
-        params: { path: { run_id: runId } },
+      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
+        params: { path: { workspace_id: workspaceId, run_id: runId } },
       }),
     );
     return ["completed", "failed", "cancelled", "waiting"].includes(
@@ -102,9 +103,12 @@ try {
   });
   assert.equal(run.status, "completed", `Run sealed as ${run.status}`);
   const items = data(
-    await scope.GET("/runs/{run_id}/items", {
-      params: { path: { run_id: runId } },
-    }),
+    await client.http.GET(
+      "/api/v1/workspaces/{workspace_id}/runs/{run_id}/items",
+      {
+        params: { path: { workspace_id: workspaceId, run_id: runId } },
+      },
+    ),
   );
   assert.ok(Array.isArray(items.items));
 
@@ -130,8 +134,10 @@ try {
   assert.ok(clientTool.run?.id && clientTool.thread?.id);
   const pending = await wait(async () => {
     const current = data(
-      await scope.GET("/runs/{run_id}", {
-        params: { path: { run_id: clientTool.run.id } },
+      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
+        params: {
+          path: { workspace_id: workspaceId, run_id: clientTool.run.id },
+        },
       }),
     );
     return ["waiting", "completed", "failed", "cancelled"].includes(
@@ -148,19 +154,22 @@ try {
   assert.ok(request?.tool_call_id, "Expected a client-tool pending action");
   const queuedKey = `typescript-queue-${randomUUID()}`;
   const queuedRequest = () =>
-    scope.POST("/threads/{thread_id}/inbox", {
-      params: {
-        path: { thread_id: clientTool.thread.id },
-        header: { "Idempotency-Key": queuedKey },
-      },
-      body: {
-        agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
-        delivery: "next_run",
-        payload: {
-          content: [{ type: "text", text: "Summarize that review." }],
+    client.http.POST(
+      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox",
+      {
+        params: {
+          path: { workspace_id: workspaceId, thread_id: clientTool.thread.id },
+          header: { "Idempotency-Key": queuedKey },
+        },
+        body: {
+          agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
+          delivery: "next_run",
+          payload: {
+            content: [{ type: "text", text: "Summarize that review." }],
+          },
         },
       },
-    });
+    );
   const queuedFirst = await queuedRequest();
   assert.equal(queuedFirst.response.status, 201);
   assert.equal(data(queuedFirst).run, null);
@@ -171,9 +180,9 @@ try {
 
   const resumeKey = `typescript-resume-${randomUUID()}`;
   const resumeRequest = () =>
-    scope.POST("/runs/{run_id}/resume", {
+    client.http.POST("/api/v1/workspaces/{workspace_id}/runs/{run_id}/resume", {
       params: {
-        path: { run_id: pending.id },
+        path: { workspace_id: workspaceId, run_id: pending.id },
         header: { "Idempotency-Key": resumeKey },
       },
       body: {
@@ -193,8 +202,10 @@ try {
   assert.equal(data(resumedFirst).id, data(resumedReplay).id);
   const completed = await wait(async () => {
     const current = data(
-      await scope.GET("/runs/{run_id}", {
-        params: { path: { run_id: data(resumedFirst).id } },
+      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
+        params: {
+          path: { workspace_id: workspaceId, run_id: data(resumedFirst).id },
+        },
       }),
     );
     return ["completed", "failed", "cancelled", "waiting"].includes(

@@ -3,7 +3,7 @@ import test from "node:test";
 import { createClient } from "../dist/index.js";
 const baseUrl = "https://service.example.test";
 
-test("conditional managed Agent, Thread and inbox operations send If-Match and expose Service receipts", async () => {
+test("conditional Agent, Thread and inbox operations send If-Match and expose Service receipts", async () => {
   const calls = [];
   const client = createClient({
     baseUrl,
@@ -28,7 +28,7 @@ test("conditional managed Agent, Thread and inbox operations send If-Match and e
       return Response.json({ id: "agent_one" });
     },
   });
-  const workspace = client.workspaces.ref("ws_one");
+  const workspace = client.resources.workspaces.ref("ws_one");
   const agent = workspace.agents.ref("agent_one");
   await agent.archive({ ifMatch: '"v1"' });
   await agent.unarchive({ ifMatch: '"v2"' });
@@ -38,7 +38,7 @@ test("conditional managed Agent, Thread and inbox operations send If-Match and e
   await thread.archive({ ifMatch: '"v5"' });
   assert.equal(
     (
-      await thread.inbox.order(
+      await thread.inbox.order.replace(
         { entry_ids: ["entry_one"] },
         { ifMatch: '"v6"' },
       )
@@ -80,12 +80,12 @@ test("management ref methods follow actual verbs and specialized response shapes
       return Response.json({ id: "secret_one" });
     },
   });
-  const workspace = client.workspaces.ref("ws_one");
+  const workspace = client.resources.workspaces.ref("ws_one");
   assert.equal(
     (
       await workspace.secrets
         .ref("secret_one")
-        .update({ value: "new" }, { ifMatch: '"v1"' })
+        .replace({ value: "new" }, { ifMatch: '"v1"' })
     ).data.id,
     "secret_one",
   );
@@ -98,7 +98,7 @@ test("management ref methods follow actual verbs and specialized response shapes
     ).data.signing_secret,
     "once",
   );
-  await client.organizations
+  await client.resources.organizations
     .ref("org_one")
     .modelProviders.ref("provider_one")
     .test();
