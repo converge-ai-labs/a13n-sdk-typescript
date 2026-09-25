@@ -20,6 +20,7 @@ export class RecoverableFetchError extends Error {
 }
 
 const publicMutations = new Set([
+  "/api/v1/auth/bootstrap",
   "/api/v1/auth/login",
   "/api/v1/auth/password-reset",
   "/api/v1/auth/password-reset/confirm",
@@ -169,9 +170,15 @@ export class Transport {
   ): Promise<Response> {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
+    const prefix = base.pathname.replace(/\/$/, "");
+    const probe =
+      input.method === "GET" &&
+      ["/healthz", "/readyz"].some(
+        (path) => target.pathname === `${prefix}${path}`,
+      );
     if (
       target.origin !== base.origin ||
-      !target.pathname.startsWith(`${base.pathname.replace(/\/$/, "")}/api/v1/`)
+      (!target.pathname.startsWith(`${prefix}/api/v1/`) && !probe)
     ) {
       throw new TypeError("Requests must target the configured Service API.");
     }
@@ -179,7 +186,7 @@ export class Transport {
     signal.throwIfAborted();
     const headers = new Headers(input.headers);
     const auth = this.options.auth;
-    const path = target.pathname.slice(base.pathname.replace(/\/$/, "").length);
+    const path = target.pathname.slice(prefix.length);
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
     if (auth.type === "bearer") {
       const token =

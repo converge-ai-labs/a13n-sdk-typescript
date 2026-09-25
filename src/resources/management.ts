@@ -13,7 +13,10 @@ import {
 } from "./base.js";
 
 type S = components["schemas"];
-type Filters = Record<string, string | number | boolean | null | undefined> & {
+type Filters = Record<
+  string,
+  string | readonly string[] | number | boolean | null | undefined
+> & {
   cursor?: string | null;
 };
 function url(base: string, ...parts: string[]): string {
@@ -226,6 +229,7 @@ export interface OrganizationManagement {
   webProviders: ProviderCollection;
   environmentProviders: ProviderCollection;
   connectorProviders: ProviderCollection;
+  memoryProviders: ProviderCollection;
 }
 export function organizationManagement(
   transport: Transport,
@@ -237,6 +241,10 @@ export function organizationManagement(
     modelProviders: new ProviderCollection(
       transport,
       url(base, "model-providers"),
+    ),
+    memoryProviders: new ProviderCollection(
+      transport,
+      url(base, "memory-providers"),
     ),
     webProviders: new ProviderCollection(transport, url(base, "web-providers")),
     environmentProviders: new ProviderCollection(
@@ -291,6 +299,7 @@ export class Organization
   readonly webProviders: OrganizationManagement["webProviders"];
   readonly environmentProviders: OrganizationManagement["environmentProviders"];
   readonly connectorProviders: OrganizationManagement["connectorProviders"];
+  readonly memoryProviders: OrganizationManagement["memoryProviders"];
   constructor(
     transport: Transport,
     readonly id: string,
@@ -302,5 +311,6 @@ export class Organization
     this.webProviders = management.webProviders;
     this.environmentProviders = management.environmentProviders;
     this.connectorProviders = management.connectorProviders;
+    this.memoryProviders = management.memoryProviders;
   }
 }

@@ -19,6 +19,45 @@ const message: Schema["MessagePayload"] = {
 const invalidMessage: Schema["MessagePayload"] = { content: "hello" };
 void invalidMessage;
 
+export async function memoryTypes() {
+  const memory = workspace.memories.ref("mem_one");
+  await workspace.memories.list({ label: ["team:a", "scope:b"] });
+  const file: ResourceResult<Schema["MemoryFile"]> = await memory.files
+    .ref("folder/note.md")
+    .get();
+  await memory.files
+    .ref("folder/note.md")
+    .replace(
+      { content: "new" },
+      { ifMatch: file.response.headers.get("ETag")! },
+    );
+  // @ts-expect-error File mutations require their ETag.
+  await memory.files.ref("note.md").replace({ content: "new" });
+  // @ts-expect-error Memory metadata mutations require the memory ETag.
+  await memory.update({ guide: null });
+  const restored: ResourceResult<Schema["MemoryFileState"]> =
+    await memory.revisions.ref(1).restore();
+  if (restored.data.file !== null) void restored.data.file.content;
+  await memory.records.ref("r1").replace({ text: "record" });
+  await memory.records.ref("r1").replace(
+    { text: "record" },
+    // @ts-expect-error Records have no ETags.
+    { ifMatch: "etag" },
+  );
+  // @ts-expect-error Records have no individual GET endpoint.
+  await memory.records.ref("r1").get();
+  // @ts-expect-error Revisions cannot be created directly.
+  await memory.revisions.create({});
+  const mounts = workspace.threads.ref("thr_one").memories;
+  // @ts-expect-error Mount changes require the Thread ETag.
+  await mounts.create({ name: "notes", memory_id: "mem_one", access: "read" });
+  await mounts.ref("notes").update({ recall: false }, { ifMatch: '"thr:2"' });
+  await organization.memoryProviders.ref("prv_one").test();
+  await client.http.POST("/api/v1/auth/bootstrap", {
+    body: { email: "owner@example.test", password: "test-only" },
+  });
+}
+
 export async function acceptedServiceTypes() {
   const submitted = await workspace.threads.create(
     { agent_id: "agent_example", payload: message },

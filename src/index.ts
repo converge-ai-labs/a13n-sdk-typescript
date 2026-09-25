@@ -58,4 +58,16 @@ export type {
   OrganizationManagement,
   WorkspaceManagement,
 } from "./resources/management.js";
+export {
+  Memories,
+  Memory,
+  MemoryFiles,
+  MemoryFile,
+  MemoryRecords,
+  MemoryRecord,
+  MemoryRevisions,
+  MemoryRevision,
+  ThreadMemories,
+  ThreadMemory,
+} from "./resources/memories.js";
 export type { paths, components, operations, Binary } from "./schema.js";

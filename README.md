@@ -71,13 +71,39 @@ const http = client.workspaceHttp(workspace.id);
 const result = await http.GET("/threads", { params: { query: { limit: 20 } } });
 ```
 
-`workspace.threads.pages()` retains page responses and cursors; `.items()` flattens pages. Workspace management includes assets, connections, environments/templates, secrets, skills and subscriptions. Organization management includes models and model, web, environment and connector providers. For specialized endpoints and file transfer use the generated HTTP methods, including `Blob` or `{file: Blob}` uploads.
+`workspace.threads.pages()` retains page responses and cursors; `.items()` flattens pages. Workspace management includes assets, connections, environments/templates, secrets, skills and subscriptions. Organization management includes models and model, web, environment, connector and memory providers. For specialized endpoints and file transfer use the generated HTTP methods, including `Blob` or `{file: Blob}` uploads.
+
+## Memory
+
+```ts
+const created = await workspace.memories.create({
+  key: "notes",
+  name: "Notes",
+});
+const memory = workspace.memories.ref(created.data.id);
+const file = await memory.files.create({
+  path: "project/notes.md",
+  content: "First note",
+});
+await memory.files
+  .ref("project/notes.md")
+  .replace(
+    { content: "Updated note" },
+    { ifMatch: file.response.headers.get("ETag")! },
+  );
+const revisions = await memory.revisions.list({ path: "project/notes.md" });
+const revision = await memory.revisions.ref(revisions.data.items[0]!.seq).get();
+```
+
+`memory.files` supports paginated listing, create/get/replace/delete/move. `memory.revisions` supports paginated history, integer-sequence get/restore and `purge(path)`. File writes use file ETags; Memory metadata uses Memory ETags. `memory.records` supports paginated list/create/search and ref(id).replace/delete, without item GET, PATCH or ETag. Search sends a POST body; uncertain writes are never replayed. `thread.memories` supports list/create and ref(name).update/delete using the **Thread** ETag. New Thread/Fork bodies accept `memories`; `RunView.memory_mounts` is the frozen accepted snapshot. `organization.memoryProviders` supports list/create/get/update/test.
+
+The pinned HTTP surface covers **230 operations across 154 paths**. The curated resource facade covers **118 operations**, including all 29 memory/provider operations and Thread SSE; the other **112** remain available through typed HTTP (including bootstrap, health probes, specialized administration and binary transfers). This distinguishes structural coverage from real-Service test coverage. File memory uses JSON text, not binary transfer. The SDK does not emulate routes absent from Service.
 
 ## Development
 
 `npm ci --ignore-scripts && npm run check:all` checks types, formatting, lint, tests, package contents and installed ESM/TypeScript consumers. `npm run generate` uses only the pinned Service snapshot in `contract/`.
 
-Against an existing disposable HTTPS Service, `node scripts/accept-installed.mjs` packs and installs the SDK in an isolated consumer, then runs both low-level and managed API acceptance. Supply `A13N_SERVICE_URL`, `A13N_API_TOKEN`, `A13N_WORKSPACE`, `A13N_AGENT`, and `A13N_CLIENT_TOOL_AGENT`; use `NODE_EXTRA_CA_CERTS` to trust the fixture certificate. The scripts never start or stop Service.
+Against an existing disposable HTTPS Service, `node scripts/accept-installed.mjs` packs and installs the SDK in an isolated consumer, then runs low-level, managed and memory API acceptance. Supply `A13N_SERVICE_URL`, `A13N_API_TOKEN`, `A13N_WORKSPACE`, `A13N_AGENT`, `A13N_CLIENT_TOOL_AGENT`, `A13N_ORGANIZATION`, and `A13N_MEMORY_PROVIDER` (an accessible `mem0_oss` provider); use `NODE_EXTRA_CA_CERTS` to trust the fixture certificate. Memory acceptance checks file CAS/history/restore, frozen Run mounts, record CRUD/search, provider testing and health probes. The scripts never start or stop Service and do not establish external cloud-provider compatibility.
 
 `node scripts/accept-browser.mjs` requires the `agent-browser` CLI and Chromium, the same Service URL, workspace and agent, plus explicit `A13N_BROWSER_EMAIL` and `A13N_BROWSER_PASSWORD` test credentials. It checks actual built ESM modules with same-origin session login and CSRF-protected managed submission, not Node Fetch mocks. This disposable-fixture browser check ignores certificate errors; it does not establish production TLS trust. Do not use production credentials or a production Service for these acceptance scripts.
 
