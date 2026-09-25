@@ -1,12 +1,14 @@
 # TypeScript SDK Overview
 
-The package exposes a complete generated `client.resources` tree and `client.http` surface, with `client.workspaceHttp(workspaceId)` for explicitly bound raw workspace routes. Generated resources bind every pinned operation using local `ref(selector)` construction and typed methods. Existing `client.workspaces` and `client.organizations` conveniences retain source compatibility, string-input submission and Run waits; they do not define operation completeness. They share one authenticated transport; no handle fetches until a method is called. The SDK does not authorize or execute agents itself.
+The package exposes one complete generated resource tree at `client.resources`. Each operation has one generated route binding. Run `wait` calls that handle's generated `get`; Thread `events` decodes its generated `stream.get` response. `textPayload` is a pure message builder, not a second submission API. All handles bind locally; no construction fetches remote state.
+
+`client.http` is the explicit low-level escape hatch for custom headers, middleware and response parsing through generated OpenAPI paths. It shares authentication and shutdown with resources, but does not add a second managed graph or workspace wrapper. The SDK does not authorize or execute agents itself.
 
 ```mermaid
 flowchart LR
   App[Application] --> Resources[Scoped resource handles]
   App --> HTTP[Generated HTTP operations]
-  App --> SSE[Thread SSE adapter]
+  Resources --> SSE[Thread SSE adapter]
   Resources --> Transport[Shared transport]
   HTTP --> Transport
   SSE --> Transport

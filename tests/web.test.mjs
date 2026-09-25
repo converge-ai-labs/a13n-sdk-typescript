@@ -94,7 +94,7 @@ test("null overrides remain explicit while omitted options are untouched", async
   client.close();
 });
 
-test("workspace-bound HTTP selects explicit scope without credential discovery", async () => {
+test("resource references select explicit scope without credential discovery", async () => {
   const urls = [];
   const client = createClient({
     baseUrl,
@@ -104,15 +104,13 @@ test("workspace-bound HTTP selects explicit scope without credential discovery",
       return Response.json({ items: [], next_cursor: null });
     },
   });
-  const http = client.workspaceHttp("ws_test");
-  await http.GET("/agents");
-  await http.GET("/agents/{agent_id}", {
-    params: { path: { agent_id: "agent_example" } },
-  });
+  const workspace = client.resources.workspaces.ref("ws_test");
+  await workspace.agents.list();
+  await workspace.agents.ref("agent_example").get();
   assert.deepEqual(urls, [
     `${baseUrl}/api/v1/workspaces/ws_test/agents`,
     `${baseUrl}/api/v1/workspaces/ws_test/agents/agent_example`,
   ]);
   client.close();
-  await assert.rejects(http.GET("/agents"), { name: "AbortError" });
+  await assert.rejects(workspace.agents.list(), { name: "AbortError" });
 });

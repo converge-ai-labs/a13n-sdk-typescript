@@ -3,6 +3,7 @@ import {
   type Client,
   type components,
   type ResourceResult,
+  textPayload,
 } from "../src/index.js";
 
 type Schema = components["schemas"];
@@ -10,8 +11,8 @@ const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test" },
 });
-const workspace = client.workspaces.ref("ws_example");
-const organization = client.organizations.ref("org_example");
+const workspace = client.resources.workspaces.ref("ws_example");
+const organization = client.resources.organizations.ref("org_example");
 const message: Schema["MessagePayload"] = {
   content: [{ type: "text", text: "hello" }],
 };
@@ -21,7 +22,7 @@ void invalidMessage;
 
 export async function memoryTypes() {
   const memory = workspace.memories.ref("mem_one");
-  await workspace.memories.list({ label: ["team:a", "scope:b"] });
+  await workspace.memories.list({ query: { label: ["team:a", "scope:b"] } });
   const file: ResourceResult<Schema["MemoryFile"]> = await memory.files
     .ref("folder/note.md")
     .get();
@@ -64,20 +65,21 @@ export async function acceptedServiceTypes() {
     { idempotencyKey: "start" },
   );
   const thread = workspace.threads.ref(submitted.data.thread.id);
-  const receipt: ResourceResult<Schema["Submitted"]> = await thread.submit(
-    message,
-    { body: { agent_id: "agent_example" }, idempotencyKey: "submit" },
-  );
+  const receipt: ResourceResult<Schema["Submitted"]> =
+    await thread.inbox.create(
+      { agent_id: "agent_example", payload: textPayload("Next") },
+      { idempotencyKey: "submit" },
+    );
   if (receipt.data.run !== null)
     await workspace.runs.ref(receipt.data.run.id).wait({ timeoutMs: 1000 });
-  for await (const event of thread.stream()) {
+  for await (const event of thread.events()) {
     if (event.cursor) void event.frame;
     break;
   }
-  await thread.inbox.list({ status: "pending" });
+  await thread.inbox.list({ query: { status: ["pending"] } });
   await workspace.agents.ref("agent_example").revisions.list();
-  await workspace.assets.list({ limit: 10 });
-  await organization.models.list({ limit: 10 });
+  await workspace.assets.list({ query: { limit: 10 } });
+  await organization.models.list({ query: { limit: 10 } });
   const createdSubscription = await workspace.subscriptions.create({
     name: "alerts",
     url: "https://example.test/hook",
@@ -91,9 +93,13 @@ export async function acceptedServiceTypes() {
   // @ts-expect-error Assets have no PATCH operation.
   await workspace.assets.ref("asset_example").update({}, { ifMatch: '"v1"' });
   // @ts-expect-error Organizations have no collection POST operation.
-  await client.organizations.create({ name: "not-supported" });
-  await client.workspaceHttp(workspace.id).GET("/threads");
-  await client.workspaceHttp(workspace.id).GET("/threads", {
+  await client.resources.organizations.create({ name: "not-supported" });
+  await workspace.threads.list();
+  // @ts-expect-error The obsolete second resource graph is not exported.
+  void client.workspaces;
+  // @ts-expect-error There is no competing scoped raw HTTP client.
+  void client.workspaceHttp;
+  await workspace.threads.list({
     // @ts-expect-error Workspace ID is bound locally, not supplied as a URL path parameter.
     params: { path: { workspace_id: "other" } },
   });
@@ -145,7 +151,7 @@ export async function fullResourceTypes() {
   // @ts-expect-error Image uploads require an explicit supported media type.
   await ws.icon.replace(new Blob(["png"]));
   // @ts-expect-error Image bytes must not silently become JSON.
-  await ws.icon.replace("png", { contentType: "image/png" });
+  await ws.icon.replace("png", { contentType: "image/png", ifMatch: '"v1"' });
   await ws.uploads.create(
     { file: new Blob(["data"]) },
     { idempotencyKey: "upload" },
@@ -156,4 +162,67 @@ export async function fullResourceTypes() {
   // @ts-expect-error Non-cursor collections do not invent pagination.
   ws.threads.ref("thread").memories.pages();
   await resources.healthz.get();
+}
+
+export async function semanticTypes() {
+  const agent = workspace.agents.ref("agent");
+  const thread = workspace.threads.ref("thread");
+  const match = { ifMatch: '"v1"' };
+  await agent.archive(match);
+  await agent.revisions.create(
+    { config: { model: { model_id: "model" } } },
+    match,
+  );
+  await thread.archive(match);
+  await thread.inbox.order.replace({ entry_ids: [] }, match);
+  // @ts-expect-error Conditional actions require If-Match even when OpenAPI marks it optional.
+  await agent.archive();
+  // @ts-expect-error Required preconditions cannot be explicitly undefined.
+  await agent.archive({ ifMatch: undefined });
+  // @ts-expect-error Required preconditions cannot be null.
+  await agent.archive({ ifMatch: null });
+  // @ts-expect-error Revision creation is conditional on the head ETag.
+  await agent.revisions.create({ config: { model: { model_id: "model" } } });
+  // @ts-expect-error Thread archive is conditional.
+  await thread.archive({});
+  // @ts-expect-error Inbox order edits use the Thread ETag.
+  await thread.inbox.order.replace({ entry_ids: [] });
+  // @ts-expect-error Image updates also require the resource ETag.
+  await workspace.icon.replace(new Blob(), { contentType: "image/png" });
+  await workspace.memories.ref("memory").revisions.ref(1).restore();
+  await workspace.memories.ref("memory").revisions.ref(1).restore(match);
+  const run = workspace.runs.ref("run");
+  const items: ResourceResult<Schema["RunItems"]> = await run.items.get();
+  void items.data.position;
+  // @ts-expect-error RunItems is a snapshot, not a list or invented paginator.
+  run.items.list();
+  // @ts-expect-error RunItems does not paginate by a cursor.
+  run.items.pages();
+  const submitted = await workspace.threads.create(
+    {
+      agent_id: "agent",
+      payload: textPayload("Hello"),
+      memories: [{ name: "notes", memory_id: "memory", access: "read" }],
+      environments: [],
+      mcp_headers: {},
+      session_id: null,
+      options: { overrides: null },
+    },
+    { idempotencyKey: "full-body" },
+  );
+  if (submitted.data.run)
+    await workspace.runs.ref(submitted.data.run.id).wait({ timeoutMs: 1000 });
+  for await (const event of thread.events()) {
+    if (event.frame.type === "delta") {
+      void event.frame.data.event;
+      // @ts-expect-error Delta is not a changed signal.
+      void event.frame.data.version;
+    }
+    if (event.cursor !== null) {
+      const cursor: string = event.cursor;
+      void cursor;
+      void event.frame.data.sequence;
+    }
+    break;
+  }
 }

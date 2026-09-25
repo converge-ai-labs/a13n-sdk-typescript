@@ -44,7 +44,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
       : Response.json({ items: [], next_cursor: null }, { status });
   });
   try {
-    const memories = client.workspaces.ref("ws_one").memories;
+    const memories = client.resources.workspaces.ref("ws_one").memories;
     await memories.list();
     await memories.create({ key: "notes", name: "Notes" });
     const memory = memories.ref("mem_one");
@@ -64,13 +64,13 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await memory.revisions.list();
     await memory.revisions.ref(1).get();
     await memory.revisions.ref(1).restore();
-    await memory.revisions.purge("notes.md");
+    await memory.revisions.delete({ query: { path: "notes.md" } });
     await memory.records.list();
     await memory.records.create({ text: "remember this" });
     await memory.records.search({ query: "this" });
     await memory.records.ref("rec_one").replace({ text: "updated" });
     await memory.records.ref("rec_one").delete();
-    const mounts = client.workspaces
+    const mounts = client.resources.workspaces
       .ref("ws_one")
       .threads.ref("thr_one").memories;
     await mounts.list();
@@ -80,7 +80,8 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     );
     await mounts.ref("notes").update({ access: "read", recall: false }, match);
     await mounts.ref("notes").delete(match);
-    const providers = client.organizations.ref("org_one").memoryProviders;
+    const providers =
+      client.resources.organizations.ref("org_one").memoryProviders;
     await providers.list();
     await providers.create({
       key: "mem0",
@@ -131,7 +132,9 @@ test("files preserve nested Unicode paths, ETags, history bodies and nullable re
         );
   });
   try {
-    const memory = client.workspaces.ref("ws_one").memories.ref("mem_one");
+    const memory = client.resources.workspaces
+      .ref("ws_one")
+      .memories.ref("mem_one");
     const result = await memory.files.ref(path).get();
     assert.equal(result.data.content, "text");
     assert.equal(result.response.headers.get("ETag"), '"file:3"');
@@ -185,7 +188,7 @@ test("record search stays in the body; record and mount handles do not invent GE
         });
   });
   try {
-    const workspace = client.workspaces.ref("ws_one");
+    const workspace = client.resources.workspaces.ref("ws_one");
     const records = workspace.memories.ref("mem_one").records;
     const found = await records.search({ query: "private query", limit: 3 });
     assert.equal(found.data.items[0].score, null);
@@ -228,9 +231,9 @@ test("memory collection pages snapshot repeated labels and preserve opaque recor
     });
   });
   try {
-    const memories = client.workspaces.ref("ws_one").memories;
+    const memories = client.resources.workspaces.ref("ws_one").memories;
     const filters = { label: ["team:a", "scope:b"], kind: "file" };
-    const pages = memories.pages(filters);
+    const pages = memories.pages({ query: filters });
     filters.label.push("later");
     assert.equal(urls.length, 0);
     for await (const page of pages) assert.deepEqual(page.data.items, []);
@@ -268,7 +271,7 @@ test("memory stale and unconfirmed writes preserve Service errors without replay
   });
   try {
     await assert.rejects(
-      client.workspaces
+      client.resources.workspaces
         .ref("ws_one")
         .memories.ref("mem_one")
         .records.create({ text: "one attempt" }),

@@ -200,7 +200,10 @@ test("Thread SSE cursor advances after consumption only for delta/boundary; gap 
       });
     },
   });
-  const stream = client.streamThread("ws_one", "th_one", { after: "1-0" });
+  const stream = client.resources.workspaces
+    .ref("ws_one")
+    .threads.ref("th_one")
+    .events({ after: "1-0" });
   assert.deepEqual((await stream.next()).value.frame.type, "delta");
   assert.deepEqual((await stream.next()).value, {
     cursor: null,
@@ -227,7 +230,10 @@ test("Thread SSE rejects invalid ID on signals and malformed payload without gue
         { headers: { "Content-Type": "text/event-stream" } },
       ),
   });
-  await assert.rejects(client.streamThread("ws", "th").next(), ProtocolError);
+  await assert.rejects(
+    client.resources.workspaces.ref("ws").threads.ref("th").events().next(),
+    ProtocolError,
+  );
   client.close();
 });
 

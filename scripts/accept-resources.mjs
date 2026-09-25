@@ -184,7 +184,7 @@ try {
   }
   assert.equal(
     (
-      await client.workspaces
+      await client.resources.workspaces
         .ref(workspaceId)
         .runs.ref(submitted.data.run.id)
         .wait({ timeoutMs: 60_000, pollIntervalMs: 100 })
@@ -196,7 +196,7 @@ try {
   );
   assert.ok(
     Array.isArray(
-      (await ws.runs.ref(submitted.data.run.id).items.list()).data.items,
+      (await ws.runs.ref(submitted.data.run.id).items.get()).data.items,
     ),
   );
   await thread.memories.ref("notes").delete(etag(await thread.get()));

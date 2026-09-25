@@ -1,36 +1,14 @@
 import { ProtocolError } from "../errors.js";
-import { RecoverableFetchError, type Transport } from "../transport.js";
+import type { Transport } from "../transport.js";
 
 export interface ResourceResult<T> {
   readonly data: T;
   readonly response: Response;
 }
 
-export interface RequestOptions {
-  signal?: AbortSignal;
-}
-
-export interface MutationOptions extends RequestOptions {
-  idempotencyKey: string;
-}
-
-export interface EtagOptions extends RequestOptions {
-  ifMatch: string;
-}
-
-export interface IdempotentEtagOptions extends MutationOptions, EtagOptions {}
-
-export interface PageFilters {
-  cursor?: string | null;
-  [key: string]: unknown;
-}
-
 interface JsonRequestOptions {
-  workspaceId?: string;
   query?: Readonly<Record<string, unknown>> | undefined;
   signal?: AbortSignal | undefined;
-  retryReads?: boolean;
-  classifyFetchFailures?: boolean;
 }
 
 function requestSignal(signal: AbortSignal | undefined): AbortSignal {
@@ -79,24 +57,12 @@ export async function jsonRequest<T>(
     signal: requestSignal(options.signal),
   };
   if (hasBody) init.body = JSON.stringify(body);
-  const fetcher = options.classifyFetchFailures
-    ? transport.fetchOnceForRecovery
-    : options.retryReads === false
-      ? transport.fetchOnce
-      : transport.fetch;
-  const response = await fetcher(
+  const response = await transport.fetch(
     new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
   );
   if (response.status === 204 || response.status === 205)
     return { data: undefined as T, response };
-  let text: string;
-  try {
-    text = await response.text();
-  } catch (error) {
-    if (options.signal?.aborted) throw options.signal.reason;
-    if (options.classifyFetchFailures) throw new RecoverableFetchError(error);
-    throw error;
-  }
+  const text = await response.text();
   if (!text) return { data: undefined as T, response };
   try {
     return { data: JSON.parse(text) as T, response };
@@ -234,27 +200,6 @@ export async function binaryRequest(
   if (!response.body)
     throw new ProtocolError("The Service returned no binary response body.");
   return new ScopedBinaryResult(response, response.body);
-}
-
-export function textInput(text: string): {
-  content: [{ type: "text"; text: string }];
-} {
-  return { content: [{ type: "text", text }] };
-}
-
-export function normalizeInput<T>(input: string | T): T {
-  return (typeof input === "string" ? textInput(input) : input) as T;
-}
-
-export function rejectReservedFields(
-  body: Readonly<Record<string, unknown>> | undefined,
-  fields: readonly string[],
-): void {
-  if (!body) return;
-  for (const field of fields) {
-    if (Object.prototype.hasOwnProperty.call(body, field))
-      throw new TypeError(`The convenience method binds ${field} locally.`);
-  }
 }
 
 export interface PageLike<T> {

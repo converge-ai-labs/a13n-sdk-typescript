@@ -33,7 +33,7 @@ try {
   );
   for (const name of [
     "accept-service.mjs",
-    "accept-managed.mjs",
+    "accept-interaction.mjs",
     "accept-memory.mjs",
     "accept-resources.mjs",
   ]) {

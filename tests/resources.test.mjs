@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createClient } from "../dist/index.js";
+import { createClient, textPayload } from "../dist/index.js";
 
 const baseUrl = "https://service.example.test";
 const json = (body, status = 200) => Response.json(body, { status });
@@ -24,10 +24,12 @@ test("bound resource handles are local; create, replay and queued receipts retai
       return json(submitted, requests.length === 1 ? 201 : 200);
     },
   });
-  const workspace = client.workspaces.ref("ws_one");
-  const agent = workspace.agents.ref("agent_one");
+  const workspace = client.resources.workspaces.ref("ws_one");
   assert.equal(requests.length, 0);
-  const first = await agent.start("Hello", { idempotencyKey: "create" });
+  const first = await workspace.threads.create(
+    { agent_id: "agent_one", payload: textPayload("Hello") },
+    { idempotencyKey: "create" },
+  );
   assert.equal(first.response.status, 201);
   assert.equal(first.data.run, null);
   assert.deepEqual(requests[0].body, {
@@ -37,10 +39,12 @@ test("bound resource handles are local; create, replay and queued receipts retai
   assert.equal(requests[0].headers.get("Idempotency-Key"), "create");
   assert.equal(requests[0].headers.get("X-A13N-Workspace-ID"), null);
   assert.equal(requests[0].url, `${baseUrl}/api/v1/workspaces/ws_one/threads`);
-  const replay = await workspace.threads.ref("th_one").submit("Next", {
-    idempotencyKey: "next",
-    body: { agent_id: "agent_one" },
-  });
+  const replay = await workspace.threads
+    .ref("th_one")
+    .inbox.create(
+      { agent_id: "agent_one", payload: textPayload("Next") },
+      { idempotencyKey: "next" },
+    );
   assert.equal(replay.response.status, 200);
   assert.equal(replay.data.entry.id, "entry_one");
   assert.deepEqual(requests[1].body, {
@@ -68,9 +72,9 @@ test("bound pagination advances once per page and handles can be closed with for
     },
   });
   const ids = [];
-  for await (const item of client.workspaces
+  for await (const item of client.resources.workspaces
     .ref("ws_one")
-    .threads.items({ limit: 1 }))
+    .threads.items({ query: { limit: 1 } }))
     ids.push(item.id);
   assert.deepEqual(ids, [1, 2]);
   assert.ok(urls[1].endsWith("?limit=1&cursor=next"));
@@ -96,7 +100,7 @@ test("Run wait polls the selected workspace and times out without mutation", asy
   });
   assert.equal(
     (
-      await client.workspaces
+      await client.resources.workspaces
         .ref("ws_one")
         .runs.ref("run_one")
         .wait({ timeoutMs: 1000, pollIntervalMs: 1 })
@@ -104,7 +108,10 @@ test("Run wait polls the selected workspace and times out without mutation", asy
     "completed",
   );
   await assert.rejects(
-    client.workspaces.ref("ws_one").runs.ref("run_one").wait({ timeoutMs: -1 }),
+    client.resources.workspaces
+      .ref("ws_one")
+      .runs.ref("run_one")
+      .wait({ timeoutMs: -1 }),
     RangeError,
   );
   client.close();

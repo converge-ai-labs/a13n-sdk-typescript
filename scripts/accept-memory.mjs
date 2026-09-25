@@ -23,8 +23,10 @@ const etag = (result) => {
   return { ifMatch };
 };
 try {
-  const workspace = client.workspaces.ref(process.env.A13N_WORKSPACE);
-  const organization = client.organizations.ref(process.env.A13N_ORGANIZATION);
+  const workspace = client.resources.workspaces.ref(process.env.A13N_WORKSPACE);
+  const organization = client.resources.organizations.ref(
+    process.env.A13N_ORGANIZATION,
+  );
   const provider = organization.memoryProviders.ref(
     process.env.A13N_MEMORY_PROVIDER,
   );
@@ -61,7 +63,9 @@ try {
     (error) => error instanceof ApiError && error.status === 412,
   );
   const revisions = [];
-  for await (const item of memory.revisions.items({ path, limit: 1 }))
+  for await (const item of memory.revisions.items({
+    query: { path, limit: 1 },
+  }))
     revisions.push(item);
   const original = revisions.find((item) => item.op === "create").seq;
   assert.equal(
@@ -75,7 +79,7 @@ try {
   );
   assert.equal(moved.data.path, movedPath);
   const paths = [];
-  for await (const item of memory.files.items({ limit: 1 }))
+  for await (const item of memory.files.items({ query: { limit: 1 } }))
     paths.push(item.path);
   assert.deepEqual(paths, [movedPath]);
   await memory.files.ref(movedPath).delete(etag(moved));
@@ -138,13 +142,16 @@ try {
     ),
   );
   const records = [];
-  for await (const item of recordMemory.records.items({ limit: 1 }))
+  for await (const item of recordMemory.records.items({ query: { limit: 1 } }))
     records.push(item.id);
   assert.ok(records.includes(record.data.id));
   await recordMemory.records.ref(record.data.id).delete();
   assert.equal((await recordMemory.records.list()).data.items.length, 0);
   await recordMemory.delete(etag(await recordMemory.get()));
-  assert.ok((await memory.revisions.purge(movedPath)).data.purged > 0);
+  assert.ok(
+    (await memory.revisions.delete({ query: { path: movedPath } })).data
+      .purged > 0,
+  );
   await memory.delete(etag(await memory.get()));
   console.log(
     JSON.stringify({

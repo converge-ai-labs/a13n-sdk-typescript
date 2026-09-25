@@ -17,10 +17,10 @@ test("workspace resources and organization providers dispatch to distinct actual
       );
     },
   });
-  const workspace = client.workspaces.ref("ws_one");
-  const organization = client.organizations.ref("org_one");
+  const workspace = client.resources.workspaces.ref("ws_one");
+  const organization = client.resources.organizations.ref("org_one");
   assert.equal(requests.length, 0);
-  await workspace.skills.list({ limit: 5 });
+  await workspace.skills.list({ query: { limit: 5 } });
   await workspace.skills.ref("skill_one").get();
   await workspace.connections.list();
   await organization.modelProviders.list();
@@ -52,7 +52,7 @@ test("management updates propagate conditional version and preserve response met
       return Response.json({ id: "model_one" }, { headers: { ETag: '"v2"' } });
     },
   });
-  const result = await client.organizations
+  const result = await client.resources.organizations
     .ref("org_one")
     .models.ref("model_one")
     .update({ name: "updated" }, { ifMatch: '"v1"' });
