@@ -1,6 +1,6 @@
 # TypeScript SDK Contract
 
-This repository owns `@converge.ai/a13n`: typed HTTP and selected resource conveniences over Service `/api/v1`, transport, Thread SSE, tests, and independent npm lifecycle. Service owns identities, authorization, durable state, receipt semantics, and streaming protocol. Generated types and adapters derive from the pinned Service revision in `contract/`; generation is offline. The Console client is not an implementation dependency.
+This repository owns `@converge.ai/a13n`: complete generated resource bindings and typed HTTP, plus interaction conveniences over Service `/api/v1`, transport, Thread SSE, tests, and independent npm lifecycle. Service owns identities, authorization, durable state, receipt semantics, and streaming protocol. Generated types and adapters derive from the pinned Service revision in `contract/`; generation is offline. The Console client is not an implementation dependency.
 
 | Contract                                                       | Responsibility                                       |
 | -------------------------------------------------------------- | ---------------------------------------------------- |

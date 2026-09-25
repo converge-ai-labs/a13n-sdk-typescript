@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import openapiTS, { astToString } from "openapi-typescript";
 import ts from "typescript";
 import prettier from "prettier";
+import { generateResources } from "./resources.mjs";
 
 /** Generate only from this repository's pinned input; never execute Service. */
 export async function generate({ root = new URL("./", import.meta.url) } = {}) {
@@ -24,7 +25,13 @@ export async function generate({ root = new URL("./", import.meta.url) } = {}) {
   const snapshot = await prettier.format(await fs.readFile(source, "utf8"), {
     parser: "json",
   });
+  const resources = generateResources(JSON.parse(snapshot));
+  await fs.mkdir(new URL("src/resources/", root), { recursive: true });
   const outputs = [
+    [
+      new URL("src/resources/generated.ts", root),
+      await prettier.format(resources.source, { parser: "typescript" }),
+    ],
     [new URL("src/schema.ts", root), content],
     [new URL("openapi.json", root), snapshot],
   ];

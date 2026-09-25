@@ -1,5 +1,6 @@
 export { createClient } from "./client.js";
 export type { Client } from "./client.js";
+export { ServiceResources } from "./resources/generated.js";
 export type { ClientOptions, Authentication } from "./transport.js";
 export {
   ApiError,

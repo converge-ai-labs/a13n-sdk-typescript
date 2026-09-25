@@ -28,6 +28,12 @@ test("changed HTTP contract regenerates types and published snapshot", async () 
     await writeFile(source, JSON.stringify(document));
     await generate({ root });
     const before = await readFile(new URL("src/schema.ts", root), "utf8");
+    const beforeResources = await readFile(
+      new URL("src/resources/generated.ts", root),
+      "utf8",
+    );
+    assert.match(beforeResources, /get autogenProbe\(\)/);
+    assert.match(beforeResources, /GET \/api\/v1\/autogen-probe/);
     document.paths["/api/v1/autogen-probe"].get.parameters = [
       { name: "autogen_probe_value", in: "query", schema: { type: "string" } },
     ];
@@ -38,6 +44,12 @@ test("changed HTTP contract regenerates types and published snapshot", async () 
     assert.notEqual(before, after);
     assert.ok(!before.includes("autogen_probe_value"));
     assert.ok(after.includes("autogen_probe_value"));
+    const afterResources = await readFile(
+      new URL("src/resources/generated.ts", root),
+      "utf8",
+    );
+    assert.notEqual(beforeResources, afterResources);
+    assert.match(afterResources, /options.query/);
     assert.equal(await readFile(source, "utf8"), input);
     assert.deepEqual(
       JSON.parse(await readFile(new URL("openapi.json", root), "utf8")),

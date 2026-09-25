@@ -35,6 +35,7 @@ try {
     "accept-service.mjs",
     "accept-managed.mjs",
     "accept-memory.mjs",
+    "accept-resources.mjs",
   ]) {
     const acceptance = readFileSync(join(root, "scripts", name), "utf8");
     if (!acceptance.includes('from "../dist/index.js"'))

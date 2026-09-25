@@ -1,6 +1,6 @@
 # TypeScript SDK Overview
 
-The package exposes a complete generated `client.http` surface and `client.workspaceHttp(workspaceId)` for explicitly bound workspace routes. Selected managed resource handles add local `ref(id)` construction, pagination, submission and Run waits. They share one authenticated transport; no handle fetches until a method is called. The SDK does not authorize or execute agents itself.
+The package exposes a complete generated `client.resources` tree and `client.http` surface, with `client.workspaceHttp(workspaceId)` for explicitly bound raw workspace routes. Generated resources bind every pinned operation using local `ref(selector)` construction and typed methods. Existing `client.workspaces` and `client.organizations` conveniences retain source compatibility, string-input submission and Run waits; they do not define operation completeness. They share one authenticated transport; no handle fetches until a method is called. The SDK does not authorize or execute agents itself.
 
 ```mermaid
 flowchart LR

@@ -103,3 +103,57 @@ export async function acceptedServiceTypes() {
     { idempotencyKey: "invalid" },
   );
 }
+
+export async function fullResourceTypes() {
+  const resources = client.resources;
+  const ws = resources.workspaces.ref("ws");
+  const provider = resources.organizations
+    .ref("org")
+    .memoryProviders.ref("provider");
+  await provider.test();
+  await resources.providerTypes.ref("memory").list();
+  // @ts-expect-error Provider kinds are an enum, not arbitrary path strings.
+  resources.providerTypes.ref("unknown");
+  await ws.memories.list({ query: { label: ["a", "b"], limit: 20 } });
+  // @ts-expect-error Filters retain exact wire types.
+  await ws.memories.list({ query: { limit: "twenty" } });
+  // @ts-expect-error Filters are generated, not a catch-all map.
+  await ws.memories.list({ query: { nonexistent: true } });
+  const memory = ws.memories.ref("memory");
+  const revision = memory.revisions.ref(1);
+  // @ts-expect-error Revision sequence selectors are numeric.
+  memory.revisions.ref("1");
+  const restored: ResourceResult<Schema["MemoryFileState"]> =
+    await revision.restore();
+  if (restored.data.file !== null) void restored.data.file.content;
+  // @ts-expect-error Records have no item read endpoint.
+  memory.records.ref("record").get();
+  // @ts-expect-error Organizations cannot be created through this collection.
+  resources.organizations.create({});
+  // @ts-expect-error Required idempotency headers remain required.
+  await ws.threads.create({ agent_id: "agent", payload: message });
+  const submitted: ResourceResult<Schema["Submitted"]> =
+    await ws.threads.create(
+      { agent_id: "agent", payload: message },
+      { idempotencyKey: "key" },
+    );
+  if (submitted.data.run !== null) void submitted.data.run.id;
+  await ws.icon.replace(new Blob(["png"]), {
+    contentType: "image/png",
+    ifMatch: '"v1"',
+  });
+  // @ts-expect-error Image uploads require an explicit supported media type.
+  await ws.icon.replace(new Blob(["png"]));
+  // @ts-expect-error Image bytes must not silently become JSON.
+  await ws.icon.replace("png", { contentType: "image/png" });
+  await ws.uploads.create(
+    { file: new Blob(["data"]) },
+    { idempotencyKey: "upload" },
+  );
+  const content = await ws.assets.ref("asset").content.get();
+  await content.close();
+  await ws.threads.ref("thread").stream.get({ lastEventId: "1-0" });
+  // @ts-expect-error Non-cursor collections do not invent pagination.
+  ws.threads.ref("thread").memories.pages();
+  await resources.healthz.get();
+}
