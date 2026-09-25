@@ -8,12 +8,14 @@ import {
 } from "./streams/thread-stream.js";
 import { Workspaces } from "./resources/interaction.js";
 import { Organizations } from "./resources/management.js";
+import { ServiceResources } from "./resources/generated.js";
 
 /** Typed OpenAPI operations and workspace/organization-bound resource conveniences. */
 export function createClient(options: ClientOptions) {
   const transport = new Transport(options);
   return {
     http: createFetchClient<paths>(transport.httpOptions()),
+    resources: new ServiceResources(transport),
     workspaces: new Workspaces(transport),
     organizations: new Organizations(transport),
     workspaceHttp: (workspaceId: string) =>

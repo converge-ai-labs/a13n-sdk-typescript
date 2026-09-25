@@ -27,7 +27,7 @@ export interface PageFilters {
 
 interface JsonRequestOptions {
   workspaceId?: string;
-  query?: Readonly<Record<string, unknown>>;
+  query?: Readonly<Record<string, unknown>> | undefined;
   signal?: AbortSignal | undefined;
   retryReads?: boolean;
   classifyFetchFailures?: boolean;
@@ -175,14 +175,15 @@ export async function uploadRequest<T>(
   transport: Transport,
   method: string,
   path: string,
-  body: Blob | ReadableStream<Uint8Array>,
-  contentType: string,
+  body: Blob | ReadableStream<Uint8Array> | FormData,
+  contentType: string | undefined,
   headers: HeadersInit | undefined,
   options: JsonRequestOptions = {},
 ): Promise<ResourceResult<T>> {
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
-  requestHeaders.set("Content-Type", contentType);
+  if (contentType !== undefined)
+    requestHeaders.set("Content-Type", contentType);
   const init: RequestInit & { duplex?: "half" } = {
     method,
     headers: requestHeaders,
@@ -202,14 +203,30 @@ export async function uploadRequest<T>(
   }
 }
 
+export function multipartBody(body: Record<string, unknown>): FormData {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(body)) {
+    if (value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      if (item instanceof Blob) form.append(name, item);
+      else form.append(name, item === null ? "" : String(item));
+    }
+  }
+  return form;
+}
+
 export async function binaryRequest(
   transport: Transport,
   path: string,
-  options: JsonRequestOptions = {},
+  options: JsonRequestOptions & {
+    headers?: HeadersInit | undefined;
+    accept?: string;
+  } = {},
 ): Promise<BinaryResult> {
-  const headers = new Headers();
+  const headers = new Headers(options.headers);
+  if (options.accept !== undefined) headers.set("Accept", options.accept);
   const response = await transport.fetch(
-    new Request(`${transport.baseUrl}${path}`, {
+    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, {
       headers,
       signal: requestSignal(options.signal),
     }),
