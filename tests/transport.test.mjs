@@ -49,7 +49,10 @@ test("session mutations use X-CSRF-Token; public flows need no CSRF; shutdown ab
     params: { path: { invitation_id: "inv_test" } },
     body: { token: "proof" },
   });
-  assert.equal(requests.length, 4);
+  await client.http.POST("/api/v1/auth/bootstrap", {
+    body: { email: "owner@example.test", password: "test-only" },
+  });
+  assert.equal(requests.length, 5);
   for (const request of requests.slice(1))
     assert.equal(request.headers.get("X-CSRF-Token"), null);
   client.close();
@@ -225,5 +228,33 @@ test("Thread SSE rejects invalid ID on signals and malformed payload without gue
       ),
   });
   await assert.rejects(client.streamThread("ws", "th").next(), ProtocolError);
+  client.close();
+});
+
+test("typed health probes stay within the configured origin and exact prefix", async () => {
+  const requests = [];
+  const client = createClient({
+    baseUrl: `${baseUrl}/prefix`,
+    auth: { type: "session" },
+    fetch: async (request) => {
+      requests.push(request);
+      return json({ status: "ok" });
+    },
+  });
+  await client.http.GET("/healthz");
+  await client.http.GET("/readyz");
+  assert.deepEqual(
+    requests.map((request) => request.url),
+    [`${baseUrl}/prefix/healthz`, `${baseUrl}/prefix/readyz`],
+  );
+  for (const [path, options] of [
+    ["/healthz/extra", {}],
+    ["/metrics", {}],
+    ["/healthz", { baseUrl: "https://elsewhere.example/prefix" }],
+    ["/healthz", { baseUrl }],
+  ])
+    await assert.rejects(client.http.GET(path, options), /configured Service/);
+  await assert.rejects(client.http.POST("/healthz"), /configured Service/);
+  assert.equal(requests.length, 2);
   client.close();
 });

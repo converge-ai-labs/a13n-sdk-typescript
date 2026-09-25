@@ -19,6 +19,7 @@ import {
   withCursor,
 } from "./base.js";
 import { workspaceManagement, type WorkspaceManagement } from "./management.js";
+import { Memories, ThreadMemories } from "./memories.js";
 
 type S = components["schemas"];
 type Filters = Record<string, string | number | boolean | null | undefined> & {
@@ -101,6 +102,7 @@ export class Workspace implements WorkspaceManagement {
   readonly threads: Threads;
   readonly runs: Runs;
   readonly sessions: Sessions;
+  readonly memories: Memories;
   readonly assets: WorkspaceManagement["assets"];
   readonly connections: WorkspaceManagement["connections"];
   readonly environments: WorkspaceManagement["environments"];
@@ -116,6 +118,7 @@ export class Workspace implements WorkspaceManagement {
     this.threads = new Threads(transport, id);
     this.runs = new Runs(transport, id);
     this.sessions = new Sessions(transport, id);
+    this.memories = new Memories(transport, workspacePath(id, "memories"));
     const management = workspaceManagement(transport, id);
     this.assets = management.assets;
     this.connections = management.connections;
@@ -395,6 +398,7 @@ export class Threads {
 export class Thread {
   readonly inbox: Inbox;
   readonly runs: ThreadRuns;
+  readonly memories: ThreadMemories;
   constructor(
     private readonly transport: Transport,
     readonly workspaceId: string,
@@ -402,6 +406,10 @@ export class Thread {
   ) {
     this.inbox = new Inbox(transport, workspaceId, id);
     this.runs = new ThreadRuns(transport, workspaceId, id);
+    this.memories = new ThreadMemories(
+      transport,
+      workspacePath(workspaceId, "threads", id, "memories"),
+    );
   }
   get(options?: RequestOptions): Promise<ResourceResult<S["ThreadView"]>> {
     return jsonRequest(
