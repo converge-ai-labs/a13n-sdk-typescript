@@ -1,213 +1,228 @@
-import type { components } from "../src/schema.js";
+import {
+  createClient,
+  type Client,
+  type components,
+  type ResourceResult,
+  textPayload,
+} from "../src/index.js";
 
 type Schema = components["schemas"];
+const client: Client = createClient({
+  baseUrl: "https://service.example.test",
+  auth: { type: "bearer", token: "test" },
+});
+const workspace = client.resources.workspaces.ref("ws_example");
+const organization = client.resources.organizations.ref("org_example");
+const message: Schema["MessagePayload"] = {
+  content: [{ type: "text", text: "hello" }],
+};
+// @ts-expect-error Message content cannot be a plain string.
+const invalidMessage: Schema["MessagePayload"] = { content: "hello" };
+void invalidMessage;
 
-// Wire defaults remain omittable, including nested request defaults.
-export const ordinaryInput: Schema["AgentInput"] = { schema_version: "2" };
-export const agentConfig: Schema["AgentConfig-Input"] = {
-  model: { model_key: "example" },
-  input_adapter: { adapter_key: "native" },
-  protocol: { public_name: "Example" },
-};
-export const runSubmission: Schema["ThreadRunSubmissionRequest"] = {
-  expected_thread_version: 1,
-  input: ordinaryInput,
-};
-
-export const searchSelection: Schema["ToolSelection"] = {
-  config: { provider_id: "wprov_test" },
-};
-export const searchOverrides: Schema["AgentRunOverride-Input"][] = [
-  {},
-  { toolsets: null },
-  { toolsets: { web: { tools: { search: searchSelection } } } },
-];
-export const searchableAgent: Schema["AgentConfig-Input"] = {
-  ...agentConfig,
-  toolsets: { web: { tools: { search: searchSelection } } },
-};
-export const searchProviderRequest: Schema["CreateWebProviderRequest"] = {
-  type: "brave",
-  name: "Research",
-  credential: { api_key: "test-secret" },
-};
-// @ts-expect-error Credentials are not a readable resource field.
-export type ReadableSearchCredential = Schema["WebProvider"]["credential"];
-import type { Client } from "../src/client.js";
-
-export async function scopedHttpContract(client: Client) {
-  const http = await client.workspaceHttp();
-  await http.GET("/agents");
-  await http.GET("/web-providers");
-  await http.POST("/web-providers/{provider_id}/test", {
-    params: { path: { provider_id: "wprov_test" } },
-  });
-  await http.GET("/agents/{agent}", {
-    params: { path: { agent: "reviewer" } },
-  });
-  await http.PATCH("/agents/{agent}", {
-    params: { path: { agent: "reviewer" }, header: { "If-Match": '"v1"' } },
-    body: { key: "assistant" },
-  });
-  // @ts-expect-error Workspace is supplied by the credential, never by this caller.
-  await http.GET("/agents", { params: { path: { workspace: "other" } } });
-}
-
-export const actor: Schema["ActorRef"] = {
-  principal_id: "system",
-  principal_type: "system",
-};
-export const environment: Schema["EnvironmentSelection"] = {
-  template_id: "etpl_example",
-  version: null,
-};
-export const patchStates: Schema["UpdateAgentRequest"][] = [
-  {},
-  { name: null },
-  { name: "new" },
-];
-// @ts-expect-error Structured patch fields cannot degrade to arbitrary JSON.
-export const invalidPatch: Schema["UpdateAgentRequest"] = { name: 42 };
-// @ts-expect-error Message content is a typed string-or-multimodal union.
-export const invalidMessage: Schema["UserMessage"] = { id: "m1", content: 42 };
-
-export async function resourceTypeContract(client: Client) {
-  const workspace = client.workspaces.ref("ws_example");
-  const agent = workspace.agents.ref("reviewer");
-  const accepted = await agent.start("hello", {
-    idempotencyKey: "start",
-    body: { environment: null },
-  });
-  accepted.run.stream({ after: "1-0", maxReconnects: 5 });
-  await accepted.run.cancel(
-    { expected_run_version: 1, expected_thread_version: 2 },
-    { idempotencyKey: "cancel" },
+export async function memoryTypes() {
+  const memory = workspace.memories.ref("mem_one");
+  await workspace.memories.list({ query: { label: ["team:a", "scope:b"] } });
+  const file: ResourceResult<Schema["MemoryFile"]> = await memory.files
+    .ref("folder/note.md")
+    .get();
+  await memory.files
+    .ref("folder/note.md")
+    .replace(
+      { content: "new" },
+      { ifMatch: file.response.headers.get("ETag")! },
+    );
+  // @ts-expect-error File mutations require their ETag.
+  await memory.files.ref("note.md").replace({ content: "new" });
+  // @ts-expect-error Memory metadata mutations require the memory ETag.
+  await memory.update({ guide: null });
+  const restored: ResourceResult<Schema["MemoryFileState"]> =
+    await memory.revisions.ref(1).restore();
+  if (restored.data.file !== null) void restored.data.file.content;
+  await memory.records.ref("r1").replace({ text: "record" });
+  await memory.records.ref("r1").replace(
+    { text: "record" },
+    // @ts-expect-error Records have no ETags.
+    { ifMatch: "etag" },
   );
-  const submission = await accepted.thread.submit(ordinaryInput, {
-    idempotencyKey: "submit",
-    body: { expected_thread_version: 2 },
+  // @ts-expect-error Records have no individual GET endpoint.
+  await memory.records.ref("r1").get();
+  // @ts-expect-error Revisions cannot be created directly.
+  await memory.revisions.create({});
+  const mounts = workspace.threads.ref("thr_one").memories;
+  // @ts-expect-error Mount changes require the Thread ETag.
+  await mounts.create({ name: "notes", memory_id: "mem_one", access: "read" });
+  await mounts.ref("notes").update({ recall: false }, { ifMatch: '"thr:2"' });
+  await organization.memoryProviders.ref("prv_one").test();
+  await client.http.POST("/api/v1/auth/bootstrap", {
+    body: { email: "owner@example.test", password: "test-only" },
   });
-  if (submission.outcome === "queued") {
-    void submission.queuedSubmission;
-    // @ts-expect-error A queued disposition has no Run reference.
-    void submission.run;
-  } else {
-    void submission.run;
-    // @ts-expect-error An accepted disposition has no queued entry reference.
-    void submission.queuedSubmission;
-  }
-  await agent.start("bad", {
-    idempotencyKey: "bad",
-    // @ts-expect-error agent_id is bound by the Agent reference.
-    body: { agent_id: "agent_other" },
-  });
-  await accepted.thread.submit("bad", {
-    idempotencyKey: "bad",
-    // @ts-expect-error input is bound by the convenience argument.
-    body: { expected_thread_version: 2, input: ordinaryInput },
-  });
-  await accepted.thread.submit("bad", {
-    idempotencyKey: "bad",
-    // @ts-expect-error expected_thread_version remains required.
-    body: {},
-  });
-  // @ts-expect-error timeoutMs is a required bounded-wait argument.
-  await accepted.run.wait({});
-  // @ts-expect-error TypeScript exact optional fields do not accept explicit undefined.
-  accepted.run.stream({ after: undefined });
 }
 
-export async function managementTypeContract(
-  client: Client,
-  modelBody: Schema["CreateModelRequest"],
-  modelPatch: Schema["UpdateModelRequest"],
-  revisionBody: Schema["CreateAgentRevisionRequest"],
-  defaultRevisionBody: Schema["SetDefaultAgentRevisionRequest"],
-  memoryWrite: Schema["MemoryWrite"],
-  connectionCommand: Schema["ConnectionCommandRequest"],
-  environmentPatch: Schema["UpdateEnvironmentRequest"],
-) {
-  const workspace = client.workspaces.ref("ws_example");
-  const organization = client.organizations.ref("org_example");
-  await workspace.models.create(modelBody);
-  await organization.models.create(modelBody);
-  await workspace.models.ref("model_example").update(modelPatch, {
-    ifMatch: '"model-v1"',
+export async function acceptedServiceTypes() {
+  const submitted = await workspace.threads.create(
+    { agent_id: "agent_example", payload: message },
+    { idempotencyKey: "start" },
+  );
+  const thread = workspace.threads.ref(submitted.data.thread.id);
+  const receipt: ResourceResult<Schema["Submitted"]> =
+    await thread.inbox.create(
+      { agent_id: "agent_example", payload: textPayload("Next") },
+      { idempotencyKey: "submit" },
+    );
+  if (receipt.data.run !== null)
+    await workspace.runs.ref(receipt.data.run.id).wait({ timeoutMs: 1000 });
+  for await (const event of thread.events()) {
+    if (event.cursor) void event.frame;
+    break;
+  }
+  await thread.inbox.list({ query: { status: ["pending"] } });
+  await workspace.agents.ref("agent_example").revisions.list();
+  await workspace.assets.list({ query: { limit: 10 } });
+  await organization.models.list({ query: { limit: 10 } });
+  const createdSubscription = await workspace.subscriptions.create({
+    name: "alerts",
+    url: "https://example.test/hook",
+    kinds: ["run.completed"],
   });
-  workspace.models.pages({ limit: 10, cursor: null });
-  workspace.models.iterate({ query: "example" });
-  await workspace.models.ref("model_example").test();
-  await workspace.models.ref("model_example").test({});
-  await organization.models.ref("model_example").test(null);
+  const signingSecret: string = createdSubscription.data.signing_secret;
+  void signingSecret;
+  await workspace.environments.create({ template_id: "template_example" });
+  // @ts-expect-error Environment creation must match a managed or external target request.
+  await workspace.environments.create({ arbitrary: true });
+  // @ts-expect-error Assets have no PATCH operation.
+  await workspace.assets.ref("asset_example").update({}, { ifMatch: '"v1"' });
+  // @ts-expect-error Organizations have no collection POST operation.
+  await client.resources.organizations.create({ name: "not-supported" });
+  await workspace.threads.list();
+  // @ts-expect-error The obsolete second resource graph is not exported.
+  void client.workspaces;
+  // @ts-expect-error There is no competing scoped raw HTTP client.
+  void client.workspaceHttp;
+  await workspace.threads.list({
+    // @ts-expect-error Workspace ID is bound locally, not supplied as a URL path parameter.
+    params: { path: { workspace_id: "other" } },
+  });
+  await workspace.threads.create(
+    // @ts-expect-error A new Thread requires the agent identity.
+    { payload: message },
+    { idempotencyKey: "invalid" },
+  );
+}
 
-  const environment = workspace.environments.ref("env_example");
-  const environmentDetail = await environment.get();
-  void environmentDetail.data.supports_stop;
-  const updatedEnvironment = await environment.update(environmentPatch, {
-    ifMatch: '"environment-v1"',
+export async function fullResourceTypes() {
+  const resources = client.resources;
+  const ws = resources.workspaces.ref("ws");
+  const provider = resources.organizations
+    .ref("org")
+    .memoryProviders.ref("provider");
+  await provider.test();
+  await resources.providerTypes.ref("memory").list();
+  // @ts-expect-error Provider kinds are an enum, not arbitrary path strings.
+  resources.providerTypes.ref("unknown");
+  await ws.memories.list({ query: { label: ["a", "b"], limit: 20 } });
+  // @ts-expect-error Filters retain exact wire types.
+  await ws.memories.list({ query: { limit: "twenty" } });
+  // @ts-expect-error Filters are generated, not a catch-all map.
+  await ws.memories.list({ query: { nonexistent: true } });
+  const memory = ws.memories.ref("memory");
+  const revision = memory.revisions.ref(1);
+  // @ts-expect-error Revision sequence selectors are numeric.
+  memory.revisions.ref("1");
+  const restored: ResourceResult<Schema["MemoryFileState"]> =
+    await revision.restore();
+  if (restored.data.file !== null) void restored.data.file.content;
+  // @ts-expect-error Records have no item read endpoint.
+  memory.records.ref("record").get();
+  // @ts-expect-error Organizations cannot be created through this collection.
+  resources.organizations.create({});
+  // @ts-expect-error Required idempotency headers remain required.
+  await ws.threads.create({ agent_id: "agent", payload: message });
+  const submitted: ResourceResult<Schema["Submitted"]> =
+    await ws.threads.create(
+      { agent_id: "agent", payload: message },
+      { idempotencyKey: "key" },
+    );
+  if (submitted.data.run !== null) void submitted.data.run.id;
+  await ws.icon.replace(new Blob(["png"]), {
+    contentType: "image/png",
+    ifMatch: '"v1"',
   });
-  // @ts-expect-error Mutation responses are base Environment projections.
-  void updatedEnvironment.data.supports_stop;
+  // @ts-expect-error Image uploads require an explicit supported media type.
+  await ws.icon.replace(new Blob(["png"]));
+  // @ts-expect-error Image bytes must not silently become JSON.
+  await ws.icon.replace("png", { contentType: "image/png", ifMatch: '"v1"' });
+  await ws.uploads.create(
+    { file: new Blob(["data"]) },
+    { idempotencyKey: "upload" },
+  );
+  const content = await ws.assets.ref("asset").content.get();
+  await content.close();
+  await ws.threads.ref("thread").stream.get({ lastEventId: "1-0" });
+  // @ts-expect-error Non-cursor collections do not invent pagination.
+  ws.threads.ref("thread").memories.pages();
+  await resources.healthz.get();
+}
 
-  const workspacePermissions = await workspace.permissions.list();
-  void workspacePermissions.data.actions;
-  const organizationPermissions = await organization.permissions.list();
-  void organizationPermissions.data.organization_admin;
-  // @ts-expect-error Organization permissions do not contain Workspace actions.
-  void organizationPermissions.data.actions;
-
-  await workspace.invitations.create({
-    email: "workspace@example.com",
-    role: "admin",
-  });
-  await organization.invitations.create({
-    email: "organization@example.com",
-    grants: [],
-  });
-  await workspace.invitations.create({
-    email: "wrong@example.com",
-    // @ts-expect-error Workspace invitations require a Workspace role.
-    grants: [],
-  });
-  await organization.invitations.create({
-    email: "wrong@example.com",
-    // @ts-expect-error Organization invitations require Organization grants.
-    role: "admin",
-  });
-
-  const agent = workspace.agents.ref("reviewer");
-  await agent.revisions.create(revisionBody, {
-    idempotencyKey: "revision",
-    ifMatch: '"agent-v1"',
-  });
-  await agent.revisions.setDefault("rev_example", defaultRevisionBody, {
-    idempotencyKey: "default-revision",
-    ifMatch: '"agent-v2"',
-  });
-
-  const memories = workspace.memoryProviders.ref("mem_example").memories;
-  await memories?.add(memoryWrite, {
-    scope: "agent",
-    subject_id: "agent_example",
-  });
-  memories?.pages({ scope: "agent", subject_id: "agent_example" });
-  // @ts-expect-error Memory scope is explicit and required.
-  memories?.list();
-
-  await workspace.connections.ref("conn_example").enable(connectionCommand, {
-    idempotencyKey: "enable",
-  });
-  await workspace.assets.ref("asset_example").delete();
-  // @ts-expect-error Asset bytes are immutable; replacement is not exported.
-  workspace.assets.ref("asset_example").replace(new Blob());
-  // @ts-expect-error Actual Environments are Workspace-owned, not Organization-owned.
-  void organization.environments;
-  // @ts-expect-error No direct EIP resource client is exported.
-  void workspace.environmentInstances;
-  // @ts-expect-error Model updates require an If-Match precondition.
-  await workspace.models.ref("model_example").update(modelPatch);
-  // @ts-expect-error Connection commands require an explicit command body.
-  await workspace.connections.ref("conn_example").enable({
-    idempotencyKey: "enable",
-  });
+export async function semanticTypes() {
+  const agent = workspace.agents.ref("agent");
+  const thread = workspace.threads.ref("thread");
+  const match = { ifMatch: '"v1"' };
+  await agent.archive(match);
+  await agent.revisions.create(
+    { config: { model: { model_id: "model" } } },
+    match,
+  );
+  await thread.archive(match);
+  await thread.inbox.order.replace({ entry_ids: [] }, match);
+  // @ts-expect-error Conditional actions require If-Match even when OpenAPI marks it optional.
+  await agent.archive();
+  // @ts-expect-error Required preconditions cannot be explicitly undefined.
+  await agent.archive({ ifMatch: undefined });
+  // @ts-expect-error Required preconditions cannot be null.
+  await agent.archive({ ifMatch: null });
+  // @ts-expect-error Revision creation is conditional on the head ETag.
+  await agent.revisions.create({ config: { model: { model_id: "model" } } });
+  // @ts-expect-error Thread archive is conditional.
+  await thread.archive({});
+  // @ts-expect-error Inbox order edits use the Thread ETag.
+  await thread.inbox.order.replace({ entry_ids: [] });
+  // @ts-expect-error Image updates also require the resource ETag.
+  await workspace.icon.replace(new Blob(), { contentType: "image/png" });
+  await workspace.memories.ref("memory").revisions.ref(1).restore();
+  await workspace.memories.ref("memory").revisions.ref(1).restore(match);
+  const run = workspace.runs.ref("run");
+  const items: ResourceResult<Schema["RunItems"]> = await run.items.get();
+  void items.data.position;
+  // @ts-expect-error RunItems is a snapshot, not a list or invented paginator.
+  run.items.list();
+  // @ts-expect-error RunItems does not paginate by a cursor.
+  run.items.pages();
+  const submitted = await workspace.threads.create(
+    {
+      agent_id: "agent",
+      payload: textPayload("Hello"),
+      memories: [{ name: "notes", memory_id: "memory", access: "read" }],
+      environments: [],
+      mcp_headers: {},
+      session_id: null,
+      options: { overrides: null },
+    },
+    { idempotencyKey: "full-body" },
+  );
+  if (submitted.data.run)
+    await workspace.runs.ref(submitted.data.run.id).wait({ timeoutMs: 1000 });
+  for await (const event of thread.events()) {
+    if (event.frame.type === "delta") {
+      void event.frame.data.event;
+      // @ts-expect-error Delta is not a changed signal.
+      void event.frame.data.version;
+    }
+    if (event.cursor !== null) {
+      const cursor: string = event.cursor;
+      void cursor;
+      void event.frame.data.sequence;
+    }
+    break;
+  }
 }

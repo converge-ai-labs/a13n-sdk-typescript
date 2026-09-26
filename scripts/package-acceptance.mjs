@@ -53,10 +53,12 @@ assert.equal(typeof createClient, "function");
 assert.equal(typeof ApiError, "function");
 const client = createClient({
   baseUrl: "https://service.example.test",
-  auth: { type: "public" },
+  auth: { type: "bearer", token: "test-token" },
 });
-assert.equal(client.workspaces.ref("ws_example").id, "ws_example");
-assert.equal(client.organizations.ref("org_example").id, "org_example");
+assert.equal(typeof client.resources.workspaces.ref("ws_example").threads.create, "function");
+assert.equal(typeof client.resources.organizations.ref("org_example").get, "function");
+assert.equal(typeof client.resources.healthz.get, "function");
+assert.equal(typeof client.resources.workspaces.ref("ws_example").uploads.create, "function");
 client.close();
 `,
   );
@@ -77,11 +79,15 @@ const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
 });
-const workspace = client.workspaces.ref("ws_example");
-const organization = client.organizations.ref("org_example");
-void workspace.runs.ref("run_example").stream;
-void workspace.models.pages({ limit: 10 });
+const workspace = client.resources.workspaces.ref("ws_example");
+const organization = client.resources.organizations.ref("org_example");
+void workspace.runs.ref("run_example").get;
+void workspace.threads.pages({ query: { limit: 10 } });
 void organization.modelProviders;
+void client.resources.workspaces.ref("ws").memories.pages({ query: { label: ["a"] } });
+void client.resources.workspaces.ref("ws").assets.ref("asset").content.get;
+// @ts-expect-error Revision selectors retain their numeric contract in the published package.
+client.resources.workspaces.ref("ws").memories.ref("memory").revisions.ref("1");
 const result: ResourceResult<{ ok: true }> = {
   data: { ok: true },
   response: new Response(),

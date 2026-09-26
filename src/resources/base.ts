@@ -1,36 +1,14 @@
 import { ProtocolError } from "../errors.js";
-import { RecoverableFetchError, type Transport } from "../transport.js";
+import type { Transport } from "../transport.js";
 
 export interface ResourceResult<T> {
   readonly data: T;
   readonly response: Response;
 }
 
-export interface RequestOptions {
-  signal?: AbortSignal;
-}
-
-export interface MutationOptions extends RequestOptions {
-  idempotencyKey: string;
-}
-
-export interface EtagOptions extends RequestOptions {
-  ifMatch: string;
-}
-
-export interface IdempotentEtagOptions extends MutationOptions, EtagOptions {}
-
-export interface PageFilters {
-  cursor?: string | null;
-  [key: string]: unknown;
-}
-
 interface JsonRequestOptions {
-  workspaceId?: string;
-  query?: Readonly<Record<string, unknown>>;
+  query?: Readonly<Record<string, unknown>> | undefined;
   signal?: AbortSignal | undefined;
-  retryReads?: boolean;
-  classifyFetchFailures?: boolean;
 }
 
 function requestSignal(signal: AbortSignal | undefined): AbortSignal {
@@ -71,8 +49,6 @@ export async function jsonRequest<T>(
 ): Promise<ResourceResult<T>> {
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
-  if (options.workspaceId)
-    requestHeaders.set("X-A13N-Workspace-ID", options.workspaceId);
   const hasBody = body !== undefined;
   if (hasBody) requestHeaders.set("Content-Type", "application/json");
   const init: RequestInit = {
@@ -81,24 +57,12 @@ export async function jsonRequest<T>(
     signal: requestSignal(options.signal),
   };
   if (hasBody) init.body = JSON.stringify(body);
-  const fetcher = options.classifyFetchFailures
-    ? transport.fetchOnceForRecovery
-    : options.retryReads === false
-      ? transport.fetchOnce
-      : transport.fetch;
-  const response = await fetcher(
+  const response = await transport.fetch(
     new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
   );
   if (response.status === 204 || response.status === 205)
     return { data: undefined as T, response };
-  let text: string;
-  try {
-    text = await response.text();
-  } catch (error) {
-    if (options.signal?.aborted) throw options.signal.reason;
-    if (options.classifyFetchFailures) throw new RecoverableFetchError(error);
-    throw error;
-  }
+  const text = await response.text();
   if (!text) return { data: undefined as T, response };
   try {
     return { data: JSON.parse(text) as T, response };
@@ -177,16 +141,15 @@ export async function uploadRequest<T>(
   transport: Transport,
   method: string,
   path: string,
-  body: Blob | ReadableStream<Uint8Array>,
-  contentType: string,
+  body: Blob | ReadableStream<Uint8Array> | FormData,
+  contentType: string | undefined,
   headers: HeadersInit | undefined,
   options: JsonRequestOptions = {},
 ): Promise<ResourceResult<T>> {
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Accept", "application/json");
-  requestHeaders.set("Content-Type", contentType);
-  if (options.workspaceId)
-    requestHeaders.set("X-A13N-Workspace-ID", options.workspaceId);
+  if (contentType !== undefined)
+    requestHeaders.set("Content-Type", contentType);
   const init: RequestInit & { duplex?: "half" } = {
     method,
     headers: requestHeaders,
@@ -206,16 +169,30 @@ export async function uploadRequest<T>(
   }
 }
 
+export function multipartBody(body: Record<string, unknown>): FormData {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(body)) {
+    if (value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      if (item instanceof Blob) form.append(name, item);
+      else form.append(name, item === null ? "" : String(item));
+    }
+  }
+  return form;
+}
+
 export async function binaryRequest(
   transport: Transport,
   path: string,
-  options: JsonRequestOptions = {},
+  options: JsonRequestOptions & {
+    headers?: HeadersInit | undefined;
+    accept?: string;
+  } = {},
 ): Promise<BinaryResult> {
-  const headers = new Headers();
-  if (options.workspaceId)
-    headers.set("X-A13N-Workspace-ID", options.workspaceId);
+  const headers = new Headers(options.headers);
+  if (options.accept !== undefined) headers.set("Accept", options.accept);
   const response = await transport.fetch(
-    new Request(`${transport.baseUrl}${path}`, {
+    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, {
       headers,
       signal: requestSignal(options.signal),
     }),
@@ -223,31 +200,6 @@ export async function binaryRequest(
   if (!response.body)
     throw new ProtocolError("The Service returned no binary response body.");
   return new ScopedBinaryResult(response, response.body);
-}
-
-export function textInput(text: string): {
-  schema_version: "2";
-  content: [{ type: "text"; text: string }];
-} {
-  return {
-    schema_version: "2",
-    content: [{ type: "text", text }],
-  };
-}
-
-export function normalizeInput<T>(input: string | T): T {
-  return (typeof input === "string" ? textInput(input) : input) as T;
-}
-
-export function rejectReservedFields(
-  body: Readonly<Record<string, unknown>> | undefined,
-  fields: readonly string[],
-): void {
-  if (!body) return;
-  for (const field of fields) {
-    if (Object.prototype.hasOwnProperty.call(body, field))
-      throw new TypeError(`The convenience method binds ${field} locally.`);
-  }
 }
 
 export interface PageLike<T> {

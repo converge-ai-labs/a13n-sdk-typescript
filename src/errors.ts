@@ -17,19 +17,11 @@ export class ProtocolError extends Error {
   override readonly name = "ProtocolError";
 }
 
-/** A locally recognized transport failure with no claim about remote mutation outcome. */
-export class TransportError extends Error {
-  override readonly name = "TransportError";
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
 export class WaitTimeoutError extends Error {
   override readonly name = "WaitTimeoutError";
   constructor(readonly timeoutMs: number) {
     super(
-      `The resource did not reach a terminal state within ${timeoutMs} ms.`,
+      `The Run did not reach a terminal or waiting state within ${timeoutMs} ms.`,
     );
   }
 }

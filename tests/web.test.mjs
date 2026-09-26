@@ -2,145 +2,115 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createClient, ApiError } from "../dist/index.js";
 const baseUrl = "https://service.example";
-const path = { workspace: "ws_test", provider_id: "sp_test" };
 
-test("Web Provider create, rotation, and tests never automatically replay", async () => {
+test("workspace submission and replay-capable commands are not retried automatically", async () => {
   let calls = 0;
   const client = createClient({
     baseUrl,
-    auth: { type: "bearer", token: "service-token" },
-    fetch: async (request) => {
+    auth: { type: "bearer", token: "key" },
+    fetch: async () => {
       calls++;
-      assert.equal(request.redirect, "error");
-      return new Response(
-        JSON.stringify({
-          error: { code: "unavailable", message: "Try later" },
-        }),
+      return Response.json(
+        {
+          error: {
+            code: "unavailable",
+            message: "Try later",
+            details: {},
+            request_id: "req_1",
+          },
+        },
         { status: 503 },
       );
     },
   });
   await assert.rejects(
-    client.http.POST("/api/v1/workspaces/{workspace}/web-providers", {
-      params: { path },
+    client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
+      params: {
+        path: { workspace_id: "ws_test" },
+        header: { "Idempotency-Key": "submit-1" },
+      },
       body: {
-        type: "brave",
-        name: "Research",
-        credential: { api_key: "test-secret" },
+        agent_id: "agent_example",
+        payload: { content: [{ type: "text", text: "Hi" }] },
       },
     }),
     ApiError,
   );
   await assert.rejects(
-    client.http.PATCH(
-      "/api/v1/workspaces/{workspace}/web-providers/{provider_id}",
+    client.http.POST(
+      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox",
       {
-        params: { path, header: { "If-Match": '"v1"' } },
-        body: { credential: { api_key: "test-secret" } },
+        params: {
+          path: { workspace_id: "ws_test", thread_id: "th_test" },
+          header: { "Idempotency-Key": "submit-2" },
+        },
+        body: {
+          agent_id: "agent_example",
+          payload: { content: [{ type: "text", text: "Next" }] },
+        },
       },
     ),
     ApiError,
   );
-  await assert.rejects(
-    client.http.POST(
-      "/api/v1/workspaces/{workspace}/web-providers/{provider_id}/test",
-      { params: { path }, body: {} },
-    ),
-    ApiError,
-  );
-  assert.equal(calls, 3);
+  assert.equal(calls, 2);
   client.close();
 });
 
-test("search override omits, disables, or replaces without default filling", async () => {
+test("null overrides remain explicit while omitted options are untouched", async () => {
   const bodies = [];
   const client = createClient({
     baseUrl,
-    auth: { type: "bearer", token: "token" },
+    auth: { type: "bearer", token: "key" },
     fetch: async (request) => {
       bodies.push(await request.json());
-      return new Response("{}", {
-        headers: { "Content-Type": "application/json" },
-      });
+      return Response.json({});
     },
   });
-  for (const config_override of [
-    {},
-    { search: null },
-    { search: { provider_id: "sp_test" } },
+  for (const options of [
+    undefined,
+    { overrides: null },
+    { overrides: { model: { model_id: "model_example" } } },
   ]) {
-    await client.http.POST("/api/v1/threads/{thread_id}/runs", {
-      params: { path: { thread_id: "thread_test" } },
+    await client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
+      params: {
+        path: { workspace_id: "ws_test" },
+        header: { "Idempotency-Key": `key-${bodies.length}` },
+      },
       body: {
-        expected_thread_version: 1,
-        input: { schema_version: "2" },
-        config_override,
+        agent_id: "agent_example",
+        payload: { content: [{ type: "text", text: "Hi" }] },
+        ...(options && { options }),
       },
     });
   }
   assert.deepEqual(
-    bodies.map((body) => body.config_override),
-    [{}, { search: null }, { search: { provider_id: "sp_test" } }],
+    bodies.map((body) => body.options),
+    [
+      undefined,
+      { overrides: null },
+      { overrides: { model: { model_id: "model_example" } } },
+    ],
   );
   client.close();
 });
 
-test("scoped account responses retain ETags and do not copy secret inputs", async () => {
-  const requests = [];
-  const client = createClient({
-    baseUrl,
-    auth: { type: "bearer", token: "token" },
-    fetch: async (request) => {
-      requests.push(request);
-      return new Response(
-        JSON.stringify({ id: "sp_test", credential_configured: true }),
-        { headers: { ETag: '"v1"', "Content-Type": "application/json" } },
-      );
-    },
-  });
-  const result = await client.http.POST(
-    "/api/v1/organizations/{organization}/web-providers",
-    {
-      params: { path: { organization: "org_test" } },
-      body: {
-        type: "exa",
-        name: "Research",
-        credential: { api_key: "test-secret" },
-      },
-    },
-  );
-  assert.equal(result.response.headers.get("ETag"), '"v1"');
-  assert.ok(!JSON.stringify(result.data).includes("test-secret"));
-  assert.deepEqual((await requests[0].json()).credential, {
-    api_key: "test-secret",
-  });
-  client.close();
-});
-
-test("workspace-bound search uses credential context and shares shutdown", async () => {
+test("resource references select explicit scope without credential discovery", async () => {
   const urls = [];
   const client = createClient({
     baseUrl,
-    auth: { type: "bearer", token: "token" },
+    auth: { type: "bearer", token: "key" },
     fetch: async (request) => {
       urls.push(request.url);
-      return Response.json(
-        request.url.endsWith("/auth/context")
-          ? { workspace_id: "ws_test", workspace_key: "renamed" }
-          : { items: [], next_cursor: null },
-      );
+      return Response.json({ items: [], next_cursor: null });
     },
   });
-  const http = await client.workspaceHttp();
-  await http.GET("/web-providers");
-  await http.GET("/web-providers/{provider_id}/references", {
-    params: { path: { provider_id: "sp_test" } },
-  });
+  const workspace = client.resources.workspaces.ref("ws_test");
+  await workspace.agents.list();
+  await workspace.agents.ref("agent_example").get();
   assert.deepEqual(urls, [
-    `${baseUrl}/api/v1/auth/context`,
-    `${baseUrl}/api/v1/workspaces/ws_test/web-providers`,
-    `${baseUrl}/api/v1/workspaces/ws_test/web-providers/sp_test/references`,
+    `${baseUrl}/api/v1/workspaces/ws_test/agents`,
+    `${baseUrl}/api/v1/workspaces/ws_test/agents/agent_example`,
   ]);
   client.close();
-  await assert.rejects(http.GET("/web-providers"));
+  await assert.rejects(workspace.agents.list(), { name: "AbortError" });
 });

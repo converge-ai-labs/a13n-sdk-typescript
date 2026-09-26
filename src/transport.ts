@@ -1,7 +1,6 @@
 import { requireSuccess } from "./errors.js";
 
 export type Authentication =
-  | { type: "public" }
   | { type: "session"; csrfToken?: string }
   | { type: "bearer"; token: string | (() => string | Promise<string>) };
 
@@ -13,17 +12,12 @@ export interface ClientOptions {
   maxReadRetries?: number;
 }
 
-export class RecoverableFetchError extends Error {
-  override readonly name = "RecoverableFetchError";
-  constructor(readonly failure: unknown) {
-    super("The dispatched request transport failed.", { cause: failure });
-  }
-}
-
 const publicMutations = new Set([
+  "/api/v1/auth/bootstrap",
   "/api/v1/auth/login",
   "/api/v1/auth/password-reset",
-  "/api/v1/auth/password-reset/complete",
+  "/api/v1/auth/password-reset/confirm",
+  "/api/v1/auth/email-change/confirm",
 ]);
 
 const retryableStatuses = new Set([429, 502, 503, 504]);
@@ -46,7 +40,7 @@ export function delay(
   });
 }
 
-async function abortable<T>(
+export async function abortable<T>(
   promise: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
@@ -114,10 +108,26 @@ export class Transport {
     return {
       baseUrl,
       fetch: this.fetch,
-      bodySerializer: (body: unknown) =>
-        body instanceof Blob || body instanceof ReadableStream
-          ? body
-          : JSON.stringify(body),
+      bodySerializer: (body: unknown) => {
+        if (
+          body instanceof Blob ||
+          body instanceof ReadableStream ||
+          body instanceof FormData
+        )
+          return body;
+        if (
+          typeof body === "object" &&
+          body !== null &&
+          "file" in body &&
+          body.file instanceof Blob &&
+          Object.keys(body).length === 1
+        ) {
+          const form = new FormData();
+          form.append("file", body.file);
+          return form;
+        }
+        return JSON.stringify(body);
+      },
     };
   }
 
@@ -138,24 +148,18 @@ export class Transport {
     this.shutdown.abort();
   }
 
-  fetch = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: true });
-
-  fetchOnce = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: false, classifyFetchFailures: false });
-
-  fetchOnceForRecovery = (input: Request): Promise<Response> =>
-    this.request(input, { retryReads: false, classifyFetchFailures: true });
-
-  private async request(
-    input: Request,
-    options: { retryReads: boolean; classifyFetchFailures?: boolean },
-  ): Promise<Response> {
+  fetch = async (input: Request): Promise<Response> => {
     const target = new URL(input.url);
     const base = new URL(this.baseUrl);
+    const prefix = base.pathname.replace(/\/$/, "");
+    const probe =
+      input.method === "GET" &&
+      ["/healthz", "/readyz"].some(
+        (path) => target.pathname === `${prefix}${path}`,
+      );
     if (
       target.origin !== base.origin ||
-      !target.pathname.startsWith(`${base.pathname.replace(/\/$/, "")}/api/v1/`)
+      (!target.pathname.startsWith(`${prefix}/api/v1/`) && !probe)
     ) {
       throw new TypeError("Requests must target the configured Service API.");
     }
@@ -163,7 +167,7 @@ export class Transport {
     signal.throwIfAborted();
     const headers = new Headers(input.headers);
     const auth = this.options.auth;
-    const path = target.pathname.slice(base.pathname.replace(/\/$/, "").length);
+    const path = target.pathname.slice(prefix.length);
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
     if (auth.type === "bearer") {
       const token =
@@ -182,7 +186,7 @@ export class Transport {
         throw new Error(
           "Restore the browser CSRF token before mutating Service resources.",
         );
-      headers.set("X-A13N-CSRF-Token", this.csrfToken);
+      headers.set("X-CSRF-Token", this.csrfToken);
     }
     const request = new Request(input, {
       headers,
@@ -191,10 +195,7 @@ export class Transport {
       redirect: "error",
     });
     const retries =
-      options.retryReads &&
-      (request.method === "GET" || request.method === "HEAD")
-        ? this.retries
-        : 0;
+      request.method === "GET" || request.method === "HEAD" ? this.retries : 0;
     for (let attempt = 0; ; attempt++) {
       let response: Response;
       try {
@@ -202,8 +203,6 @@ export class Transport {
       } catch (error) {
         if (signal.aborted) throw error;
         if (attempt >= retries) {
-          if (options.classifyFetchFailures)
-            throw new RecoverableFetchError(error);
           throw error;
         }
         await delay(250 * 2 ** attempt, signal);
@@ -220,5 +219,5 @@ export class Transport {
       await requireSuccess(response);
       return response;
     }
-  }
+  };
 }

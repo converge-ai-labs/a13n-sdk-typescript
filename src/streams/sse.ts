@@ -15,7 +15,12 @@ export async function* decodeSse(
   body: ReadableStream<Uint8Array>,
 ): AsyncGenerator<SseFrame> {
   for await (const frame of decodeSseDetailed(body)) {
-    yield { id: frame.id, event: frame.event, data: frame.data };
+    // Thread signal frames carry no cursor even when the SSE parser retains a previous ID.
+    yield {
+      id: frame.idPresent ? frame.id : "",
+      event: frame.event,
+      data: frame.data,
+    };
   }
 }
 
