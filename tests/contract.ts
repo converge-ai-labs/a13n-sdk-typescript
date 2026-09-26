@@ -20,6 +20,29 @@ const message: Schema["MessagePayload"] = {
 const invalidMessage: Schema["MessagePayload"] = { content: "hello" };
 void invalidMessage;
 
+export function pricingRuleTypes() {
+  const absent: Schema["ModelPriceRule-Input"] = {
+    rule_id: "default",
+    prices: [],
+  };
+  const explicitNull: Schema["ModelPriceRule-Input"] = {
+    ...absent,
+    max_input_tokens: null,
+    service_tier: null,
+  };
+  const selected: Schema["ModelPriceRule-Output"] = {
+    rule_id: "default",
+    prices: [{ price_key: "input_mtok", price: "1" }],
+    max_input_tokens: 128_000,
+    service_tier: "priority",
+  };
+  // @ts-expect-error Token thresholds are numeric, not strings.
+  selected.max_input_tokens = "128000";
+  // @ts-expect-error Service tiers are strings, not booleans.
+  explicitNull.service_tier = true;
+  return { absent, explicitNull, selected };
+}
+
 export async function memoryTypes() {
   const memory = workspace.memories.ref("mem_one");
   await workspace.memories.list({ query: { label: ["team:a", "scope:b"] } });
