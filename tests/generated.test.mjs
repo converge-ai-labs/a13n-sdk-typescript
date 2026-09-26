@@ -65,3 +65,44 @@ test("ordinary HTTP response headers and omitted/null patch values survive trans
   assert.deepEqual(sent, [{}, { name: null }, { name: "New" }]);
   client.close();
 });
+
+test("model pricing selectors preserve omission, null and values through resources", async () => {
+  const client = createClient({
+    baseUrl: "https://service.example",
+    auth: { type: "bearer", token: "key" },
+    fetch: async (request) => {
+      assert.equal(request.method, "PATCH");
+      assert.equal(request.headers.get("If-Match"), '"v1"');
+      return Response.json(await request.json());
+    },
+  });
+  try {
+    for (const selectors of [
+      {},
+      { max_input_tokens: null, service_tier: null },
+      { max_input_tokens: 128_000, service_tier: "priority" },
+    ]) {
+      const rule = {
+        rule_id: "default",
+        prices: [{ price_key: "input_mtok", price: "1" }],
+        ...selectors,
+      };
+      const body = {
+        pricing: {
+          provider: "test",
+          model: "test-model",
+          source: "manual",
+          source_revision: "test",
+          rules: [rule],
+        },
+      };
+      const result = await client.resources.organizations
+        .ref("org")
+        .models.ref("model")
+        .update(body, { ifMatch: '"v1"' });
+      assert.deepEqual(result.data, body);
+    }
+  } finally {
+    client.close();
+  }
+});
