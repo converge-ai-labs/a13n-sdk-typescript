@@ -6,6 +6,10 @@ TypeScript SDK for a13n Service: complete generated resource bindings and HTTP t
 npm install @converge.ai/a13n
 ```
 
+## Documentation
+
+The examples below are the quick start. Use the [application guide](docs/README.md) for Node/browser setup, resource discovery, queued Entry handling, Memory semantics and error recovery. These Markdown guides live with the SDK; read the same tag or commit as your installed dependency. [Contributing](CONTRIBUTING.md) covers development and releases.
+
 ## Client and authentication
 
 ```ts
