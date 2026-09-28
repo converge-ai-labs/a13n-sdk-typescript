@@ -15,12 +15,11 @@ const pascal = (value) => {
   return name[0].toUpperCase() + name.slice(1);
 };
 const quote = JSON.stringify;
-const runPath = "/api/v1/workspaces/{workspace_id}/runs/{run_id}";
-const threadPath = "/api/v1/workspaces/{workspace_id}/threads/{thread_id}";
+const runPath = "/api/v1/runs/{run_id}";
 // contract/semantics/api.md: Preconditions requires every declared If-Match,
 // except restoring a Memory file that may not currently exist (Memories).
 const optionalMatch = new Set([
-  "post /api/v1/workspaces/{workspace_id}/memories/{memory_id}/revisions/{seq}/restore",
+  "post /api/v1/memories/{memory_id}/revisions/{seq}/restore",
 ]);
 
 export function resourceModel(document) {
@@ -223,7 +222,7 @@ export function generateResources(document) {
       : "undefined";
     const owner = op.owner ?? op.node;
     const suffix = op.owner ? ` + ${quote("/" + op.node.segments.at(-1))}` : "";
-    const path = `this.path${suffix}`;
+    const path = owner === nodes[0] ? quote(op.path) : `this.path${suffix}`;
     const requestOptions = `{ signal: options.signal${query.length ? ", query: options.query" : ""} }`;
     let request;
     if (stream)
@@ -283,14 +282,6 @@ export function generateResources(document) {
           `get ${camel(key)}(): ${child.name} { return new ${child.name}(this.transport, ${node.segments.length ? `this.path + ${quote("/" + key)}` : quote(child.path?.startsWith("/api/v1/") || !["healthz", "readyz"].includes(key) ? "/api/v1/" + key : "/" + key)}); }`,
         ]);
     }
-    if (node.path === runPath)
-      add("wait", [
-        "wait(options: WaitOptions) { return waitForRun(options => this.get(options), this.transport.signal, options); }",
-      ]);
-    if (node.path === threadPath)
-      add("events", [
-        "events(options?: ThreadStreamOptions) { return threadStream(options => this.stream.get(options), this.transport.signal, options); }",
-      ]);
     classes.push(
       `export class ${node.name} { constructor(private readonly transport: Transport${node.segments.length ? ", private readonly path: string" : ""}) {}\n${lines.join("\n")}\n}`,
     );
@@ -299,8 +290,6 @@ export function generateResources(document) {
     source: `/** Generated resource bindings. Do not edit; run npm run generate. */
 import type { operations, Binary } from '../schema.js';
 import type { Transport } from '../transport.js';
-import { waitForRun, type WaitOptions } from './interaction.js';
-import { threadStream, type ThreadStreamOptions } from '../streams/thread-stream.js';
 import { jsonRequest, uploadRequest, binaryRequest, multipartBody, selector, snapshot, withCursor, PageIterator, flattenPages, type ResourceResult, type BinaryResult } from './base.js';
 ${aliases.join("\n")}
 ${classes.join("\n\n")}

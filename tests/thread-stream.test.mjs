@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createClient, ProtocolError } from "../dist/index.js";
+import { threadStream } from "../dist/streams/thread-stream.js";
 
 const gap = 'event: gap\ndata: {"run_id":"run_one"}\n\n';
 test("gap-only connections exhaust reconnect budget without a cursor advance", async () => {
@@ -17,12 +18,12 @@ test("gap-only connections exhaust reconnect budget without a cursor advance", a
     },
   });
   try {
-    const stream = client.resources.workspaces
-      .ref("ws_one")
-      .threads.ref("thread_one")
-      .events({
-        after: "1-0",
-      });
+    const stream = threadStream(
+      (options) =>
+        client.resources.threads.ref("thread_one").stream.get(options),
+      new AbortController().signal,
+      { after: "1-0" },
+    );
     for (let i = 0; i < 3; i++) {
       const value = (await stream.next()).value;
       assert.deepEqual(value, {

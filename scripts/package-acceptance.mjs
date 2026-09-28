@@ -55,10 +55,12 @@ const client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
 });
-assert.equal(typeof client.resources.workspaces.ref("ws_example").threads.create, "function");
+assert.equal(typeof client.agents.ref("agt_example").start, "function");
+assert.equal(typeof client.agents.ref("agt_example").send, "function");
+assert.equal(typeof client.resources.threads.create, "function");
 assert.equal(typeof client.resources.organizations.ref("org_example").get, "function");
 assert.equal(typeof client.resources.healthz.get, "function");
-assert.equal(typeof client.resources.workspaces.ref("ws_example").uploads.create, "function");
+assert.equal(typeof client.resources.uploads.create, "function");
 client.close();
 `,
   );
@@ -79,15 +81,25 @@ const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
 });
-const workspace = client.resources.workspaces.ref("ws_example");
 const organization = client.resources.organizations.ref("org_example");
-void workspace.runs.ref("run_example").get;
-void workspace.threads.pages({ query: { limit: 10 } });
-void organization.modelProviders;
-void client.resources.workspaces.ref("ws").memories.pages({ query: { label: ["a"] } });
-void client.resources.workspaces.ref("ws").assets.ref("asset").content.get;
+void client.resources.runs.ref("run_example").get;
+void client.resources.threads.pages({ query: { limit: 10 } });
+void organization.get;
+void client.resources.modelProviders.list;
+void client.resources.memories.pages({ query: { label: ["a"] } });
+void client.resources.assets.ref("asset").content.get;
 // @ts-expect-error Revision selectors retain their numeric contract in the published package.
-client.resources.workspaces.ref("ws").memories.ref("memory").revisions.ref("1");
+client.resources.memories.ref("memory").revisions.ref("1");
+async function example() {
+  const agent = client.agents.ref("agt_example");
+  const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
+  for await (const event of interaction) void event.frame.type;
+  const outcome = await interaction.result();
+  void outcome.output;
+  const followup = await agent.send(interaction.thread.id, "Next", { idempotencyKey: "next-1" });
+  followup.close();
+}
+void example;
 const result: ResourceResult<{ ok: true }> = {
   data: { ok: true },
   response: new Response(),

@@ -1,7 +1,8 @@
 import { requireSuccess } from "./errors.js";
+import { isWorkspaceScopedRoute } from "./workspace-scope.js";
 
 export type Authentication =
-  | { type: "session"; csrfToken?: string }
+  | { type: "session"; csrfToken?: string; workspaceId?: string }
   | { type: "bearer"; token: string | (() => string | Promise<string>) };
 
 export interface ClientOptions {
@@ -80,6 +81,7 @@ export class Transport {
   private readonly shutdown = new AbortController();
   private readonly fetcher: typeof globalThis.fetch;
   private csrfToken: string | undefined;
+  private workspaceId: string | undefined;
   private readonly retries: number;
 
   constructor(private readonly options: ClientOptions) {
@@ -99,40 +101,21 @@ export class Transport {
     this.fetcher = options.fetch ?? globalThis.fetch.bind(globalThis);
     this.csrfToken =
       options.auth.type === "session" ? options.auth.csrfToken : undefined;
+    this.workspaceId =
+      options.auth.type === "session" ? options.auth.workspaceId : undefined;
     this.retries = options.maxReadRetries ?? 2;
     if (!Number.isInteger(this.retries) || this.retries < 0 || this.retries > 5)
       throw new RangeError("maxReadRetries must be 0–5.");
   }
 
-  httpOptions(baseUrl = this.baseUrl) {
-    return {
-      baseUrl,
-      fetch: this.fetch,
-      bodySerializer: (body: unknown) => {
-        if (
-          body instanceof Blob ||
-          body instanceof ReadableStream ||
-          body instanceof FormData
-        )
-          return body;
-        if (
-          typeof body === "object" &&
-          body !== null &&
-          "file" in body &&
-          body.file instanceof Blob &&
-          Object.keys(body).length === 1
-        ) {
-          const form = new FormData();
-          form.append("file", body.file);
-          return form;
-        }
-        return JSON.stringify(body);
-      },
-    };
-  }
-
   setCsrfToken(token: string | undefined): void {
     this.csrfToken = token;
+  }
+
+  setWorkspaceId(workspaceId: string | undefined): void {
+    if (this.options.auth.type !== "session")
+      throw new TypeError("Only browser sessions select a workspace.");
+    this.workspaceId = workspaceId;
   }
 
   get signal(): AbortSignal {
@@ -145,6 +128,7 @@ export class Transport {
 
   close(): void {
     this.csrfToken = undefined;
+    this.workspaceId = undefined;
     this.shutdown.abort();
   }
 
@@ -169,6 +153,18 @@ export class Transport {
     const auth = this.options.auth;
     const path = target.pathname.slice(prefix.length);
     const mutation = !["GET", "HEAD", "OPTIONS"].includes(input.method);
+    if (auth.type === "session" && isWorkspaceScopedRoute(input.method, path)) {
+      const selected = headers.get("X-Workspace-ID") ?? this.workspaceId;
+      if (!selected)
+        throw new TypeError(
+          "Select a workspace for session business requests.",
+        );
+      if (this.workspaceId && selected !== this.workspaceId)
+        throw new TypeError(
+          "Request workspace conflicts with the selected session workspace.",
+        );
+      headers.set("X-Workspace-ID", selected);
+    }
     if (auth.type === "bearer") {
       const token =
         typeof auth.token === "function"

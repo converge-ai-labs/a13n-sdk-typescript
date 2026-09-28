@@ -28,7 +28,7 @@ test("conditional Agent, Thread and inbox operations send If-Match and expose Se
       return Response.json({ id: "agent_one" });
     },
   });
-  const workspace = client.resources.workspaces.ref("ws_one");
+  const workspace = client.resources;
   const agent = workspace.agents.ref("agent_one");
   await agent.archive({ ifMatch: '"v1"' });
   await agent.unarchive({ ifMatch: '"v2"' });
@@ -77,17 +77,17 @@ test("management ref methods follow actual verbs and specialized response shapes
       if (request.url.endsWith("/subscriptions"))
         return Response.json({ id: "sub_one", signing_secret: "once" });
       if (request.url.endsWith("/test")) return Response.json({ status: "ok" });
-      return Response.json({ id: "secret_one" });
+      return Response.json({ id: "agent_one" });
     },
   });
-  const workspace = client.resources.workspaces.ref("ws_one");
+  const workspace = client.resources;
   assert.equal(
     (
-      await workspace.secrets
-        .ref("secret_one")
-        .replace({ value: "new" }, { ifMatch: '"v1"' })
+      await workspace.agents
+        .ref("agent_one")
+        .update({ name: "new" }, { ifMatch: '"v1"' })
     ).data.id,
-    "secret_one",
+    "agent_one",
   );
   assert.equal(
     (
@@ -98,13 +98,10 @@ test("management ref methods follow actual verbs and specialized response shapes
     ).data.signing_secret,
     "once",
   );
-  await client.resources.organizations
-    .ref("org_one")
-    .modelProviders.ref("provider_one")
-    .test();
+  await client.resources.modelProviders.ref("provider_one").test();
   assert.deepEqual(
     calls.map(([method]) => method),
-    ["PUT", "POST", "POST"],
+    ["PATCH", "POST", "POST"],
   );
   assert.ok(calls[2][1].endsWith("/model-providers/provider_one/test"));
   client.close();

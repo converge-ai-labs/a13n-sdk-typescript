@@ -139,10 +139,12 @@ export async function* threadStream(
       ) {
         throw new ProtocolError("Expected a Thread event stream.");
       }
-      for await (const raw of decodeSse(stream.body)) {
+      for await (const raw of decodeSse(stream.body, signal)) {
+        signal.throwIfAborted();
         const event = parseFrame(raw);
         if (event.cursor && event.cursor === cursor) continue;
         yield event;
+        signal.throwIfAborted();
         // Only applied output advances replay; gap-only reconnects cannot reset the retry bound.
         if (event.cursor) {
           cursor = event.cursor;

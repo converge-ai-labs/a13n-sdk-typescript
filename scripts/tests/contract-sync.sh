@@ -127,7 +127,7 @@ diff -r "$sdk/contract" "$work/current"
 
 # PR operations use only local bare Git and fake gh/make; never a real API/token.
 # Language-specific generated ownership; the remainder of this suite is shared.
-export TEST_GENERATED=src/schema.ts TEST_ADDED=openapi.json TEST_RESOURCES=src/resources/generated.ts TEST_REMOVED=
+export TEST_GENERATED=src/schema.ts TEST_ADDED=openapi.json TEST_RESOURCES=src/resources/generated.ts TEST_SCOPE=src/workspace-scope.ts TEST_REMOVED=
 export TEST_NEEDS_INSTALL=true
 mkdir -p "$sdk/$(dirname "$TEST_GENERATED")" "$sdk/$(dirname "$TEST_ADDED")"
 cp "$sdk/contract/openapi.json" "$sdk/$TEST_GENERATED"
@@ -183,11 +183,13 @@ elif [[ ${TEST_PR_RACE:-} == delete ]]; then
 fi
 # Simulate partial writes and unrelated build/handwritten changes before failure.
 printf 'partial output\n' > "$TEST_GENERATED"
+printf 'partial scope\n' > "$TEST_SCOPE"
 printf 'not a generated file\n' > handwritten.txt
 printf 'untracked build output\n' > unexpected.txt
 if [[ ${TEST_GENERATE_FAIL:-false} != false ]]; then exit 1; fi
 cp contract/openapi.json "$TEST_GENERATED"
 cp contract/openapi.json "$TEST_RESOURCES"
+cp contract/openapi.json "$TEST_SCOPE"
 if [[ $(jq '.paths | length' contract/openapi.json) != 0 ]]; then
   cp contract/openapi.json "$TEST_ADDED"
   if [[ -n "$TEST_REMOVED" ]]; then rm -f "$TEST_REMOVED"; fi
@@ -282,6 +284,9 @@ rm "$sdk/dirty.txt"
 export TEST_GENERATE_FAIL=false
 propose "$runtime"
 [[ -z $(git -C "$sdk" diff main HEAD -- "$TEST_GENERATED" "$TEST_ADDED" "$TEST_RESOURCES") ]]
+# A newly generated scope table must be staged by the rolling proposal.
+git -C "$sdk" show "HEAD:$TEST_SCOPE" > "$work/actual"
+cmp "$work/actual" "$work/initial/openapi.json"
 [[ $(git -C "$sdk" show HEAD:contract/source.json | jq -r .commit) == "$runtime" ]]
 [[ $(git -C "$sdk" show HEAD:handwritten.txt) == handwritten ]]
 ! git -C "$sdk" cat-file -e HEAD:unexpected.txt 2>/dev/null
@@ -310,6 +315,7 @@ reject propose "$http"
 [[ $(head) == "$first_head" ]]
 [[ -z $(git -C "$sdk" diff --cached) ]]
 [[ $(cat "$sdk/$TEST_GENERATED") == 'partial output' ]]
+[[ $(cat "$sdk/$TEST_SCOPE") == 'partial scope' ]]
 [[ $(grep -c create "$TEST_PR_LOG") == 1 ]]
 
 # Retry advances the same branch; failed metadata reconciliation is recoverable.
@@ -319,7 +325,7 @@ reject propose "$http"
 http_head=$(head)
 [[ "$http_head" != "$first_head" ]]
 git -C "$sdk" merge-base --is-ancestor "$first_head" "$http_head"
-for output in "$TEST_GENERATED" "$TEST_ADDED" "$TEST_RESOURCES"; do
+for output in "$TEST_GENERATED" "$TEST_ADDED" "$TEST_RESOURCES" "$TEST_SCOPE"; do
   git -C "$sdk" show "HEAD:$output" > "$work/actual"
   cmp "$work/actual" "$work/http.json"
 done

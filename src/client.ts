@@ -1,16 +1,22 @@
-import createFetchClient from "openapi-fetch";
-import type { paths } from "./schema.js";
 import { Transport, type ClientOptions } from "./transport.js";
 import { ServiceResources } from "./resources/generated.js";
+import {
+  AgentCollection,
+  RunCollection,
+  ThreadCollection,
+} from "./semantic.js";
 
-/** One complete resource tree, sharing authentication and lifetime with the raw HTTP escape hatch. */
+/** One transport for the authored Agent workflow and complete generated resources. */
 export function createClient(options: ClientOptions) {
   const transport = new Transport(options);
+  const resources = new ServiceResources(transport);
   return {
-    resources: new ServiceResources(transport),
-    /** Advanced request headers, middleware and response parsing; ordinary calls use resources. */
-    http: createFetchClient<paths>(transport.httpOptions()),
+    agents: new AgentCollection(resources, transport.signal),
+    threads: new ThreadCollection(resources),
+    runs: new RunCollection(resources, transport.signal),
+    resources,
     setCsrfToken: (token: string | undefined) => transport.setCsrfToken(token),
+    setWorkspaceId: (id: string | undefined) => transport.setWorkspaceId(id),
     close: () => transport.close(),
   };
 }

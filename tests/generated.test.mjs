@@ -13,25 +13,17 @@ test("generated OpenAPI declares binary content and current submission replay", 
     "skills/{skill_id}/revisions/{revision_id}/content",
     "skills/{skill_id}/revisions/{revision_id}/files/{path}",
   ]) {
-    const path = `/api/v1/workspaces/{workspace_id}/${suffix}`;
+    const path = `/api/v1/${suffix}`;
     const success = spec.paths[path].get.responses["200"];
     const media = Object.values(success.content);
     assert.equal(media.length, 1);
     assert.equal(media[0].schema.format, "binary");
   }
+  assert.ok(spec.paths["/api/v1/threads"].post.responses["200"]);
   assert.ok(
-    spec.paths["/api/v1/workspaces/{workspace_id}/threads"].post.responses[
-      "200"
-    ],
+    spec.paths["/api/v1/threads/{thread_id}/inbox"].post.responses["200"],
   );
-  assert.ok(
-    spec.paths["/api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox"]
-      .post.responses["200"],
-  );
-  assert.ok(
-    spec.paths["/api/v1/workspaces/{workspace_id}/runs/{run_id}/resume"].post
-      .responses["200"],
-  );
+  assert.ok(spec.paths["/api/v1/runs/{run_id}/resume"].post.responses["200"]);
 });
 
 test("ordinary HTTP response headers and omitted/null patch values survive transport", async () => {
@@ -49,16 +41,9 @@ test("ordinary HTTP response headers and omitted/null patch values survive trans
     },
   });
   for (const body of [{}, { name: null }, { name: "New" }]) {
-    const result = await client.http.PATCH(
-      "/api/v1/workspaces/{workspace_id}/agents/{agent_id}",
-      {
-        params: {
-          path: { workspace_id: "ws_example", agent_id: "agent_example" },
-          header: { "If-Match": '"v1"' },
-        },
-        body,
-      },
-    );
+    const result = await client.resources.agents
+      .ref("agent_example")
+      .update(body, { ifMatch: '"v1"' });
     assert.equal(result.response.headers.get("ETag"), '"v2"');
     assert.equal(result.response.headers.get("X-Request-Id"), "req_test");
   }
@@ -96,9 +81,8 @@ test("model pricing selectors preserve omission, null and values through resourc
           rules: [rule],
         },
       };
-      const result = await client.resources.organizations
-        .ref("org")
-        .models.ref("model")
+      const result = await client.resources.models
+        .ref("model")
         .update(body, { ifMatch: '"v1"' });
       assert.deepEqual(result.data, body);
     }
