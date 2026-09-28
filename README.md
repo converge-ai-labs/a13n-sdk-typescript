@@ -65,18 +65,32 @@ node hello.mjs
 
 The example prints saved messages and tool activity as JSON. `result.output` is the Run's optional output value, not necessarily its conversation text.
 
-Each **new logical request** needs its own idempotency key. The example generates one. If a network failure leaves the outcome uncertain, save and reuse the **same key and request** when reconciling or retrying; generating a fresh key may submit a second message. `result()` waits for this submission to finish or pause without opening a streaming connection. It returns `completed`, `waiting`, `failed`, or `cancelled`—check the status before using the output. The default local wait limit is five minutes; see [timeouts and recovery](docs/README.md#timeouts-and-recovery).
+Each **new logical request** needs its own idempotency key. The example generates one. If a network failure leaves the outcome uncertain, save and reuse the **same key and request** when reconciling or retrying; generating a fresh key may submit a second message. `result()` waits for this submission to finish or pause without opening a streaming connection. It returns `completed`, `waiting`, `failed`, or `cancelled`—check the status before using the output. The default local wait limit is five minutes; see [timeouts and recovery](docs/07-errors-and-recovery.md).
 
 ## Continue the conversation
 
-To send another message, retain the Thread ID printed above. In the same `try` block, after the first result, use:
+To send another message, retain the Thread ID printed above. In the same `try` block, send **only after the first result is `completed`**. A `waiting` Run needs its pending tool or approval resolved first; a premature message can stay queued:
 
 ```js
-const followUp = await agent.send(interaction.thread.id, "What did you mean?", {
-  idempotencyKey: randomUUID(),
-});
-const nextResult = await followUp.result();
-console.log(nextResult.status, nextResult.output);
+if (result.status === "completed") {
+  const followUp = await agent.send(
+    interaction.thread.id,
+    "What did you mean?",
+    {
+      idempotencyKey: randomUUID(),
+    },
+  );
+  const nextResult = await followUp.result();
+  console.log(nextResult.status);
+  if (nextResult.status === "completed") {
+    console.log((await nextResult.run.items()).data.items);
+  }
+} else {
+  console.log(
+    "Resolve or inspect the first Run before continuing:",
+    result.status,
+  );
+}
 ```
 
 Store the Thread ID if the conversation must survive process restarts. A Thread can receive messages from different Agents; `send` always uses the Agent you selected.
@@ -96,18 +110,22 @@ for await (const event of live) {
   }
 }
 const finalResult = await live.result();
-console.log(finalResult.status, finalResult.output);
+console.log(finalResult.status);
+if (finalResult.status === "completed") {
+  console.log((await finalResult.run.items()).data.items);
+}
 ```
 
-This finite stream stops when that interaction finishes or pauses, even if the connection is idle. Live events may be incomplete; for committed display state use `await finalResult.run.items()`. Do not break out of the loop if you still need `live.result()`: an early break closes this interaction's local observation. Closing or cancelling locally does **not** interrupt the remote Run. See [streaming and committed output](docs/README.md#streaming-and-committed-output).
+This finite stream stops when that interaction finishes or pauses, even if the connection is idle. Live events may be incomplete; for committed display state use `await finalResult.run.items()`. Do not break out of the loop if you still need `live.result()`: an early break closes this interaction's local observation. Closing or cancelling locally does **not** interrupt the remote Run. See [streaming and committed output](docs/02-streaming-and-readback.md).
 
 ## Go further
 
-- [Create an Agent and choose a Model](docs/README.md#create-an-agent)
-- [Send structured messages and mount Memory](docs/README.md#structured-input-and-memory)
-- [Handle a waiting Run and resume](docs/README.md#waiting-and-resuming)
-- [Use session authentication in a browser](docs/README.md#browser-sessions)
-- [Use generated resources for management, files, and administration](docs/README.md#generated-resources)
-- [Work with timeouts and uncertain requests](docs/README.md#timeouts-and-recovery)
+- [Configure conversations and continue across calls](docs/01-setup-and-conversations.md)
+- [Stream updates and reconcile committed output](docs/02-streaming-and-readback.md)
+- [Handle waiting Runs and client tools](docs/03-waiting-and-tools.md)
+- [Attach files and mount Memory](docs/04-files-and-memory.md)
+- [Use a same-origin browser session](docs/05-browser-sessions.md)
+- [Create Agents and manage resources with ETags](docs/06-generated-resources.md)
+- [Recover from timeouts and uncertain submissions](docs/07-errors-and-recovery.md)
 
 For the complete wire contract, see the [pinned OpenAPI](openapi.json) and [SDK specification](spec/README.md). Contributors can use [CONTRIBUTING.md](CONTRIBUTING.md) for generation, validation, and release procedures.
