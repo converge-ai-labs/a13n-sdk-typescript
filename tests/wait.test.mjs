@@ -4,7 +4,7 @@ import { createClient, WaitTimeoutError } from "../dist/index.js";
 
 function setup(fetch, auth = { type: "bearer", token: "test" }) {
   const client = createClient({ baseUrl: "https://service.test", auth, fetch });
-  return { client, run: client.resources.workspaces.ref("ws").runs.ref("run") };
+  return { client, run: client.runs.ref("run") };
 }
 const timeout = (error) =>
   error instanceof WaitTimeoutError && error.timeoutMs === 10;
@@ -66,7 +66,7 @@ test(
         });
         const { client, run } = setup(async (request) => {
           started();
-          if (sleeping) return Response.json({ status: "running" });
+          if (sleeping) return Response.json({ id: "run", status: "running" });
           return new Promise((_, reject) =>
             request.signal.addEventListener(
               "abort",
@@ -107,8 +107,8 @@ test("wait returns waiting and terminal representations with their HTTP evidence
       );
     });
     const result = await run.wait({ timeoutMs: 100 });
-    assert.equal(result.data.status, status);
-    assert.equal(result.response.headers.get("ETag"), '"run:1"');
+    assert.equal(result.status, status);
+    assert.equal(result.snapshot.response.headers.get("ETag"), '"run:1"');
     assert.equal(calls, 1);
     client.close();
   }

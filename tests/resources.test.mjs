@@ -24,7 +24,7 @@ test("bound resource handles are local; create, replay and queued receipts retai
       return json(submitted, requests.length === 1 ? 201 : 200);
     },
   });
-  const workspace = client.resources.workspaces.ref("ws_one");
+  const workspace = client.resources;
   assert.equal(requests.length, 0);
   const first = await workspace.threads.create(
     { agent_id: "agent_one", payload: textPayload("Hello") },
@@ -38,7 +38,7 @@ test("bound resource handles are local; create, replay and queued receipts retai
   });
   assert.equal(requests[0].headers.get("Idempotency-Key"), "create");
   assert.equal(requests[0].headers.get("X-A13N-Workspace-ID"), null);
-  assert.equal(requests[0].url, `${baseUrl}/api/v1/workspaces/ws_one/threads`);
+  assert.equal(requests[0].url, `${baseUrl}/api/v1/threads`);
   const replay = await workspace.threads
     .ref("th_one")
     .inbox.create(
@@ -51,10 +51,7 @@ test("bound resource handles are local; create, replay and queued receipts retai
     agent_id: "agent_one",
     payload: { content: [{ type: "text", text: "Next" }] },
   });
-  assert.equal(
-    requests[1].url,
-    `${baseUrl}/api/v1/workspaces/ws_one/threads/th_one/inbox`,
-  );
+  assert.equal(requests[1].url, `${baseUrl}/api/v1/threads/th_one/inbox`);
   client.close();
 });
 
@@ -72,9 +69,9 @@ test("bound pagination advances once per page and handles can be closed with for
     },
   });
   const ids = [];
-  for await (const item of client.resources.workspaces
-    .ref("ws_one")
-    .threads.items({ query: { limit: 1 } }))
+  for await (const item of client.resources.threads.items({
+    query: { limit: 1 },
+  }))
     ids.push(item.id);
   assert.deepEqual(ids, [1, 2]);
   assert.ok(urls[1].endsWith("?limit=1&cursor=next"));
@@ -87,10 +84,7 @@ test("Run wait polls the selected workspace and times out without mutation", asy
     baseUrl,
     auth: { type: "bearer", token: "test" },
     fetch: async (request) => {
-      assert.equal(
-        request.url,
-        `${baseUrl}/api/v1/workspaces/ws_one/runs/run_one`,
-      );
+      assert.equal(request.url, `${baseUrl}/api/v1/runs/run_one`);
       calls++;
       return json({
         status: calls === 2 ? "completed" : "running",
@@ -100,18 +94,14 @@ test("Run wait polls the selected workspace and times out without mutation", asy
   });
   assert.equal(
     (
-      await client.resources.workspaces
-        .ref("ws_one")
-        .runs.ref("run_one")
+      await client.runs
+        .ref("run_one")
         .wait({ timeoutMs: 1000, pollIntervalMs: 1 })
-    ).data.status,
+    ).status,
     "completed",
   );
   await assert.rejects(
-    client.resources.workspaces
-      .ref("ws_one")
-      .runs.ref("run_one")
-      .wait({ timeoutMs: -1 }),
+    client.runs.ref("run_one").wait({ timeoutMs: -1 }),
     RangeError,
   );
   client.close();

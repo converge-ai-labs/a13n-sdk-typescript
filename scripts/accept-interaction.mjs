@@ -1,11 +1,10 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { createClient, textPayload } from "../dist/index.js";
+import { createClient } from "../dist/index.js";
 
 for (const name of [
   "A13N_SERVICE_URL",
   "A13N_API_TOKEN",
-  "A13N_WORKSPACE",
   "A13N_AGENT",
   "A13N_CLIENT_TOOL_AGENT",
 ])
@@ -14,87 +13,65 @@ const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
-const workspace = client.resources.workspaces.ref(process.env.A13N_WORKSPACE);
-const waitFor = async (check, timeout = 30_000) => {
-  const deadline = Date.now() + timeout;
-  do {
-    const result = await check();
-    if (result) return result;
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  } while (Date.now() < deadline);
-  throw new Error("Timed out waiting for Service state");
-};
+const resources = client.resources;
+const key = () => `ts-managed-${randomUUID()}`;
 try {
-  const key = `ts-managed-${randomUUID()}`;
-  const body = {
-    agent_id: process.env.A13N_AGENT,
-    payload: textPayload("Reply briefly to the resource SDK acceptance probe."),
-  };
-  const first = await workspace.threads.create(body, { idempotencyKey: key });
-  assert.equal(first.response.status, 201);
-  assert.equal(first.data.entry.status, "assigned");
-  assert.ok(first.data.run?.id);
-  const replay = await workspace.threads.create(body, { idempotencyKey: key });
+  const agent = client.agents.ref(process.env.A13N_AGENT);
+  const prompt = "Reply briefly to the managed SDK acceptance probe.";
+  const firstKey = key();
+  const interaction = await agent.start(prompt, { idempotencyKey: firstKey });
+  assert.equal(interaction.receipt.response.status, 201);
+  const replay = await resources.threads.create(
+    {
+      agent_id: agent.id,
+      payload: { content: [{ type: "text", text: prompt }] },
+    },
+    { idempotencyKey: firstKey },
+  );
   assert.equal(replay.response.status, 200);
-  assert.equal(replay.data.entry.id, first.data.entry.id);
-  const thread = workspace.threads.ref(first.data.thread.id);
-  assert.equal((await thread.get()).data.id, first.data.thread.id);
+  assert.equal(replay.data.entry.id, interaction.entry.id);
   const events = [];
-  const signal = AbortSignal.timeout(20_000);
-  for await (const event of thread.events({ signal })) {
-    events.push(event.frame.type);
-    if (event.frame.type === "boundary") break;
-  }
-  assert.ok(events.includes("delta") && events.includes("boundary"));
-  const run = workspace.runs.ref(first.data.run.id);
-  assert.equal(
-    (await run.wait({ timeoutMs: 30_000, pollIntervalMs: 250 })).data.status,
-    "completed",
-  );
-  assert.ok(Array.isArray((await run.items.get()).data.items));
+  for await (const event of interaction) events.push(event.frame.type);
+  const outcome = await interaction.result();
+  assert.equal(outcome.status, "completed");
+  assert.ok(Array.isArray((await outcome.run.items()).data.items));
   assert.ok(
-    (await thread.runs.list()).data.items.some(
-      (item) => item.id === first.data.run.id,
-    ),
+    (
+      await resources.threads.ref(interaction.thread.id).runs.list()
+    ).data.items.some((item) => item.id === outcome.run.id),
   );
-  const tool = await workspace.threads.create(
-    {
-      agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
-      payload: textPayload("[client] Run local_review on this request."),
-    },
-    {
-      idempotencyKey: `ts-managed-tool-${randomUUID()}`,
-    },
+
+  const toolAgent = client.agents.ref(process.env.A13N_CLIENT_TOOL_AGENT);
+  const tool = await toolAgent.start(
+    "[client] Run local_review on this request.",
+    { idempotencyKey: key() },
   );
-  assert.ok(tool.data.run?.id);
-  const toolRun = workspace.runs.ref(tool.data.run.id);
-  const pending = await waitFor(async () => {
-    const value = (await toolRun.get()).data;
-    return value.status === "waiting" ? value : null;
-  });
+  const pending = await tool.result();
+  assert.equal(pending.status, "waiting");
   const action = pending.pending?.items.find(
     (item) => item.kind === "client_tool",
   );
   assert.ok(action?.tool_call_id);
-  const queuedKey = `ts-managed-next-${randomUUID()}`;
-  const inbox = workspace.threads.ref(tool.data.thread.id).inbox;
+  const queuedKey = key();
+  const inbox = resources.threads.ref(tool.thread.id).inbox;
   const message = {
-    agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
+    agent_id: toolAgent.id,
     delivery: "next_run",
     payload: { content: [{ type: "text", text: "Summarize that review." }] },
   };
-  const queued = await inbox.create(message, { idempotencyKey: queuedKey });
-  assert.equal(queued.response.status, 201);
-  assert.equal(queued.data.run, null);
-  assert.equal(
-    (await inbox.ref(queued.data.entry.id).get()).data.id,
-    queued.data.entry.id,
-  );
+  const queued = await toolAgent.send(tool.thread.id, message.payload, {
+    idempotencyKey: queuedKey,
+    delivery: "next_run",
+  });
+  assert.equal(queued.receipt.response.status, 201);
+  assert.equal(queued.run, null);
+  assert.equal((await queued.entry.get()).data.id, queued.entry.id);
   const queuedReplay = await inbox.create(message, {
     idempotencyKey: queuedKey,
   });
   assert.equal(queuedReplay.response.status, 200);
-  assert.equal(queuedReplay.data.entry.id, queued.data.entry.id);
+  assert.equal(queuedReplay.data.entry.id, queued.entry.id);
+
   const answers = {
     answers: [
       {
@@ -104,41 +81,41 @@ try {
       },
     ],
   };
-  const resumeKey = `ts-managed-resume-${randomUUID()}`;
-  const resumed = await toolRun.resume(answers, { idempotencyKey: resumeKey });
-  assert.equal(resumed.response.status, 201);
-  const resumedReplay = await toolRun.resume(answers, {
+  const resumeKey = key();
+  const resumed = await pending.run.resume(answers, {
     idempotencyKey: resumeKey,
   });
+  assert.equal(resumed.receipt.response.status, 201);
+  const resumedReplay = await resources.runs
+    .ref(pending.run.id)
+    .resume(answers, { idempotencyKey: resumeKey });
   assert.equal(resumedReplay.response.status, 200);
-  assert.equal(resumedReplay.data.id, resumed.data.id);
-  assert.equal(
-    (
-      await workspace.runs
-        .ref(resumed.data.id)
-        .wait({ timeoutMs: 30_000, pollIntervalMs: 250 })
-    ).data.status,
-    "completed",
-  );
+  assert.equal(resumedReplay.data.id, resumed.id);
+  assert.equal((await resumed.wait({ timeoutMs: 30_000 })).status, "completed");
+  const queuedOutcome = await queued.result();
+  assert.equal(queuedOutcome.status, "completed");
+  const incorporated = await queued.entry.get();
+  assert.equal(incorporated.data.status, "consumed");
+  assert.equal(incorporated.data.assigned_run_id, queuedOutcome.run.id);
 
   const bytes = new Uint8Array([0, 255, 17, 3, 39, 100]);
   const upload = (
-    await workspace.uploads.create(
+    await resources.uploads.create(
       { file: new Blob([bytes], { type: "application/octet-stream" }) },
-      { idempotencyKey: `ts-upload-${randomUUID()}` },
+      { idempotencyKey: key() },
     )
   ).data;
   assert.equal(upload.size, bytes.length);
-  const asset = await workspace.assets.create({
+  const asset = await resources.assets.create({
     upload_id: upload.upload_id,
     name: `typescript-${randomUUID()}.bin`,
   });
   assert.equal(asset.response.status, 201);
   assert.equal(
-    (await workspace.assets.ref(asset.data.id).get()).data.digest,
+    (await resources.assets.ref(asset.data.id).get()).data.digest,
     upload.digest,
   );
-  const content = await workspace.assets.ref(asset.data.id).content.get();
+  const content = await resources.assets.ref(asset.data.id).content.get();
   try {
     assert.deepEqual(
       new Uint8Array(await new Response(content.body).arrayBuffer()),
@@ -148,7 +125,7 @@ try {
     await content.close();
   }
   console.log(
-    `Resource interaction installed acceptance passed: thread=${first.data.thread.id} run=${first.data.run.id} queued=${queued.data.entry.id} resumed=${resumed.data.id} asset=${asset.data.id}`,
+    `Installed interaction acceptance passed: thread=${interaction.thread.id} run=${outcome.run.id} frames=${events.join(",")} queued=${queued.entry.id} resumed=${resumed.id} asset=${asset.data.id}`,
   );
 } finally {
   client.close();

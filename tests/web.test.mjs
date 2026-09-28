@@ -24,31 +24,22 @@ test("workspace submission and replay-capable commands are not retried automatic
     },
   });
   await assert.rejects(
-    client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
-      params: {
-        path: { workspace_id: "ws_test" },
-        header: { "Idempotency-Key": "submit-1" },
-      },
-      body: {
+    client.resources.threads.create(
+      {
         agent_id: "agent_example",
         payload: { content: [{ type: "text", text: "Hi" }] },
       },
-    }),
+      { idempotencyKey: "submit-1" },
+    ),
     ApiError,
   );
   await assert.rejects(
-    client.http.POST(
-      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox",
+    client.resources.threads.ref("th_test").inbox.create(
       {
-        params: {
-          path: { workspace_id: "ws_test", thread_id: "th_test" },
-          header: { "Idempotency-Key": "submit-2" },
-        },
-        body: {
-          agent_id: "agent_example",
-          payload: { content: [{ type: "text", text: "Next" }] },
-        },
+        agent_id: "agent_example",
+        payload: { content: [{ type: "text", text: "Next" }] },
       },
+      { idempotencyKey: "submit-2" },
     ),
     ApiError,
   );
@@ -71,17 +62,14 @@ test("null overrides remain explicit while omitted options are untouched", async
     { overrides: null },
     { overrides: { model: { model_id: "model_example" } } },
   ]) {
-    await client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
-      params: {
-        path: { workspace_id: "ws_test" },
-        header: { "Idempotency-Key": `key-${bodies.length}` },
-      },
-      body: {
+    await client.resources.threads.create(
+      {
         agent_id: "agent_example",
         payload: { content: [{ type: "text", text: "Hi" }] },
         ...(options && { options }),
       },
-    });
+      { idempotencyKey: `key-${bodies.length}` },
+    );
   }
   assert.deepEqual(
     bodies.map((body) => body.options),
@@ -104,12 +92,12 @@ test("resource references select explicit scope without credential discovery", a
       return Response.json({ items: [], next_cursor: null });
     },
   });
-  const workspace = client.resources.workspaces.ref("ws_test");
+  const workspace = client.resources;
   await workspace.agents.list();
   await workspace.agents.ref("agent_example").get();
   assert.deepEqual(urls, [
-    `${baseUrl}/api/v1/workspaces/ws_test/agents`,
-    `${baseUrl}/api/v1/workspaces/ws_test/agents/agent_example`,
+    `${baseUrl}/api/v1/agents`,
+    `${baseUrl}/api/v1/agents/agent_example`,
   ]);
   client.close();
   await assert.rejects(workspace.agents.list(), { name: "AbortError" });

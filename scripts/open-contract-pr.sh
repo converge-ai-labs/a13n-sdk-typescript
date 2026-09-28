@@ -82,7 +82,7 @@ main() {
     # Install the selected proposal's lockfile, including reviewer adaptations.
     env -u GH_TOKEN make install
     env -u GH_TOKEN make generate
-    git add -A -- contract src/schema.ts src/resources/generated.ts openapi.json
+    git add -A -- contract src/schema.ts src/resources/generated.ts src/workspace-scope.ts openapi.json
     bot_git commit -m "chore(contract): update Service snapshot to $commit"
     if [[ "$state" == OPEN ]]; then
       live_pr=$(gh pr view "$number" --repo "$GITHUB_REPOSITORY" --json state,isDraft)

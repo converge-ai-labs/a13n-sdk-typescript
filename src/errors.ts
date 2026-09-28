@@ -26,39 +26,8 @@ export class WaitTimeoutError extends Error {
   }
 }
 
-export class ReplayGapError extends ApiError {
-  override readonly name = "ReplayGapError";
-  readonly runId: string | undefined;
-  readonly requestedCursor: string | undefined;
-  readonly retainedFloor: string | undefined;
-  readonly highWatermark: string | undefined;
-
-  constructor(
-    status: number,
-    code: string,
-    message: string,
-    details: Record<string, unknown>,
-    requestId: string | null,
-    retryAfter: string | null = null,
-  ) {
-    super(status, code, message, details, requestId, retryAfter);
-    this.runId = optionalString(details, "run_id");
-    this.requestedCursor = optionalString(details, "requested_cursor");
-    this.retainedFloor = optionalString(details, "retained_floor");
-    this.highWatermark = optionalString(details, "high_watermark");
-  }
-}
-
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function optionalString(
-  value: Record<string, unknown>,
-  key: string,
-): string | undefined {
-  const field = value[key];
-  return typeof field === "string" ? field : undefined;
 }
 
 export async function requireSuccess(response: Response): Promise<void> {
@@ -72,8 +41,7 @@ export async function requireSuccess(response: Response): Promise<void> {
   const error =
     isRecord(payload) && isRecord(payload.error) ? payload.error : {};
   const code = typeof error.code === "string" ? error.code : "http_error";
-  const ErrorType = code.includes("replay_gap") ? ReplayGapError : ApiError;
-  throw new ErrorType(
+  throw new ApiError(
     response.status,
     code,
     typeof error.message === "string"

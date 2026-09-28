@@ -1,15 +1,13 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { ApiError, createClient, data } from "../dist/index.js";
+import { ApiError, createClient } from "../dist/index.js";
 
 // Opt-in, existing disposable HTTPS Service with an accessible mem0_oss provider.
 // The caller owns fixture lifecycle; this does not establish cloud compatibility.
 for (const name of [
   "A13N_SERVICE_URL",
   "A13N_API_TOKEN",
-  "A13N_WORKSPACE",
   "A13N_AGENT",
-  "A13N_ORGANIZATION",
   "A13N_MEMORY_PROVIDER",
 ])
   if (!process.env[name]) throw new Error(`${name} is required`);
@@ -23,35 +21,32 @@ const etag = (result) => {
   return { ifMatch };
 };
 try {
-  const workspace = client.resources.workspaces.ref(process.env.A13N_WORKSPACE);
-  const organization = client.resources.organizations.ref(
-    process.env.A13N_ORGANIZATION,
-  );
-  const provider = organization.memoryProviders.ref(
+  const resources = client.resources;
+  const provider = resources.memoryProviders.ref(
     process.env.A13N_MEMORY_PROVIDER,
   );
   assert.equal((await provider.get()).data.type, "mem0_oss");
   assert.equal((await provider.test()).data.status, "succeeded");
   const providers = [];
-  for await (const item of organization.memoryProviders.items())
+  for await (const item of resources.memoryProviders.items())
     providers.push(item.id);
   assert.ok(providers.includes(process.env.A13N_MEMORY_PROVIDER));
   assert.equal(
-    data(await client.http.GET("/api/v1/auth/configuration")).initialized,
+    (await resources.auth.configuration.get()).data.initialized,
     true,
   );
-  assert.equal((await client.http.GET("/healthz")).response.status, 200);
-  assert.equal((await client.http.GET("/readyz")).response.status, 200);
+  assert.equal((await resources.healthz.get()).response.status, 200);
+  assert.equal((await resources.readyz.get()).response.status, 200);
 
   const key = `ts-memory-${randomUUID()}`;
-  const created = await workspace.memories.create({ key, name: key });
-  const memory = workspace.memories.ref(created.data.id);
+  const created = await resources.memories.create({ name: key });
+  const memory = resources.memories.ref(created.data.id);
   assert.equal(
     (await memory.update({ name: "SDK file memory" }, etag(created))).data.name,
     "SDK file memory",
   );
   const memories = [];
-  for await (const item of workspace.memories.items()) memories.push(item.id);
+  for await (const item of resources.memories.items()) memories.push(item.id);
   assert.ok(memories.includes(created.data.id));
   const path = "projects/计划 #1%.md";
   const file = memory.files.ref(path);
@@ -96,7 +91,7 @@ try {
   );
   assert.ok((await memory.revisions.ref(changed).restore()).data.file);
 
-  const submitted = await workspace.threads.create(
+  const submitted = await resources.threads.create(
     {
       agent_id: process.env.A13N_AGENT,
       payload: { content: [{ type: "text", text: "Memory SDK acceptance." }] },
@@ -105,10 +100,10 @@ try {
     { idempotencyKey: key },
   );
   assert.ok(submitted.data.run);
-  const thread = workspace.threads.ref(submitted.data.thread.id);
-  const run = workspace.runs.ref(submitted.data.run.id);
+  const thread = resources.threads.ref(submitted.data.thread.id);
+  const run = client.runs.ref(submitted.data.run.id);
   assert.equal(
-    (await run.wait({ timeoutMs: 60_000, pollIntervalMs: 100 })).data.status,
+    (await run.wait({ timeoutMs: 60_000, pollIntervalMs: 100 })).status,
     "completed",
   );
   const mounted = await thread.memories
@@ -123,13 +118,12 @@ try {
   assert.equal((await thread.memories.list()).data.items.length, 1);
   await thread.memories.ref("extra").delete(etag(extra));
 
-  const recordCreated = await workspace.memories.create({
-    key: `${key}-records`,
-    name: key,
+  const recordCreated = await resources.memories.create({
+    name: `${key}-records`,
     type: "mem0_oss",
     provider_id: process.env.A13N_MEMORY_PROVIDER,
   });
-  const recordMemory = workspace.memories.ref(recordCreated.data.id);
+  const recordMemory = resources.memories.ref(recordCreated.data.id);
   const record = await recordMemory.records.create({ text: "prefers tea" });
   await recordMemory.records
     .ref(record.data.id)

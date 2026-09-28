@@ -1,39 +1,20 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { createClient, data } from "../dist/index.js";
+import { createClient } from "../dist/index.js";
 
-/** Integration acceptance against a separately managed disposable Service (never starts or stops it). */
-const required = [
+/** Acceptance against an independently managed disposable Service. Never starts/stops Service. */
+for (const name of [
   "A13N_SERVICE_URL",
   "A13N_API_TOKEN",
-  "A13N_WORKSPACE",
   "A13N_AGENT",
   "A13N_CLIENT_TOOL_AGENT",
-];
-for (const name of required)
+])
   if (!process.env[name]) throw new Error(`${name} is required`);
-const workspaceId = process.env.A13N_WORKSPACE;
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
-const key = `typescript-accept-${randomUUID()}`;
-const payload = {
-  agent_id: process.env.A13N_AGENT,
-  payload: {
-    content: [
-      { type: "text", text: "Reply briefly to this SDK acceptance probe." },
-    ],
-  },
-};
-const submit = () =>
-  client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
-    params: {
-      path: { workspace_id: workspaceId },
-      header: { "Idempotency-Key": key },
-    },
-    body: payload,
-  });
+const key = () => `typescript-accept-${randomUUID()}`;
 const wait = async (check, timeout = 30_000) => {
   const deadline = Date.now() + timeout;
   do {
@@ -41,182 +22,93 @@ const wait = async (check, timeout = 30_000) => {
     if (value) return value;
     await new Promise((resolve) => setTimeout(resolve, 200));
   } while (Date.now() < deadline);
-  throw new Error("Timed out waiting for a sealed run");
+  throw new Error("Timed out waiting for Service state");
 };
 try {
-  const first = await submit();
-  assert.equal(first.response.status, 201);
-  const created = data(first);
-  assert.ok(created.thread?.id && created.entry?.id && created.run?.id);
-  const replay = await submit();
+  const prompt = "Reply briefly to this SDK acceptance probe.";
+  const firstKey = key();
+  const agent = client.agents.ref(process.env.A13N_AGENT);
+  const interaction = await agent.start(prompt, { idempotencyKey: firstKey });
+  assert.equal(interaction.receipt.response.status, 201);
+  const replay = await client.resources.threads.create(
+    {
+      agent_id: agent.id,
+      payload: { content: [{ type: "text", text: prompt }] },
+    },
+    { idempotencyKey: firstKey },
+  );
   assert.equal(replay.response.status, 200);
-  assert.equal(data(replay).entry.id, created.entry.id);
-  assert.equal(data(replay).thread.id, created.thread.id);
-  const threadId = created.thread.id;
-  const runId = created.run.id;
-  const thread = data(
-    await client.http.GET(
-      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}",
-      {
-        params: { path: { workspace_id: workspaceId, thread_id: threadId } },
-      },
-    ),
-  );
-  assert.equal(thread.id, threadId);
+  assert.equal(replay.data.entry.id, interaction.entry.id);
+  assert.equal(replay.data.thread.id, interaction.thread.id);
 
-  const deadline = AbortSignal.timeout(20_000);
-  const output = [];
-  try {
-    for await (const { cursor, frame } of client.resources.workspaces
-      .ref(workspaceId)
-      .threads.ref(threadId)
-      .events({ signal: deadline })) {
-      output.push(frame.type);
-      assert.equal(
-        cursor === null,
-        ["changed", "reset", "gap"].includes(frame.type),
-      );
-      if (frame.type === "boundary") break;
-    }
-  } catch (error) {
-    if (deadline.aborted)
-      throw new Error(`Thread SSE timed out after: ${output.join(", ")}`, {
-        cause: error,
-      });
-    throw error;
-  }
-  assert.ok(
-    output.includes("boundary"),
-    `No checkpoint boundary: ${output.join(", ")}`,
-  );
-  const run = await wait(async () => {
-    const current = data(
-      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
-        params: { path: { workspace_id: workspaceId, run_id: runId } },
-      }),
-    );
-    return ["completed", "failed", "cancelled", "waiting"].includes(
-      current.status,
-    )
-      ? current
-      : null;
-  });
-  assert.equal(run.status, "completed", `Run sealed as ${run.status}`);
-  const items = data(
-    await client.http.GET(
-      "/api/v1/workspaces/{workspace_id}/runs/{run_id}/items",
-      {
-        params: { path: { workspace_id: workspaceId, run_id: runId } },
-      },
-    ),
-  );
-  assert.ok(Array.isArray(items.items));
+  const frames = [];
+  for await (const event of interaction) frames.push(event.frame.type);
+  const outcome = await interaction.result();
+  assert.equal(outcome.status, "completed", `Run sealed as ${outcome.status}`);
+  assert.equal((await interaction.thread.get()).data.id, interaction.thread.id);
+  assert.ok(Array.isArray((await outcome.run.items()).data.items));
 
-  const clientTool = data(
-    await client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
-      params: {
-        path: { workspace_id: workspaceId },
-        header: { "Idempotency-Key": `typescript-client-${randomUUID()}` },
-      },
-      body: {
-        agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
-        payload: {
-          content: [
-            {
-              type: "text",
-              text: "[client] Run local_review on this request.",
-            },
-          ],
-        },
-      },
-    }),
+  const clientToolAgent = client.agents.ref(process.env.A13N_CLIENT_TOOL_AGENT);
+  const toolInteraction = await clientToolAgent.start(
+    "[client] Run local_review on this request.",
+    { idempotencyKey: key() },
   );
-  assert.ok(clientTool.run?.id && clientTool.thread?.id);
-  const pending = await wait(async () => {
-    const current = data(
-      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
-        params: {
-          path: { workspace_id: workspaceId, run_id: clientTool.run.id },
-        },
-      }),
-    );
-    return ["waiting", "completed", "failed", "cancelled"].includes(
-      current.status,
-    )
-      ? current
-      : null;
-  });
+  const pending = await toolInteraction.result();
   assert.equal(pending.status, "waiting");
-  assert.equal(pending.wait_reason, "client_tool");
+  assert.equal(pending.snapshot.data.wait_reason, "client_tool");
   const request = pending.pending?.items.find(
     (item) => item.kind === "client_tool",
   );
   assert.ok(request?.tool_call_id, "Expected a client-tool pending action");
-  const queuedKey = `typescript-queue-${randomUUID()}`;
-  const queuedRequest = () =>
-    client.http.POST(
-      "/api/v1/workspaces/{workspace_id}/threads/{thread_id}/inbox",
-      {
-        params: {
-          path: { workspace_id: workspaceId, thread_id: clientTool.thread.id },
-          header: { "Idempotency-Key": queuedKey },
-        },
-        body: {
-          agent_id: process.env.A13N_CLIENT_TOOL_AGENT,
-          delivery: "next_run",
-          payload: {
-            content: [{ type: "text", text: "Summarize that review." }],
-          },
-        },
-      },
-    );
-  const queuedFirst = await queuedRequest();
-  assert.equal(queuedFirst.response.status, 201);
-  assert.equal(data(queuedFirst).run, null);
-  assert.equal(data(queuedFirst).entry.status, "pending");
-  const queuedReplay = await queuedRequest();
-  assert.equal(queuedReplay.response.status, 200);
-  assert.equal(data(queuedReplay).entry.id, data(queuedFirst).entry.id);
 
-  const resumeKey = `typescript-resume-${randomUUID()}`;
-  const resumeRequest = () =>
-    client.http.POST("/api/v1/workspaces/{workspace_id}/runs/{run_id}/resume", {
-      params: {
-        path: { workspace_id: workspaceId, run_id: pending.id },
-        header: { "Idempotency-Key": resumeKey },
+  const queuedKey = key();
+  const queuedBody = {
+    agent_id: clientToolAgent.id,
+    delivery: "next_run",
+    payload: { content: [{ type: "text", text: "Summarize that review." }] },
+  };
+  const queuedFirst = await client.resources.threads
+    .ref(toolInteraction.thread.id)
+    .inbox.create(queuedBody, { idempotencyKey: queuedKey });
+  assert.equal(queuedFirst.response.status, 201);
+  assert.equal(queuedFirst.data.run, null);
+  assert.equal(queuedFirst.data.entry.status, "pending");
+  const queuedReplay = await client.resources.threads
+    .ref(toolInteraction.thread.id)
+    .inbox.create(queuedBody, { idempotencyKey: queuedKey });
+  assert.equal(queuedReplay.response.status, 200);
+  assert.equal(queuedReplay.data.entry.id, queuedFirst.data.entry.id);
+
+  const answers = {
+    answers: [
+      {
+        tool_call_id: request.tool_call_id,
+        action: "complete",
+        result: { reviewed: true },
       },
-      body: {
-        answers: [
-          {
-            tool_call_id: request.tool_call_id,
-            action: "complete",
-            result: { reviewed: true },
-          },
-        ],
-      },
-    });
-  const resumedFirst = await resumeRequest();
-  assert.equal(resumedFirst.response.status, 201);
-  const resumedReplay = await resumeRequest();
-  assert.equal(resumedReplay.response.status, 200);
-  assert.equal(data(resumedFirst).id, data(resumedReplay).id);
-  const completed = await wait(async () => {
-    const current = data(
-      await client.http.GET("/api/v1/workspaces/{workspace_id}/runs/{run_id}", {
-        params: {
-          path: { workspace_id: workspaceId, run_id: data(resumedFirst).id },
-        },
-      }),
-    );
-    return ["completed", "failed", "cancelled", "waiting"].includes(
-      current.status,
-    )
-      ? current
-      : null;
+    ],
+  };
+  const resumeKey = key();
+  const successor = await pending.run.resume(answers, {
+    idempotencyKey: resumeKey,
   });
+  assert.equal(successor.receipt.response.status, 201);
+  const resumedReplay = await client.resources.runs
+    .ref(pending.run.id)
+    .resume(answers, { idempotencyKey: resumeKey });
+  assert.equal(resumedReplay.response.status, 200);
+  assert.equal(resumedReplay.data.id, successor.id);
+  const completed = await successor.wait();
   assert.equal(completed.status, "completed");
+  await wait(async () => {
+    const current = await client.resources.threads
+      .ref(toolInteraction.thread.id)
+      .inbox.ref(queuedFirst.data.entry.id)
+      .get();
+    return current.data.status === "consumed" ? current : null;
+  });
   console.log(
-    `Service acceptance passed: thread=${threadId} run=${runId} frames=${output.join(",")} queued=${data(queuedFirst).entry.id} resumed=${completed.id}`,
+    `Service acceptance passed: thread=${interaction.thread.id} run=${outcome.run.id} frames=${frames.join(",")} queued=${queuedFirst.data.entry.id} resumed=${completed.run.id}`,
   );
 } finally {
   client.close();

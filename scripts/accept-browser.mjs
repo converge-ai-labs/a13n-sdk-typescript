@@ -40,10 +40,7 @@ function moduleUrl(filename) {
   const transformed = source.replace(
     /\bfrom\s+"([^"]+)"/g,
     (_match, specifier) => {
-      const dependency =
-        specifier === "openapi-fetch"
-          ? join(root, "node_modules/openapi-fetch/dist/index.mjs")
-          : resolve(dirname(filename), specifier);
+      const dependency = resolve(dirname(filename), specifier);
       return `from ${JSON.stringify(moduleUrl(dependency))}`;
     },
   );
@@ -57,7 +54,7 @@ try {
     `${process.env.A13N_SERVICE_URL}/api/v1/auth/configuration`,
   ]);
   const code = `(async () => { const result = await (async () => {
-    const { createClient, textPayload } = await import(${JSON.stringify(moduleUrl(join(root, "dist/index.js")))});
+    const { createClient } = await import(${JSON.stringify(moduleUrl(join(root, "dist/index.js")))});
     const login = await fetch('/api/v1/auth/login', {
       method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({email: ${JSON.stringify(email)}, password: ${JSON.stringify(password)}}),
@@ -65,21 +62,20 @@ try {
     if (login.status !== 200) throw new Error('Browser login HTTP ' + login.status);
     const csrf = (await login.json()).csrf_token;
     if (typeof csrf !== 'string') throw new Error('Browser login missing CSRF token');
-    const client = createClient({baseUrl: location.origin, auth: {type: 'session'}});
+    const client = createClient({baseUrl: location.origin, auth: {type: 'session', workspaceId: ${JSON.stringify(process.env.A13N_WORKSPACE)}}});
     try {
       client.setCsrfToken(csrf);
-      const session = await client.http.GET('/api/v1/auth/session');
+      const session = await client.resources.auth.session.get();
       if (session.response.status !== 200) throw new Error('Browser session unavailable');
-      const workspace = client.resources.workspaces.ref(${JSON.stringify(process.env.A13N_WORKSPACE)});
-      const result = await workspace.threads.create(
-        {agent_id: ${JSON.stringify(process.env.A13N_AGENT)}, payload: textPayload('Reply briefly to this browser SDK probe.')}, {idempotencyKey: ${JSON.stringify(`ts-browser-${randomUUID()}`)}}
+      const interaction = await client.agents.ref(${JSON.stringify(process.env.A13N_AGENT)}).start(
+        'Reply briefly to this browser SDK probe.', {idempotencyKey: ${JSON.stringify(`ts-browser-${randomUUID()}`)}}
       );
-      if (result.response.status !== 201 || !result.data.run) throw new Error('Browser resource submission failed');
-      const run = await workspace.runs.ref(result.data.run.id).wait({timeoutMs: 30000, pollIntervalMs: 250});
-      if (run.data.status !== 'completed') throw new Error('Browser Run did not complete: ' + run.data.status);
-      const items = await workspace.runs.ref(result.data.run.id).items.get();
+      if (interaction.receipt.response.status !== 201) throw new Error('Browser resource submission failed');
+      const outcome = await interaction.result({timeoutMs: 30000, pollIntervalMs: 250});
+      if (outcome.status !== 'completed') throw new Error('Browser Run did not complete: ' + outcome.status);
+      const items = await outcome.run.items();
       if (!Array.isArray(items.data.items)) throw new Error('Browser Run Items unavailable');
-      return {login: login.status, session: session.response.status, submission: result.response.status, run: run.data.status, items: items.data.items.length};
+      return {login: login.status, session: session.response.status, submission: interaction.receipt.response.status, run: outcome.status, items: items.data.items.length};
     } finally { client.close(); }
   })(); return result; })()`;
   const response = command(["eval", "--stdin"], code);

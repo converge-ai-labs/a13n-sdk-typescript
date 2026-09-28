@@ -19,7 +19,7 @@ const client = createClient({
 });
 const resources = client.resources;
 const workspaceId = process.env.A13N_WORKSPACE;
-const ws = resources.workspaces.ref(workspaceId);
+const workspace = resources.workspaces.ref(workspaceId);
 const org = resources.organizations.ref(process.env.A13N_ORGANIZATION);
 const key = `generated-${randomUUID()}`;
 const etag = (result) => {
@@ -49,28 +49,30 @@ try {
     assert.equal(error.details.verb, "admin");
   }
   assert.equal(
-    (await org.memoryProviders.ref(process.env.A13N_MEMORY_PROVIDER).test())
-      .data.status,
+    (
+      await resources.memoryProviders
+        .ref(process.env.A13N_MEMORY_PROVIDER)
+        .test()
+    ).data.status,
     "succeeded",
   );
   for (const collection of [
-    ws.agents,
-    ws.sessions,
-    ws.threads,
-    ws.memories,
-    ws.assets,
-    ws.connections,
-    ws.environments,
-    ws.environmentTemplates,
-    ws.skills,
-    ws.subscriptions,
-    ws.secrets,
-    org.models,
-    org.modelProviders,
-    org.webProviders,
-    org.environmentProviders,
-    org.connectorProviders,
-    org.memoryProviders,
+    resources.agents,
+    resources.sessions,
+    resources.threads,
+    resources.memories,
+    resources.assets,
+    resources.connections,
+    resources.environments,
+    resources.environmentTemplates,
+    resources.skills,
+    resources.subscriptions,
+    resources.models,
+    resources.modelProviders,
+    resources.webProviders,
+    resources.environmentProviders,
+    resources.connectorProviders,
+    resources.memoryProviders,
   ]) {
     const page = await collection.list({ query: { limit: 1 } });
     assert.ok(Array.isArray(page.data.items));
@@ -78,7 +80,7 @@ try {
 
   // Multipart bytes are not JSON, and downloaded bytes are not buffered by SDK.
   const bytes = new Uint8Array(300_000).map((_, index) => index % 251);
-  const uploaded = await ws.uploads.create(
+  const uploaded = await resources.uploads.create(
     {
       file: new File([bytes], "generated.bin", {
         type: "application/octet-stream",
@@ -86,11 +88,11 @@ try {
     },
     { idempotencyKey: `${key}-upload` },
   );
-  const asset = await ws.assets.create(
+  const asset = await resources.assets.create(
     { upload_id: uploaded.data.upload_id, name: `${key}.bin` },
     { idempotencyKey: `${key}-asset` },
   );
-  const content = await ws.assets.ref(asset.data.id).content.get();
+  const content = await resources.assets.ref(asset.data.id).content.get();
   try {
     assert.deepEqual(
       new Uint8Array(await new Response(content.body).arrayBuffer()),
@@ -109,30 +111,19 @@ try {
     ],
     { type: "image/png" },
   );
-  await ws.icon.replace(png, {
-    ...etag(await ws.get()),
+  await workspace.icon.replace(png, {
+    ...etag(await workspace.get()),
     contentType: "image/png",
   });
-  const icon = await ws.icon.get();
+  const icon = await workspace.icon.get();
   try {
     assert.ok((await new Response(icon.body).arrayBuffer()).byteLength > 0);
   } finally {
     await icon.close();
   }
 
-  const secret = await ws.secrets.create({
-    key: `GENERATED_${randomUUID().replaceAll("-", "")}`,
-    value: "disposable-test-value",
-  });
-  const secretRef = ws.secrets.ref(secret.data.id);
-  const replaced = await secretRef.replace(
-    { value: "replacement-test-value" },
-    etag(secret),
-  );
-  assert.equal((await secretRef.delete(etag(replaced))).response.status, 204);
-
-  const created = await ws.memories.create({ key, name: key });
-  const memory = ws.memories.ref(created.data.id);
+  const created = await resources.memories.create({ name: key });
+  const memory = resources.memories.ref(created.data.id);
   const path = "generated/计划 #%.md";
   const first = await memory.files.create({ path, content: "first" });
   const file = memory.files.ref(path);
@@ -161,14 +152,14 @@ try {
     },
     memories: [{ name: "notes", memory_id: created.data.id, access: "read" }],
   };
-  const submit = () => ws.threads.create(body, { idempotencyKey: key });
+  const submit = () => resources.threads.create(body, { idempotencyKey: key });
   const submitted = await submit();
   const replay = await submit();
   assert.equal(submitted.response.status, 201);
   assert.equal(replay.response.status, 200);
   assert.equal(submitted.data.entry.id, replay.data.entry.id);
   assert.ok(submitted.data.run);
-  const thread = ws.threads.ref(submitted.data.thread.id);
+  const thread = resources.threads.ref(submitted.data.thread.id);
   const rawSse = await thread.stream.get({
     signal: AbortSignal.timeout(20_000),
   });
@@ -184,19 +175,19 @@ try {
   }
   assert.equal(
     (
-      await client.resources.workspaces
-        .ref(workspaceId)
-        .runs.ref(submitted.data.run.id)
+      await client.runs
+        .ref(submitted.data.run.id)
         .wait({ timeoutMs: 60_000, pollIntervalMs: 100 })
-    ).data.status,
+    ).status,
     "completed",
   );
   assert.ok(
-    (await ws.runs.ref(submitted.data.run.id).get()).data.memory_mounts.length,
+    (await resources.runs.ref(submitted.data.run.id).get()).data.memory_mounts
+      .length,
   );
   assert.ok(
     Array.isArray(
-      (await ws.runs.ref(submitted.data.run.id).items.get()).data.items,
+      (await resources.runs.ref(submitted.data.run.id).items.get()).data.items,
     ),
   );
   await thread.memories.ref("notes").delete(etag(await thread.get()));
@@ -206,7 +197,7 @@ try {
       resource_acceptance: "passed",
       sdk: "typescript",
       generated_only_http: true,
-      collection_families: 18,
+      collection_families: 16,
       binary_bytes: bytes.length,
       png_upload: true,
       cas_numeric_restore: true,

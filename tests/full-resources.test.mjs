@@ -152,7 +152,7 @@ test("generated pagination is lazy, snapshots repeated filters and retains respo
     }),
   );
   const query = { label: ["team:a", "scope:b"] };
-  const pages = client.resources.workspaces.ref("ws").memories.pages({ query });
+  const pages = client.resources.memories.pages({ query });
   query.label.push("changed");
   assert.equal(urls.length, 0);
   const first = await pages.next();
@@ -173,7 +173,7 @@ test("generated pages reject repeated cursors and item iteration closes early", 
       return Response.json({ items: [{ id: "item" }], next_cursor: "same" });
     }),
   );
-  const memories = client.resources.workspaces.ref("ws").memories;
+  const memories = client.resources.memories;
   const pages = memories.pages();
   await pages.next();
   await assert.rejects(pages.next(), ProtocolError);
@@ -201,9 +201,8 @@ test("generated raw SSE retains Last-Event-ID; explicit close cancels its body",
       );
     }),
   );
-  const response = await client.resources.workspaces
-    .ref("ws")
-    .threads.ref("thr")
+  const response = await client.resources.threads
+    .ref("thr")
     .stream.get({ lastEventId: "2-0" });
   await response.close();
   assert.equal(cancelled, true);
@@ -227,14 +226,12 @@ test("generated resources share CSRF, shutdown, errors and non-replayed writes",
         { status: 503 },
       );
     }),
-    auth: { type: "session" },
+    auth: { type: "session", workspaceId: "ws" },
     maxReadRetries: 2,
   });
   client.setCsrfToken("csrf");
   await assert.rejects(
-    client.resources.workspaces
-      .ref("ws")
-      .memories.create({ key: "notes", name: "Notes" }),
+    client.resources.memories.create({ key: "notes", name: "Notes" }),
     ApiError,
   );
   assert.equal(calls, 1);

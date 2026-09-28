@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { ApiError, createClient, ProtocolError } from "../dist/index.js";
 import { decodeSse } from "../dist/streams/sse.js";
+import { threadStream } from "../dist/streams/thread-stream.js";
+import { Transport } from "../dist/transport.js";
 
 const baseUrl = "https://service.example";
 const json = (value) => Response.json(value);
@@ -26,44 +28,41 @@ test("session mutations use X-CSRF-Token; public flows need no CSRF; shutdown ab
     },
   });
   await assert.rejects(
-    client.http.PATCH("/api/v1/users/me", { body: { name: "A" } }),
+    client.resources.users.me.update({ name: "A" }, { ifMatch: '"version"' }),
     /CSRF/,
   );
   client.setCsrfToken("csrf-proof");
-  await client.http.PATCH("/api/v1/users/me", {
-    headers: { "If-Match": '"version"' },
-    body: { name: "A" },
-  });
+  await client.resources.users.me.update(
+    { name: "A" },
+    { ifMatch: '"version"' },
+  );
   assert.equal(requests[0].headers.get("X-CSRF-Token"), "csrf-proof");
   assert.equal(requests[0].headers.get("If-Match"), '"version"');
   assert.equal(requests[0].credentials, "same-origin");
   assert.deepEqual(await requests[0].json(), { name: "A" });
   client.setCsrfToken(undefined);
-  await client.http.POST("/api/v1/auth/password-reset/confirm", {
-    body: { token: "proof", password: "updated" },
+  await client.resources.auth.passwordReset.confirm({
+    token: "proof",
+    password: "updated",
   });
-  await client.http.POST("/api/v1/auth/email-change/confirm", {
-    body: { token: "proof" },
-  });
-  await client.http.POST("/api/v1/invitations/{invitation_id}/accept", {
-    params: { path: { invitation_id: "inv_test" } },
-    body: { token: "proof" },
-  });
-  await client.http.POST("/api/v1/auth/bootstrap", {
-    body: { email: "owner@example.test", password: "test-only" },
+  await client.resources.auth.emailChange.confirm({ token: "proof" });
+  await client.resources.invitations.ref("inv_test").accept({ token: "proof" });
+  await client.resources.auth.bootstrap({
+    email: "owner@example.test",
+    password: "test-only",
   });
   assert.equal(requests.length, 5);
   for (const request of requests.slice(1))
     assert.equal(request.headers.get("X-CSRF-Token"), null);
   client.close();
-  await assert.rejects(client.http.GET("/api/v1/users/me"), {
+  await assert.rejects(client.resources.users.me.get(), {
     name: "AbortError",
   });
 });
 
 test("credentials cannot escape through a per-call base URL", async () => {
   let calls = 0;
-  const client = createClient({
+  const transport = new Transport({
     baseUrl,
     auth: { type: "bearer", token: "private" },
     fetch: async () => {
@@ -72,13 +71,11 @@ test("credentials cannot escape through a per-call base URL", async () => {
     },
   });
   await assert.rejects(
-    client.http.GET("/api/v1/users/me", {
-      baseUrl: "https://elsewhere.example",
-    }),
+    transport.fetch(new Request("https://elsewhere.example/api/v1/users/me")),
     /configured Service/,
   );
   assert.equal(calls, 0);
-  client.close();
+  transport.close();
 });
 
 test("safe reads retry; mutations never replay even with idempotency keys", async () => {
@@ -91,20 +88,17 @@ test("safe reads retry; mutations never replay even with idempotency keys", asyn
         ? new Response(null, { status: 503, headers: { "Retry-After": "0" } })
         : json({}),
   });
-  await client.http.GET("/api/v1/users/me");
+  await client.resources.users.me.get();
   assert.equal(calls, 2);
   calls = 0;
   await assert.rejects(
-    client.http.POST("/api/v1/workspaces/{workspace_id}/threads", {
-      params: {
-        path: { workspace_id: "ws_test" },
-        header: { "Idempotency-Key": "one" },
-      },
-      body: {
+    client.resources.threads.create(
+      {
         agent_id: "agent_test",
         payload: { content: [{ type: "text", text: "hi" }] },
       },
-    }),
+      { idempotencyKey: "one" },
+    ),
     ApiError,
   );
   assert.equal(calls, 1);
@@ -136,17 +130,14 @@ test("raw binary and multipart uploads retain their bytes and content type", asy
       return json({});
     },
   });
-  await client.http.PUT("/api/v1/users/me/avatar", {
-    body: new Blob([bytes]),
-    headers: { "Content-Type": "image/png", "If-Match": '"v1"' },
+  await client.resources.users.me.avatar.replace(new Blob([bytes]), {
+    contentType: "image/png",
+    ifMatch: '"v1"',
   });
-  await client.http.POST("/api/v1/workspaces/{workspace_id}/uploads", {
-    params: {
-      path: { workspace_id: "ws_test" },
-      header: { "Idempotency-Key": "file-1" },
-    },
-    body: { file: new Blob([bytes]) },
-  });
+  await client.resources.uploads.create(
+    { file: new Blob([bytes]) },
+    { idempotencyKey: "file-1" },
+  );
   assert.equal(calls, 2);
   client.close();
 });
@@ -200,10 +191,11 @@ test("Thread SSE cursor advances after consumption only for delta/boundary; gap 
       });
     },
   });
-  const stream = client.resources.workspaces
-    .ref("ws_one")
-    .threads.ref("th_one")
-    .events({ after: "1-0" });
+  const stream = threadStream(
+    (options) => client.resources.threads.ref("th_one").stream.get(options),
+    new AbortController().signal,
+    { after: "1-0" },
+  );
   assert.deepEqual((await stream.next()).value.frame.type, "delta");
   assert.deepEqual((await stream.next()).value, {
     cursor: null,
@@ -212,7 +204,7 @@ test("Thread SSE cursor advances after consumption only for delta/boundary; gap 
   assert.equal((await stream.next()).value.cursor, "3-0");
   assert.equal(
     requests[0].url,
-    `${baseUrl}/prefix/api/v1/workspaces/ws_one/threads/th_one/stream`,
+    `${baseUrl}/prefix/api/v1/threads/th_one/stream`,
   );
   assert.equal(requests[0].headers.get("Last-Event-ID"), "1-0");
   assert.equal(requests[1].headers.get("Last-Event-ID"), "2-0");
@@ -223,7 +215,7 @@ test("Thread SSE cursor advances after consumption only for delta/boundary; gap 
 test("Thread SSE rejects invalid ID on signals and malformed payload without guessing history", async () => {
   const client = createClient({
     baseUrl,
-    auth: { type: "session" },
+    auth: { type: "session", workspaceId: "ws" },
     fetch: async () =>
       new Response(
         chunks('id: 2-0\nevent: gap\ndata: {"run_id":"run_one"}\n\n'),
@@ -231,7 +223,10 @@ test("Thread SSE rejects invalid ID on signals and malformed payload without gue
       ),
   });
   await assert.rejects(
-    client.resources.workspaces.ref("ws").threads.ref("th").events().next(),
+    threadStream(
+      (options) => client.resources.threads.ref("th").stream.get(options),
+      new AbortController().signal,
+    ).next(),
     ProtocolError,
   );
   client.close();
@@ -247,20 +242,36 @@ test("typed health probes stay within the configured origin and exact prefix", a
       return json({ status: "ok" });
     },
   });
-  await client.http.GET("/healthz");
-  await client.http.GET("/readyz");
+  await client.resources.healthz.get();
+  await client.resources.readyz.get();
   assert.deepEqual(
     requests.map((request) => request.url),
     [`${baseUrl}/prefix/healthz`, `${baseUrl}/prefix/readyz`],
   );
-  for (const [path, options] of [
-    ["/healthz/extra", {}],
-    ["/metrics", {}],
-    ["/healthz", { baseUrl: "https://elsewhere.example/prefix" }],
-    ["/healthz", { baseUrl }],
+  const transport = new Transport({
+    baseUrl: `${baseUrl}/prefix`,
+    auth: { type: "session" },
+    fetch: async () => json({}),
+  });
+  for (const path of [
+    "/healthz/extra",
+    "/metrics",
+    "https://elsewhere.example/healthz",
+    `${baseUrl}/healthz`,
   ])
-    await assert.rejects(client.http.GET(path, options), /configured Service/);
-  await assert.rejects(client.http.POST("/healthz"), /configured Service/);
+    await assert.rejects(
+      transport.fetch(
+        new Request(path.startsWith("/") ? `${baseUrl}/prefix${path}` : path),
+      ),
+      /configured Service/,
+    );
+  await assert.rejects(
+    transport.fetch(
+      new Request(`${baseUrl}/prefix/healthz`, { method: "POST" }),
+    ),
+    /configured Service/,
+  );
+  transport.close();
   assert.equal(requests.length, 2);
   client.close();
 });

@@ -13,8 +13,9 @@ const maxFrameCharacters = 1024 * 1024;
 /** Decode incremental UTF-8 and LF/CRLF/CR framing, including split delimiters. */
 export async function* decodeSse(
   body: ReadableStream<Uint8Array>,
+  signal?: AbortSignal,
 ): AsyncGenerator<SseFrame> {
-  for await (const frame of decodeSseDetailed(body)) {
+  for await (const frame of decodeSseDetailed(body, signal)) {
     // Thread signal frames carry no cursor even when the SSE parser retains a previous ID.
     yield {
       id: frame.idPresent ? frame.id : "",
@@ -67,13 +68,15 @@ export async function* decodeSseDetailed(
         if (size > maxFrameCharacters)
           throw new ProtocolError("SSE frame exceeds the size limit.");
         if (!line) {
-          if (values.length)
+          if (values.length) {
+            signal?.throwIfAborted();
             yield {
               id,
               event: event || "message",
               data: values.join("\n"),
               idPresent,
             };
+          }
           values = [];
           event = "";
           idPresent = false;

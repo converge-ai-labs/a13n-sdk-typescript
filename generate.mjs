@@ -25,9 +25,32 @@ export async function generate({ root = new URL("./", import.meta.url) } = {}) {
   const snapshot = await prettier.format(await fs.readFile(source, "utf8"), {
     parser: "json",
   });
-  const resources = generateResources(JSON.parse(snapshot));
+  const document = JSON.parse(snapshot);
+  const resources = generateResources(document);
+  const scopedRoutes = Object.entries(document.paths).flatMap(([path, item]) =>
+    Object.entries(item)
+      .filter(
+        ([method, operation]) =>
+          ["get", "post", "put", "patch", "delete"].includes(method) &&
+          [...(item.parameters ?? []), ...(operation.parameters ?? [])].some(
+            (parameter) =>
+              parameter.in === "header" && parameter.name === "X-Workspace-ID",
+          ),
+      )
+      .map(([method]) => {
+        const pattern = path
+          .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+          .replace(/\\\{[^/]+\\\}/g, "[^/]+");
+        return `[${JSON.stringify(method.toUpperCase())}, new RegExp(${JSON.stringify(`^${pattern}$`)})]`;
+      }),
+  );
+  const scope = await prettier.format(
+    `/** Generated workspace-scoped routes from the pinned Service contract. */\nconst routes: ReadonlyArray<readonly [string, RegExp]> = [${scopedRoutes.join(",")}];\nexport function isWorkspaceScopedRoute(method: string, path: string): boolean { return routes.some(([verb, pattern]) => verb === method && pattern.test(path)); }\n`,
+    { parser: "typescript" },
+  );
   await fs.mkdir(new URL("src/resources/", root), { recursive: true });
   const outputs = [
+    [new URL("src/workspace-scope.ts", root), scope],
     [
       new URL("src/resources/generated.ts", root),
       await prettier.format(resources.source, { parser: "typescript" }),

@@ -1,23 +1,20 @@
 # TypeScript SDK Overview
 
-The package exposes one complete generated resource tree at `client.resources`. Each operation has one generated route binding. Run `wait` calls that handle's generated `get`; Thread `events` decodes its generated `stream.get` response. `textPayload` is a pure message builder, not a second submission API. All handles bind locally; no construction fetches remote state.
-
-`client.http` is the explicit low-level escape hatch for custom headers, middleware and response parsing through generated OpenAPI paths. It shares authentication and shutdown with resources, but does not add a second managed graph or workspace wrapper. The SDK does not authorize or execute agents itself.
+`@converge.ai/a13n` has two layers and one wire implementation. The authored Agent-oriented layer supplies finite `Interaction` with iteration, authoritative result and Thread/receipt together. The complete generated `client.resources` layer maps each pinned schema operation to one typed HTTP call. Both use the same transport, authentication, error handling and generated route bindings; no parallel HTTP facade, workspace-scoped business tree, or client-side Agent executor exists.
 
 ```mermaid
 flowchart LR
-  App[Application] --> Resources[Scoped resource handles]
-  App --> HTTP[Generated HTTP operations]
-  Resources --> SSE[Thread SSE adapter]
-  Resources --> Transport[Shared transport]
-  HTTP --> Transport
-  SSE --> Transport
-  Transport --> Service[Service /api/v1]
-  Pin[Pinned Service contract] --> Types[Generated types]
+  App[Application] --> Agent[Agent interaction and exact Run handles]
+  App --> Resources[Generated complete resources]
+  Agent --> Resources
+  Agent --> Parser[Typed Thread SSE parser]
+  Parser --> Resources
+  Resources --> Transport[One authenticated transport]
+  Transport --> Service[Service]
+  Pin[Pinned Service OpenAPI] --> Types[Generated types and bindings]
   Types --> Resources
-  Types --> HTTP
 ```
 
-The normal path is: choose a workspace, submit a `NewThread` with an Agent ID and idempotency key, retain the `Submitted` receipt including its inbox entry and nullable Run, read the Run's committed Items, and optionally observe live Thread events. Further messages go to that Thread's inbox; a submitted entry can start immediately or wait while another Run occupies the Thread. Resume, interrupt and fork target exact Run identities. Streaming is observation only: a frame, EOF or local close neither commits execution nor proves business success. Service responses are the source of truth.
+The ordinary journey binds an Agent by **ID**, calls `start(input,{idempotencyKey,...})`, optionally iterates its finite output, reads `interaction.result()`, then calls `send(threadId,input,{idempotencyKey,...})` to continue. A Thread is not owned by any single Agent. The interaction retains the original `Submitted` receipt with Thread, Entry and nullable initial Run. Its result waits for Entry **consumption**, then observes only the incorporating Run; assignment alone is not incorporation. It stops at completed, failed, cancelled or waiting without following a successor. `RunOutcome.snapshot` and Run Items are authoritative; transient stream frames are not.
 
-Generated wire fields retain snake_case and omission versus explicit null; SDK options use camelCase. Service alone owns authorization, state, versioning and retention. This package never imports Service runtime or another SDK.
+Business requests with API-key auth use the key's implicit workspace. Same-origin session callers select a workspace explicitly for declared workspace-scoped operations and use CSRF for protected mutations. Administration retains its explicit organization/workspace paths. Service alone owns identities, authorization, durable state, versioning and retention. Wire fields remain snake_case and preserve omission versus explicit null; authored options use camelCase. The package imports neither Service runtime nor another SDK.

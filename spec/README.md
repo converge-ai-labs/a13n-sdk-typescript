@@ -1,14 +1,14 @@
 # TypeScript SDK Contract
 
-This repository owns `@converge.ai/a13n`: complete generated resource bindings and typed HTTP, plus interaction conveniences over Service `/api/v1`, transport, Thread SSE, tests, and independent npm lifecycle. Service owns identities, authorization, durable state, receipt semantics, and streaming protocol. Generated types and adapters derive from the pinned Service revision in `contract/`; generation is offline. The Console client is not an implementation dependency.
+This repository owns `@converge.ai/a13n`: an authored Agent-first finite Interaction, complete generated typed resource bindings over Service `/api/v1`, one authenticated transport, tests and an independent npm lifecycle. Service owns identities, authorization, durable state, receipts and stream protocol. The pinned `contract/` is generated offline from one Service revision. The Console client is not an implementation dependency.
 
-| Contract                                                       | Responsibility                                       |
-| -------------------------------------------------------------- | ---------------------------------------------------- |
-| [Overview](00-overview.md)                                     | Architecture and execution path                      |
-| [Resources and lifetime](01-resources-and-client-lifetime.md)  | Authentication, scope, response and handle lifetimes |
-| [Interaction and control](02-interaction-and-control.md)       | Thread submission, inbox, exact-Run commands         |
-| [Observation](03-observation-and-data-access.md)               | Thread SSE, cursor application, retained Run items   |
-| [Resource management](04-resource-management.md)               | Collections and management boundaries                |
-| [Protocol and compatibility](05-protocol-and-compatibility.md) | Pinned contracts, errors, validation and migration   |
+| Contract                                                       | Responsibility                                           |
+| -------------------------------------------------------------- | -------------------------------------------------------- |
+| [Overview](00-overview.md)                                     | Two layers, one transport and ordinary execution journey |
+| [Resources and lifetime](01-resources-and-client-lifetime.md)  | Authentication, scope, response and handle lifetimes     |
+| [Interaction and control](02-interaction-and-control.md)       | Agent start/send, exact Entry/Run result and commands    |
+| [Observation](03-observation-and-data-access.md)               | Finite stream, raw SSE, cursor and committed readback    |
+| [Resource management](04-resource-management.md)               | Generated collections, administration and Memory         |
+| [Protocol and compatibility](05-protocol-and-compatibility.md) | Pin, errors, validation and breaking cutover             |
 
-This is the current SDK contract. Service semantics are upstream-owned; see `contract/semantics/` for pinned normative inputs. Contribution and release workflow lives in [CONTRIBUTING.md](../CONTRIBUTING.md).
+This is the current SDK contract. Service semantics remain upstream-owned; `contract/semantics/` contains pinned normative inputs. Contribution and release workflow lives in [CONTRIBUTING.md](../CONTRIBUTING.md).

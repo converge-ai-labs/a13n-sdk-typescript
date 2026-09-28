@@ -4,7 +4,7 @@ import test from "node:test";
 import { ApiError, createClient } from "../dist/index.js";
 
 const baseUrl = "https://service.example.test";
-const memoryBase = "/api/v1/workspaces/ws_one/memories/mem_one";
+const memoryBase = "/api/v1/memories/mem_one";
 const match = { ifMatch: '"file:2"' };
 
 function mockClient(fetch) {
@@ -44,7 +44,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
       : Response.json({ items: [], next_cursor: null }, { status });
   });
   try {
-    const memories = client.resources.workspaces.ref("ws_one").memories;
+    const memories = client.resources.memories;
     await memories.list();
     await memories.create({ key: "notes", name: "Notes" });
     const memory = memories.ref("mem_one");
@@ -70,9 +70,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await memory.records.search({ query: "this" });
     await memory.records.ref("rec_one").replace({ text: "updated" });
     await memory.records.ref("rec_one").delete();
-    const mounts = client.resources.workspaces
-      .ref("ws_one")
-      .threads.ref("thr_one").memories;
+    const mounts = client.resources.threads.ref("thr_one").memories;
     await mounts.list();
     await mounts.create(
       { name: "notes", memory_id: "mem_one", access: "write" },
@@ -80,8 +78,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     );
     await mounts.ref("notes").update({ access: "read", recall: false }, match);
     await mounts.ref("notes").delete(match);
-    const providers =
-      client.resources.organizations.ref("org_one").memoryProviders;
+    const providers = client.resources.memoryProviders;
     await providers.list();
     await providers.create({
       key: "mem0",
@@ -92,8 +89,9 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await providers.ref("prv_one").get();
     await providers.ref("prv_one").update({ enabled: false }, match);
     await providers.ref("prv_one").test();
-    await client.http.POST("/api/v1/auth/bootstrap", {
-      body: { email: "owner@example.test", password: "test-only" },
+    await client.resources.auth.bootstrap({
+      email: "owner@example.test",
+      password: "test-only",
     });
     const expected = Object.entries(document.paths).flatMap(
       ([path, methods]) =>
@@ -132,9 +130,7 @@ test("files preserve nested Unicode paths, ETags, history bodies and nullable re
         );
   });
   try {
-    const memory = client.resources.workspaces
-      .ref("ws_one")
-      .memories.ref("mem_one");
+    const memory = client.resources.memories.ref("mem_one");
     const result = await memory.files.ref(path).get();
     assert.equal(result.data.content, "text");
     assert.equal(result.response.headers.get("ETag"), '"file:3"');
@@ -188,7 +184,7 @@ test("record search stays in the body; record and mount handles do not invent GE
         });
   });
   try {
-    const workspace = client.resources.workspaces.ref("ws_one");
+    const workspace = client.resources;
     const records = workspace.memories.ref("mem_one").records;
     const found = await records.search({ query: "private query", limit: 3 });
     assert.equal(found.data.items[0].score, null);
@@ -231,7 +227,7 @@ test("memory collection pages snapshot repeated labels and preserve opaque recor
     });
   });
   try {
-    const memories = client.resources.workspaces.ref("ws_one").memories;
+    const memories = client.resources.memories;
     const filters = { label: ["team:a", "scope:b"], kind: "file" };
     const pages = memories.pages({ query: filters });
     filters.label.push("later");
@@ -271,9 +267,8 @@ test("memory stale and unconfirmed writes preserve Service errors without replay
   });
   try {
     await assert.rejects(
-      client.resources.workspaces
-        .ref("ws_one")
-        .memories.ref("mem_one")
+      client.resources.memories
+        .ref("mem_one")
         .records.create({ text: "one attempt" }),
       (error) =>
         error instanceof ApiError &&
