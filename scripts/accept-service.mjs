@@ -55,11 +55,12 @@ try {
   );
   const pending = await toolInteraction.result();
   assert.equal(pending.status, "waiting");
-  assert.equal(pending.snapshot.data.wait_reason, "client_tool");
-  const request = pending.pending?.items.find(
-    (item) => item.kind === "client_tool",
-  );
-  assert.ok(request?.tool_call_id, "Expected a client-tool pending action");
+  assert.equal(pending.snapshot.data.wait_reason, "call");
+  assert.equal(pending.pending?.approvals.length, 0);
+  assert.equal(pending.pending?.calls.length, 1);
+  const request = pending.pending.calls[0];
+  assert.equal(request.tool_name, "local_review");
+  assert.ok(request.tool_call_id, "Expected a client-tool pending call");
 
   const queuedKey = key();
   const queuedBody = {
@@ -80,13 +81,13 @@ try {
   assert.equal(queuedReplay.data.entry.id, queuedFirst.data.entry.id);
 
   const answers = {
-    answers: [
-      {
-        tool_call_id: request.tool_call_id,
-        action: "complete",
-        result: { reviewed: true },
-      },
-    ],
+    approvals: {},
+    calls: {
+      [request.tool_call_id]: { status: "returned", value: { reviewed: true } },
+    },
+    input: {
+      content: [{ type: "text", text: "Mention a limitation of the review." }],
+    },
   };
   const resumeKey = key();
   const successor = await pending.run.resume(answers, {

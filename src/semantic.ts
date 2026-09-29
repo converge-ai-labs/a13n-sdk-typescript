@@ -13,6 +13,7 @@ import { threadStream, type ThreadEvent } from "./streams/thread-stream.js";
 
 type Schema = components["schemas"];
 export type MessageInput = string | Schema["MessagePayload"];
+/** New-Thread fields, including a one-time imported message_history seed. */
 export type StartOptions = Omit<Schema["NewThread"], "agent_id" | "payload"> & {
   idempotencyKey: string;
   signal?: AbortSignal;
@@ -93,14 +94,14 @@ export class RunHandle {
     return this.resources.runs.ref(this.id).interrupt(options);
   }
 
-  /** Resume creates a distinct successor; it does not mutate this bound Run's identity. */
+  /** Submit the complete pending results and optional input as one successor intent. */
   async resume(
-    answers: Schema["ResumeRequest"],
+    request: Schema["Resume"],
     options: { idempotencyKey: string; signal?: AbortSignal },
   ): Promise<RunHandle> {
     const receipt = await this.resources.runs
       .ref(this.id)
-      .resume(answers, options);
+      .resume(request, options);
     return new RunHandle(
       receipt.data.id,
       this.resources,

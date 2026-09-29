@@ -1613,7 +1613,7 @@ export interface paths {
     put?: never;
     /**
      * Resume Run
-     * @description Answer the waiting run's approvals and client tools; the successor run continues from them.
+     * @description Answer the exact waiting run's approvals, client tools and user questions; the successor continues from them.
      */
     post: operations["resume_run_api_v1_runs__run_id__resume_post"];
     delete?: never;
@@ -2287,6 +2287,57 @@ export interface paths {
     };
     /** Summarize Usage */
     get: operations["summarize_usage_api_v1_usage_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/usage/agents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Usage Agents */
+    get: operations["usage_agents_api_v1_usage_agents_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/usage/models": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Usage Models */
+    get: operations["usage_models_api_v1_usage_models_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/usage/overview": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Usage Overview */
+    get: operations["usage_overview_api_v1_usage_overview_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3254,6 +3305,22 @@ export interface components {
       /** Name */
       name?: string | null;
     };
+    /** AgentUsage */
+    AgentUsage: {
+      /** Agent Id */
+      agent_id: string;
+      /** Name */
+      name: string;
+      runs: components["schemas"]["RunMetrics"];
+      usage: components["schemas"]["ModelMetrics"];
+    };
+    /** AgentUsagePage */
+    AgentUsagePage: {
+      /** Items */
+      items: components["schemas"]["AgentUsage"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
     /**
      * AgentValidate
      * @description A configuration to check as creating a revision would, storing nothing.
@@ -3266,10 +3333,6 @@ export interface components {
       agent_id?: string | null;
       config: components["schemas"]["AgentConfig-Input"];
     };
-    Answer:
-      | components["schemas"]["Approve"]
-      | components["schemas"]["Reject"]
-      | components["schemas"]["Complete"];
     /** ApiKey */
     ApiKey: {
       /**
@@ -3304,6 +3367,8 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    ApprovalDecision:
+      components["schemas"]["Approve"] | components["schemas"]["Deny"];
     /** Approve */
     Approve: {
       /**
@@ -3311,8 +3376,6 @@ export interface components {
        * @enum {string}
        */
       action: "approve";
-      /** Tool Call Id */
-      tool_call_id: string;
     };
     /** Asset */
     Asset: {
@@ -3516,6 +3579,8 @@ export interface components {
        */
       password: string;
     };
+    CallResult:
+      components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /** CallbackOutcome */
     CallbackOutcome: {
       /** Connection Id */
@@ -3599,17 +3664,6 @@ export interface components {
        * @enum {string}
        */
       permission?: "inherit" | "allow" | "deny";
-    };
-    /** Complete */
-    Complete: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      action: "complete";
-      result: components["schemas"]["JsonValue"];
-      /** Tool Call Id */
-      tool_call_id: string;
     };
     /** Connection */
     Connection: {
@@ -3860,6 +3914,15 @@ export interface components {
      * @enum {string}
      */
     CredentialMode: "required" | "optional" | "forbidden";
+    /** DailyUsage */
+    DailyUsage: {
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      usage: components["schemas"]["ModelMetrics"];
+    };
     /** DelegationContextPolicy */
     DelegationContextPolicy: {
       /**
@@ -3888,6 +3951,16 @@ export interface components {
       items: components["schemas"]["WebhookDelivery"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** Deny */
+    Deny: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      action: "deny";
+      /** Reason */
+      reason?: string | null;
     };
     /** EmailChangeConfirm */
     EmailChangeConfirm: {
@@ -4107,6 +4180,19 @@ export interface components {
        * Format: password
        */
       token: string;
+    };
+    /**
+     * Failed
+     * @description An explicit external tool failure, including an intentional unanswered question.
+     */
+    Failed: {
+      /** Message */
+      message: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "failed";
     };
     /** Failure */
     Failure: {
@@ -4919,6 +5005,10 @@ export interface components {
       options?: components["schemas"]["RunOptions-Input"];
       payload: components["schemas"]["MessagePayload"];
     };
+    /** @description Pydantic AI ModelMessage JSON objects, validated by the Service. Imports completed user text, model text and closed tool-call/JSON-result exchanges; no instructions, media or suspended execution. At most 256 messages and 256 KiB of normalized JSON. */
+    MessageHistory: {
+      [key: string]: components["schemas"]["JsonValue"];
+    }[];
     /** MessagePayload */
     MessagePayload: {
       /** Content */
@@ -5049,6 +5139,23 @@ export interface components {
       /** Provider Id */
       provider_id: string;
     };
+    /** ModelMetrics */
+    ModelMetrics: {
+      /** Cache Hit Rate */
+      cache_hit_rate: number | null;
+      /** Cache Read Tokens */
+      cache_read_tokens: number;
+      /** Cost */
+      cost: string | null;
+      /** Input Tokens */
+      input_tokens: number;
+      /** Output Tokens */
+      output_tokens: number;
+      /** Requests */
+      requests: number;
+      /** Unpriced Requests */
+      unpriced_requests: number;
+    };
     /** ModelPage */
     ModelPage: {
       /** Items */
@@ -5155,6 +5262,21 @@ export interface components {
       /** Requests */
       requests: number;
     };
+    /** ModelUsageGroup */
+    ModelUsageGroup: {
+      /** Model */
+      model: string | null;
+      /** Name */
+      name: string | null;
+      usage: components["schemas"]["ModelMetrics"];
+    };
+    /** ModelUsagePage */
+    ModelUsagePage: {
+      /** Items */
+      items: components["schemas"]["ModelUsageGroup"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
     /** MountCreate */
     MountCreate: {
       /** Environment Id */
@@ -5202,26 +5324,12 @@ export interface components {
        * @default []
        */
       memories?: components["schemas"]["MemoryMount"][];
+      message_history?: components["schemas"]["MessageHistory"];
       options?: components["schemas"]["RunOptions-Input"];
       payload: components["schemas"]["MessagePayload"];
       /** Session Id */
       session_id?: string | null;
     };
-    /** NoResponse */
-    NoResponse: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      action: "no_response";
-      /** Tool Call Id */
-      tool_call_id: string;
-    };
-    NormalizedAnswer:
-      | components["schemas"]["Approve"]
-      | components["schemas"]["Reject"]
-      | components["schemas"]["Complete"]
-      | components["schemas"]["NoResponse"];
     /** @enum {string} */
     OAuthGrant: "authorization_code" | "client_credentials";
     /** OAuthRedirect */
@@ -5359,30 +5467,28 @@ export interface components {
     };
     /**
      * Pending
-     * @description Public projection of the exact sealed pending set; the native requests live in the state object.
+     * @description Public projection; complete native requests and private metadata stay in the checkpoint.
      */
     Pending: {
-      /** Items */
-      items: components["schemas"]["PendingItem"][];
+      /** Approvals */
+      approvals: components["schemas"]["PendingCall"][];
+      /** Calls */
+      calls: components["schemas"]["PendingCall"][];
     };
-    /** PendingItem */
-    PendingItem: {
+    /** PendingCall */
+    PendingCall: {
       /** Arguments */
       arguments: {
         [key: string]: components["schemas"]["JsonValue"];
       };
-      kind: components["schemas"]["PendingKind"];
       /** Presentation */
       presentation?: {
         [key: string]: components["schemas"]["JsonValue"];
       } | null;
-      /** Tool Call Id */
-      tool_call_id: string;
+      tool_call_id: components["schemas"]["ToolCallId"];
       /** Tool Name */
       tool_name: string;
     };
-    /** @enum {string} */
-    PendingKind: "approval" | "client_tool" | "user_input";
     /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.
@@ -5531,7 +5637,7 @@ export interface components {
        */
       created_at: string;
       /** Created By Id */
-      created_by_id: string;
+      created_by_id: string | null;
       /** Credential Configured */
       credential_configured: boolean;
       /** Enabled */
@@ -5552,7 +5658,7 @@ export interface components {
        */
       updated_at: string;
       /** Updated By Id */
-      updated_by_id: string;
+      updated_by_id: string | null;
       /** Version */
       version: number;
       /** Workspace Id */
@@ -5677,33 +5783,20 @@ export interface components {
       /** Name */
       name?: string | null;
     };
-    /** Reject */
-    Reject: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      action: "reject";
-      /** Reason */
-      reason?: string | null;
-      /** Tool Call Id */
-      tool_call_id: string;
-    };
     /**
      * Resume
-     * @description The normalized batch stored on the successor: one answer per pending call of the exact wait.
+     * @description The complete result batch, submitted and stored on the successor without omission defaults.
      */
     Resume: {
-      /** Answers */
-      answers: components["schemas"]["NormalizedAnswer"][];
-    };
-    /** ResumeRequest */
-    ResumeRequest: {
-      /**
-       * Answers
-       * @default []
-       */
-      answers?: components["schemas"]["Answer"][];
+      /** Approvals */
+      approvals: {
+        [key: string]: components["schemas"]["ApprovalDecision"];
+      };
+      /** Calls */
+      calls: {
+        [key: string]: components["schemas"]["CallResult"];
+      };
+      input?: components["schemas"]["MessagePayload"] | null;
     };
     /** RetryConfig */
     RetryConfig: {
@@ -5724,6 +5817,18 @@ export interface components {
       output?: number | null;
       /** Tools */
       tools?: number | null;
+    };
+    /**
+     * Returned
+     * @description A JSON tool result. Built-in question values are validated by the Harness.
+     */
+    Returned: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      status: "returned";
+      value: components["schemas"]["JsonValue"];
     };
     /** RevokedConnection */
     RevokedConnection: {
@@ -5795,6 +5900,13 @@ export interface components {
       labels: {
         [key: string]: string;
       };
+    };
+    /** RunMetrics */
+    RunMetrics: {
+      /** Average Duration Seconds */
+      average_duration_seconds: number | null;
+      /** Runs */
+      runs: number;
     };
     /**
      * RunOptions
@@ -6498,7 +6610,7 @@ export interface components {
        */
       created_at: string;
       /** Created By Id */
-      created_by_id: string;
+      created_by_id: string | null;
       /** Description */
       description: string | null;
       /** Enabled */
@@ -6521,7 +6633,7 @@ export interface components {
        */
       updated_at: string;
       /** Updated By Id */
-      updated_by_id: string;
+      updated_by_id: string | null;
       /** Version */
       version: number;
       /** Workspace Id */
@@ -6637,6 +6749,7 @@ export interface components {
           [key: string]: string;
         };
       };
+      message_history: components["schemas"]["MessageHistory"];
       /**
        * Origin
        * @enum {string}
@@ -6662,6 +6775,7 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    ToolCallId: string;
     /** ToolDefinition */
     ToolDefinition: {
       /** Config Schema */
@@ -6924,6 +7038,13 @@ export interface components {
       /** Total Tokens Limit */
       total_tokens_limit?: number | null;
     };
+    /** UsageOverview */
+    UsageOverview: {
+      /** Daily */
+      daily: components["schemas"]["DailyUsage"][];
+      runs: components["schemas"]["RunMetrics"];
+      usage: components["schemas"]["ModelMetrics"];
+    };
     /** UsageSummary */
     UsageSummary: {
       /** Models */
@@ -6941,7 +7062,7 @@ export interface components {
     /** @enum {string} */
     Verb: "read" | "run" | "write" | "admin";
     /** @enum {string} */
-    WaitReason: "approval" | "client_tool" | "user_input" | "multiple";
+    WaitReason: "approval" | "call" | "multiple";
     /** @enum {string} */
     WebOperation: "search" | "scrape";
     /**
@@ -10736,7 +10857,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["ResumeRequest"];
+        "application/json": components["schemas"]["Resume"];
       };
     };
     responses: {
@@ -12295,6 +12416,95 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UsageSummary"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  usage_agents_api_v1_usage_agents_get: {
+    parameters: {
+      query: {
+        start: string;
+        end: string;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentUsagePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  usage_models_api_v1_usage_models_get: {
+    parameters: {
+      query: {
+        start: string;
+        end: string;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ModelUsagePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  usage_overview_api_v1_usage_overview_get: {
+    parameters: {
+      query: {
+        start: string;
+        end: string;
+        timezone?: string;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UsageOverview"];
         };
       };
       400: components["responses"]["Error"];

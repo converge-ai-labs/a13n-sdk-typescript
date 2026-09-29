@@ -221,7 +221,7 @@ test("Run resume returns distinct handle and committed Items readback, never fol
   });
   const original = client.runs.ref("run_one");
   const successor = await original.resume(
-    { answers: [] },
+    { approvals: {}, calls: {} },
     { idempotencyKey: "resume-001" },
   );
   assert.equal(successor.id, "run_successor");

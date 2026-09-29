@@ -190,6 +190,64 @@ export async function fullResourceTypes() {
   await resources.healthz.get();
 }
 
+export async function importedHistoryAndAtomicResumeTypes() {
+  const history: Schema["MessageHistory"] = [
+    {
+      kind: "request",
+      parts: [{ part_kind: "user-prompt", content: "Earlier" }],
+    },
+    { kind: "response", parts: [{ part_kind: "text", content: "Answered" }] },
+  ];
+  const attachment: Schema["MessagePayload"] = {
+    content: [
+      { type: "text", text: "Review this" },
+      { type: "asset", asset_id: "asset_one" },
+    ],
+  };
+  const agent = client.agents.ref("agent");
+  const started = await agent.start(attachment, {
+    idempotencyKey: "import-once",
+    message_history: history,
+  });
+  const readback: Schema["MessageHistory"] = (await started.thread.get()).data
+    .message_history;
+  void readback;
+  await workspace.threads.create(
+    { agent_id: "agent", message_history: history, payload: attachment },
+    { idempotencyKey: "native-import" },
+  );
+  await agent.send("thread", "Next", {
+    idempotencyKey: "next",
+    // @ts-expect-error The imported seed belongs to NewThread, not an inbox message.
+    message_history: history,
+  });
+  const batch: Schema["Resume"] = {
+    approvals: { approval_one: { action: "approve" } },
+    calls: { call_one: { status: "returned", value: { reviewed: true } } },
+    input: attachment,
+  };
+  await client.runs
+    .ref("run")
+    .resume(batch, { idempotencyKey: "atomic-resume" });
+  await workspace.runs
+    .ref("run")
+    .resume(batch, { idempotencyKey: "native-resume" });
+  await client.runs.ref("run").resume(
+    // @ts-expect-error Both result maps are required by the wire request.
+    { input: attachment },
+    { idempotencyKey: "missing-results" },
+  );
+  await client.runs.ref("run").resume(
+    {
+      approvals: {},
+      calls: {},
+      // @ts-expect-error Resume input uses a full message payload, not a plain string.
+      input: "text",
+    },
+    { idempotencyKey: "wrong-input" },
+  );
+}
+
 export async function semanticTypes() {
   const agent = workspace.agents.ref("agent");
   const thread = workspace.threads.ref("thread");
