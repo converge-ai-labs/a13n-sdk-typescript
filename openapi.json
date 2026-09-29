@@ -15178,7 +15178,7 @@
             "loginSession": []
           }
         ],
-        "summary": "List Providers",
+        "summary": "List connector providers",
         "tags": ["providers"]
       },
       "post": {
@@ -15242,7 +15242,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Create Provider",
+        "summary": "Create connector provider",
         "tags": ["providers"]
       }
     },
@@ -15306,7 +15306,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Get Provider",
+        "summary": "Get connector provider",
         "tags": ["providers"]
       },
       "patch": {
@@ -15399,7 +15399,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Update Provider",
+        "summary": "Update connector provider",
         "tags": ["providers"]
       }
     },
@@ -15729,7 +15729,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Test Provider",
+        "summary": "Test connector provider",
         "tags": ["providers"]
       }
     },
@@ -15812,7 +15812,7 @@
             "loginSession": []
           }
         ],
-        "summary": "List Providers",
+        "summary": "List environment providers",
         "tags": ["providers"]
       },
       "post": {
@@ -15876,7 +15876,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Create Provider",
+        "summary": "Create environment provider",
         "tags": ["providers"]
       }
     },
@@ -15940,7 +15940,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Get Provider",
+        "summary": "Get environment provider",
         "tags": ["providers"]
       },
       "patch": {
@@ -16033,7 +16033,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Update Provider",
+        "summary": "Update environment provider",
         "tags": ["providers"]
       }
     },
@@ -16098,7 +16098,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Test Provider",
+        "summary": "Test environment provider",
         "tags": ["providers"]
       }
     },
@@ -18990,7 +18990,7 @@
             "loginSession": []
           }
         ],
-        "summary": "List Providers",
+        "summary": "List memory providers",
         "tags": ["providers"]
       },
       "post": {
@@ -19054,7 +19054,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Create Provider",
+        "summary": "Create memory provider",
         "tags": ["providers"]
       }
     },
@@ -19118,7 +19118,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Get Provider",
+        "summary": "Get memory provider",
         "tags": ["providers"]
       },
       "patch": {
@@ -19211,7 +19211,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Update Provider",
+        "summary": "Update memory provider",
         "tags": ["providers"]
       }
     },
@@ -19276,7 +19276,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Test Provider",
+        "summary": "Test memory provider",
         "tags": ["providers"]
       }
     },
@@ -19390,7 +19390,7 @@
             "loginSession": []
           }
         ],
-        "summary": "List Providers",
+        "summary": "List model providers",
         "tags": ["providers"]
       },
       "post": {
@@ -19454,7 +19454,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Create Provider",
+        "summary": "Create model provider",
         "tags": ["providers"]
       }
     },
@@ -19518,7 +19518,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Get Provider",
+        "summary": "Get model provider",
         "tags": ["providers"]
       },
       "patch": {
@@ -19611,7 +19611,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Update Provider",
+        "summary": "Update model provider",
         "tags": ["providers"]
       }
     },
@@ -19676,7 +19676,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Test Provider",
+        "summary": "Test model provider",
         "tags": ["providers"]
       }
     },
@@ -27584,7 +27584,7 @@
             "loginSession": []
           }
         ],
-        "summary": "List Providers",
+        "summary": "List web providers",
         "tags": ["providers"]
       },
       "post": {
@@ -27648,7 +27648,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Create Provider",
+        "summary": "Create web provider",
         "tags": ["providers"]
       }
     },
@@ -27712,7 +27712,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Get Provider",
+        "summary": "Get web provider",
         "tags": ["providers"]
       },
       "patch": {
@@ -27805,7 +27805,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Update Provider",
+        "summary": "Update web provider",
         "tags": ["providers"]
       }
     },
@@ -27870,7 +27870,7 @@
             "loginSession": []
           }
         ],
-        "summary": "Test Provider",
+        "summary": "Test web provider",
         "tags": ["providers"]
       }
     },
