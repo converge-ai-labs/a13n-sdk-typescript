@@ -1402,6 +1402,7 @@ type Operation172 =
   operations["thread_stream_api_v1_threads__thread_id__stream_get"];
 type Operation172Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation172["parameters"]["query"]>;
   lastEventId?: NonNullable<
     Operation172["parameters"]["header"]
   >["Last-Event-ID"];
@@ -6784,7 +6785,7 @@ export class ThreadsThreadIdStreamResource {
   /** GET /api/v1/threads/{thread_id}/stream. Caller owns and closes the unbuffered body. */
   get(options: Operation172Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
-      ...{ signal: options.signal },
+      ...{ signal: options.signal, query: options.query },
       headers: Object.fromEntries(
         Object.entries({
           "Last-Event-ID": options.lastEventId,
