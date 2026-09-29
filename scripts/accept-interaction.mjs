@@ -19,17 +19,35 @@ try {
   const agent = client.agents.ref(process.env.A13N_AGENT);
   const prompt = "Reply briefly to the managed SDK acceptance probe.";
   const firstKey = key();
-  const interaction = await agent.start(prompt, { idempotencyKey: firstKey });
+  const message_history = [
+    {
+      kind: "request",
+      parts: [{ part_kind: "user-prompt", content: "What is the SDK?" }],
+    },
+    {
+      kind: "response",
+      parts: [{ part_kind: "text", content: "An Agent Service client." }],
+    },
+  ];
+  const interaction = await agent.start(prompt, {
+    idempotencyKey: firstKey,
+    message_history,
+  });
   assert.equal(interaction.receipt.response.status, 201);
   const replay = await resources.threads.create(
     {
       agent_id: agent.id,
+      message_history,
       payload: { content: [{ type: "text", text: prompt }] },
     },
     { idempotencyKey: firstKey },
   );
   assert.equal(replay.response.status, 200);
   assert.equal(replay.data.entry.id, interaction.entry.id);
+  assert.deepEqual(
+    (await interaction.thread.get()).data.message_history,
+    message_history,
+  );
   const events = [];
   for await (const event of interaction) events.push(event.frame.type);
   const outcome = await interaction.result();
@@ -48,10 +66,12 @@ try {
   );
   const pending = await tool.result();
   assert.equal(pending.status, "waiting");
-  const action = pending.pending?.items.find(
-    (item) => item.kind === "client_tool",
-  );
-  assert.ok(action?.tool_call_id);
+  const calls = pending.pending?.calls ?? [];
+  assert.equal(pending.pending?.approvals.length, 0);
+  assert.equal(calls.length, 1);
+  const action = calls[0];
+  assert.equal(action.tool_name, "local_review");
+  assert.ok(action.tool_call_id);
   const queuedKey = key();
   const inbox = resources.threads.ref(tool.thread.id).inbox;
   const message = {
@@ -73,13 +93,13 @@ try {
   assert.equal(queuedReplay.data.entry.id, queued.entry.id);
 
   const answers = {
-    answers: [
-      {
-        tool_call_id: action.tool_call_id,
-        action: "complete",
-        result: { reviewed: true },
-      },
-    ],
+    approvals: {},
+    calls: {
+      [action.tool_call_id]: { status: "returned", value: { reviewed: true } },
+    },
+    input: {
+      content: [{ type: "text", text: "Include one caveat in this review." }],
+    },
   };
   const resumeKey = key();
   const resumed = await pending.run.resume(answers, {
