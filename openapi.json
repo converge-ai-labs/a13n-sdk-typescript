@@ -1549,7 +1549,7 @@
             "type": "string"
           },
           "upload_id": {
-            "pattern": "^upl_[a-f0-9]{64}$",
+            "pattern": "^upl_[a-f0-9]{32}$",
             "title": "Upload Id",
             "type": "string"
           }
@@ -11813,7 +11813,7 @@
             "type": "string"
           },
           "upload_id": {
-            "pattern": "^upl_[a-f0-9]{64}$",
+            "pattern": "^upl_[a-f0-9]{32}$",
             "title": "Upload Id",
             "type": "string"
           }
