@@ -312,3 +312,41 @@ export async function semanticTypes() {
     break;
   }
 }
+
+export async function streamCoverageTypes() {
+  const config: Schema["ModelConfig-Input"] = {
+    model_name: "native-model",
+    model_api: "openai.responses",
+    settings: {
+      mode: "native",
+      flag: false,
+      budget: 4,
+      nullable: null,
+      nested: { values: [1, "two", null] },
+    },
+  };
+  const output: Schema["ModelConfig-Output"] = config;
+  // JsonValue follows the pinned schema's unconstrained value; settings remains a map.
+  void output.settings;
+  // @ts-expect-error Native model settings must be keyed settings, not a scalar.
+  config.settings = "high";
+  const display = (await client.runs.ref("run_one").items()).data;
+  const hint: string | null | undefined = display.resume_after;
+  void hint;
+  const raw = await client.resources.threads.ref("thread_one").stream.get({
+    query: { run: "run_one", position: display.position },
+    ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
+  });
+  await raw.close();
+  for await (const event of threadStream(
+    (options) => client.resources.threads.ref("thread_one").stream.get(options),
+    new AbortController().signal,
+    { run: "run_one", position: "1-5", after: "1234-5" },
+  )) {
+    if (event.frame.type === "gap") {
+      const target: string | null | undefined = event.frame.data.position;
+      void target;
+    }
+    break;
+  }
+}

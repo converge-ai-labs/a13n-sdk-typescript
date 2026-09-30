@@ -100,6 +100,7 @@ test("finite stream filters foreign Runs, preserves exact gap, and finishes with
       return Response.json(run("completed"));
     }
     if (path.endsWith("/stream")) {
+      assert.equal(new URL(request.url).search, "");
       const stream = new ReadableStream({
         start(controller) {
           controller.enqueue(
@@ -107,7 +108,7 @@ test("finite stream filters foreign Runs, preserves exact gap, and finishes with
               delta("1-0", "run_other") +
                 frame("changed", "", { version: 2 }) +
                 delta("2-0", "run_exact") +
-                frame("gap", "", { run_id: "run_exact" }) +
+                frame("gap", "", { run_id: "run_exact", position: "1-7" }) +
                 delta("3-0", "run_other"),
             ),
           );
@@ -125,9 +126,20 @@ test("finite stream filters foreign Runs, preserves exact gap, and finishes with
   const interaction = await client.agents
     .ref("agt_one")
     .start("Hi", { idempotencyKey: "one" });
-  const types = [];
-  for await (const event of interaction) types.push(event.frame.type);
-  assert.deepEqual(types, ["delta", "gap"]);
+  const events = [];
+  for await (const event of interaction) events.push(event);
+  assert.deepEqual(
+    events.map((event) => event.frame.type),
+    ["delta", "gap"],
+  );
+  assert.deepEqual(events[1], {
+    cursor: null,
+    frame: { type: "gap", data: { run_id: "run_exact", position: "1-7" } },
+  });
+  assert.equal(
+    paths.some((path) => path.endsWith("/items")),
+    false,
+  );
   assert.equal((await interaction.result()).status, "completed");
   assert.equal(streamCancelled, true);
   assert.equal(posts, 1);
