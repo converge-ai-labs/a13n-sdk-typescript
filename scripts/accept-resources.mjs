@@ -22,12 +22,14 @@ const workspaceId = process.env.A13N_WORKSPACE;
 const workspace = resources.workspaces.ref(workspaceId);
 const org = resources.organizations.ref(process.env.A13N_ORGANIZATION);
 const key = `generated-${randomUUID()}`;
+const stage = (name) => console.log(`[typescript resources] ${name}`);
 const etag = (result) => {
   const ifMatch = result.response.headers.get("ETag");
   assert.ok(ifMatch);
   return { ifMatch };
 };
 try {
+  stage("probes and shared providers: start");
   assert.equal((await resources.healthz.get()).response.status, 200);
   assert.equal((await resources.readyz.get()).response.status, 200);
   assert.equal(
@@ -56,6 +58,8 @@ try {
     ).data.status,
     "succeeded",
   );
+  stage("probes and shared providers: passed");
+  stage("collections: start");
   for (const collection of [
     resources.agents,
     resources.sessions,
@@ -78,6 +82,8 @@ try {
     assert.ok(Array.isArray(page.data.items));
   }
 
+  stage("collections: passed");
+  stage("multipart upload and binary download: start");
   // Multipart bytes are not JSON, and downloaded bytes are not buffered by SDK.
   const bytes = new Uint8Array(300_000).map((_, index) => index % 251);
   const uploaded = await resources.uploads.create(
@@ -88,6 +94,7 @@ try {
     },
     { idempotencyKey: `${key}-upload` },
   );
+  assert.match(uploaded.data.upload_id, /^upl_[a-f0-9]{32}$/);
   const asset = await resources.assets.create(
     { upload_id: uploaded.data.upload_id, name: `${key}.bin` },
     { idempotencyKey: `${key}-asset` },
@@ -102,6 +109,8 @@ try {
     await content.close();
   }
 
+  stage("multipart upload and binary download: passed");
+  stage("workspace icon: start");
   const png = new Blob(
     [
       Buffer.from(
@@ -122,6 +131,8 @@ try {
     await icon.close();
   }
 
+  stage("workspace icon: passed");
+  stage("memory CAS and restore: start");
   const created = await resources.memories.create({ name: key });
   const memory = resources.memories.ref(created.data.id);
   const path = "generated/计划 #%.md";
@@ -145,6 +156,8 @@ try {
     "first",
   );
 
+  stage("memory CAS and restore: passed");
+  stage("submission replay: start");
   const body = {
     agent_id: process.env.A13N_AGENT,
     payload: {
@@ -160,19 +173,27 @@ try {
   assert.equal(submitted.data.entry.id, replay.data.entry.id);
   assert.ok(submitted.data.run);
   const thread = resources.threads.ref(submitted.data.thread.id);
+  stage("submission replay: passed");
+  stage("raw SSE: opening");
   const rawSse = await thread.stream.get({
     signal: AbortSignal.timeout(20_000),
   });
+  stage("raw SSE: opened");
   try {
     const reader = rawSse.body.getReader();
     try {
+      stage("raw SSE: reading first chunk");
       assert.ok((await reader.read()).value.byteLength);
+      stage("raw SSE: first chunk received");
     } finally {
       reader.releaseLock();
     }
   } finally {
+    stage("raw SSE: closing");
     await rawSse.close();
+    stage("raw SSE: closed");
   }
+  stage("exact Run wait: start");
   assert.equal(
     (
       await client.runs
@@ -181,17 +202,115 @@ try {
     ).status,
     "completed",
   );
+  stage("exact Run wait: passed");
+  stage("committed Items coverage: reading");
   assert.ok(
     (await resources.runs.ref(submitted.data.run.id).get()).data.memory_mounts
       .length,
   );
-  assert.ok(
-    Array.isArray(
-      (await resources.runs.ref(submitted.data.run.id).items.get()).data.items,
-    ),
-  );
+  const display = (await resources.runs.ref(submitted.data.run.id).items.get())
+    .data;
+  assert.ok(Array.isArray(display.items));
+  assert.equal(display.run.id, submitted.data.run.id);
+  assert.equal(display.complete, true);
+  assert.match(display.position, /^(0|[1-9]\d{0,19})-(0|[1-9]\d{0,19})$/);
+  if (display.resume_after != null)
+    assert.match(display.resume_after, /^\d{1,20}-\d{1,20}$/);
+  // This sealed display is the explicit baseline. The Thread may no longer
+  // have a current Run: a healthy response can remain idle, including with a
+  // retained hint. Observe a bounded window, not an assumed boundary replay.
+  for (const lastEventId of new Set([
+    undefined,
+    display.resume_after ?? undefined,
+    "0-0",
+  ])) {
+    const hint =
+      lastEventId === undefined
+        ? "absent"
+        : lastEventId === "0-0"
+          ? "expired"
+          : "confirmed";
+    stage(`coverage (${hint} hint): opening`);
+    const observation = new AbortController();
+    const covered = await thread.stream.get({
+      query: { run: display.run.id, position: display.position },
+      ...(lastEventId ? { lastEventId } : {}),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(20_000),
+        observation.signal,
+      ]),
+    });
+    stage(`coverage (${hint} hint): opened; observing bounded window`);
+    const timer = setTimeout(() => observation.abort(), 1000);
+    const reader = covered.body.getReader();
+    try {
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        let chunk;
+        try {
+          chunk = await reader.read();
+        } catch (error) {
+          if (!observation.signal.aborted) throw error;
+          break;
+        }
+        assert.equal(chunk.done, false, "coverage stream ended unexpectedly");
+        buffer += decoder.decode(chunk.value, { stream: true });
+        let delimiter;
+        while ((delimiter = buffer.indexOf("\n\n")) >= 0) {
+          const envelope = buffer.slice(0, delimiter);
+          buffer = buffer.slice(delimiter + 2);
+          const event = envelope
+            .split("\n")
+            .find((line) => line.startsWith("event: "))
+            ?.slice(7);
+          if (!event || event === "changed") continue;
+          assert.notEqual(
+            event,
+            "gap",
+            "missing replay hint alone must not report loss",
+          );
+          assert.notEqual(
+            event,
+            "reset",
+            "same-attempt snapshot must not reset",
+          );
+          assert.notEqual(
+            event,
+            "delta",
+            "sealed display already covers these deltas",
+          );
+          if (event === "boundary") {
+            const data = JSON.parse(
+              envelope
+                .split("\n")
+                .find((line) => line.startsWith("data: "))
+                .slice(6),
+            );
+            assert.equal(data.run_id, display.run.id);
+          }
+        }
+      }
+    } finally {
+      clearTimeout(timer);
+      try {
+        stage(`coverage (${hint} hint): cancelling reader`);
+        await reader.cancel().catch((error) => {
+          if (!observation.signal.aborted) throw error;
+        });
+      } finally {
+        reader.releaseLock();
+        stage(`coverage (${hint} hint): closing response`);
+        await covered.close();
+      }
+      assert.equal(covered.closed, true);
+      stage(`coverage (${hint} hint): closed`);
+    }
+  }
+  stage("memory cleanup: start");
   await thread.memories.ref("notes").delete(etag(await thread.get()));
   await memory.delete(etag(await memory.get()));
+  stage("memory cleanup: passed");
   console.log(
     JSON.stringify({
       resource_acceptance: "passed",
@@ -203,6 +322,7 @@ try {
       cas_numeric_restore: true,
       idempotent_replay: true,
       raw_sse_close: true,
+      snapshot_coverage_and_expired_hint: true,
     }),
   );
 } finally {

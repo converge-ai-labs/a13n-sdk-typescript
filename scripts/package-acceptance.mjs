@@ -75,6 +75,7 @@ client.close();
   createClient,
   type Client,
   type ResourceResult,
+  type components,
 } from "@converge.ai/a13n";
 
 const client: Client = createClient({
@@ -93,9 +94,29 @@ client.resources.memories.ref("memory").revisions.ref("1");
 async function example() {
   const agent = client.agents.ref("agt_example");
   const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
-  for await (const event of interaction) void event.frame.type;
+  for await (const event of interaction) {
+    if (event.frame.type === "gap") {
+      const target: string | null | undefined = event.frame.data.position;
+      void target;
+    }
+  }
   const outcome = await interaction.result();
   void outcome.output;
+  const display = (await outcome.run.items()).data;
+  const hint: string | null | undefined = display.resume_after;
+  void hint;
+  if (display.position !== null) {
+    const raw = await client.resources.threads.ref(interaction.thread.id).stream.get({
+      query: { run: outcome.run.id, position: display.position },
+      ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
+    });
+    await raw.close();
+  }
+  const config: components["schemas"]["ModelConfig-Input"] = {
+    model_name: "native", model_api: "openai.responses",
+    settings: { reasoning_effort: "high", native: { values: [1, null, false] } },
+  };
+  void config;
   const followup = await agent.send(interaction.thread.id, "Next", { idempotencyKey: "next-1" });
   followup.close();
 }

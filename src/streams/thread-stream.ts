@@ -5,8 +5,11 @@ import { decodeSse, type SseFrame } from "./sse.js";
 
 export interface ThreadStreamOptions {
   signal?: AbortSignal;
-  /** Redis entry ID from the last applied delta or boundary. */
+  /** Redis entry ID from the last applied delta/boundary or RunItems.resume_after. */
   after?: string;
+  /** Exact Run and applied display coverage; both must be supplied together. */
+  run?: string;
+  position?: string;
 }
 export interface ItemRef {
   id: string;
@@ -29,7 +32,8 @@ export type ThreadStreamFrame =
       data: { run_id: string; attempt: number; sequence: number };
     }
   | { type: "changed"; data: { version: number } }
-  | { type: "reset" | "gap"; data: { run_id: string } };
+  | { type: "reset"; data: { run_id: string } }
+  | { type: "gap"; data: { run_id: string; position?: string | null } };
 export type ThreadEvent =
   | {
       cursor: string;
@@ -41,6 +45,7 @@ export type ThreadEvent =
     };
 
 const cursorPattern = /^\d{1,20}-\d{1,20}$/;
+const positionPattern = /^(0|[1-9]\d{0,19})-(0|[1-9]\d{0,19})$/;
 const kinds = new Set([
   "text_message",
   "reasoning_message",
@@ -98,11 +103,34 @@ function parseFrame(frame: SseFrame): ThreadEvent {
       cursor: null,
       frame: { type: "changed", data: { version: value.version } },
     };
-  if ((frame.event === "reset" || frame.event === "gap") && runSignal(value))
+  if (frame.event === "reset" && runSignal(value))
     return {
       cursor: null,
-      frame: { type: frame.event, data: { run_id: value.run_id } },
+      frame: { type: "reset", data: { run_id: value.run_id } },
     };
+  if (frame.event === "gap" && runSignal(value)) {
+    if (
+      value.position !== undefined &&
+      value.position !== null &&
+      !(
+        typeof value.position === "string" &&
+        positionPattern.test(value.position)
+      )
+    )
+      throw new ProtocolError("Invalid Thread gap position.");
+    return {
+      cursor: null,
+      frame: {
+        type: "gap",
+        data: {
+          run_id: value.run_id,
+          ...(value.position !== undefined
+            ? { position: value.position as string | null }
+            : {}),
+        },
+      },
+    };
+  }
   throw new ProtocolError("Unsupported Thread frame.");
 }
 
@@ -111,12 +139,23 @@ export async function* threadStream(
   open: (options: {
     signal: AbortSignal;
     lastEventId?: string;
+    query?: { run: string; position: string };
   }) => Promise<BinaryResult>,
   shutdown: AbortSignal,
   options: ThreadStreamOptions = {},
 ): AsyncGenerator<ThreadEvent> {
   if (options.after && !cursorPattern.test(options.after))
     throw new TypeError("after must be a Redis stream entry ID.");
+  if ((options.run !== undefined) !== (options.position !== undefined))
+    throw new TypeError("run and position must be supplied together.");
+  if (options.position !== undefined && !positionPattern.test(options.position))
+    throw new TypeError(
+      "position must be a canonical attempt-sequence position.",
+    );
+  const coverage =
+    options.run !== undefined && options.position !== undefined
+      ? { run: options.run, position: options.position }
+      : undefined;
   const signal = options.signal
     ? AbortSignal.any([options.signal, shutdown])
     : shutdown;
@@ -129,6 +168,7 @@ export async function* threadStream(
       stream = await open({
         signal,
         ...(cursor ? { lastEventId: cursor } : {}),
+        ...(coverage ? { query: coverage } : {}),
       });
       const response = stream.response;
       if (

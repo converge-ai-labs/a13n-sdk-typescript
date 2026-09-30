@@ -33,7 +33,7 @@ try {
   const { data: display } = await result.run.items();
   console.log("Replace preview with committed Items:", display.items);
   if (!display.complete)
-    console.log("Display is still incomplete; refresh this exact Run later.");
+    console.log("Run is not sealed; refresh this exact Run later.");
   if (display.dropped > 0)
     console.log("Earlier display Items were dropped:", display.dropped);
   if (previewUncertain)
@@ -47,8 +47,36 @@ Run it with the same three environment variables as [conversation.mjs](01-setup-
 
 ## Reconcile a UI after gaps or truncation
 
-Treat stream deltas as an ephemeral preview. On `gap` or `reset`, invalidate that preview and read `result.run.items()` (or the bound Run's `items()` while it is active); replace, rather than append to, what the UI rendered from deltas. This example suppresses later deltas until final readback. For a continuously updating UI, refresh committed Items during the run and rebuild the view from each snapshot, optionally continuing live preview only after your application has reconciled a trustworthy stream cursor. The returned `complete` flag describes the display snapshot: when false, refresh the **same Run** later instead of claiming its Items are final. `dropped > 0` means some earlier display Items are no longer retained; the readback is authoritative for retained Items but cannot reconstruct those missing Items. Do not advertise a lossless full transcript when either condition applies.
+Treat stream deltas as an ephemeral preview. On `gap` or `reset`, invalidate that preview and read `result.run.items()` (or the bound Run's `items()` while it is active); replace, rather than append to, what the UI rendered from deltas. This example suppresses later deltas until final readback. For a continuously updating UI, refresh committed Items during the run and rebuild the view from each snapshot, optionally continuing live preview only after your application has reconciled a trustworthy stream cursor. The returned `complete` flag means the Run is sealed, including waiting/failed/cancelled as well as completed: when false, refresh the **same Run** later instead of claiming its Items are final. `dropped > 0` means some earlier display Items are no longer retained; the readback is authoritative for retained Items but cannot reconstruct those missing Items. Do not advertise a lossless full transcript when either condition applies.
 
-The iterator yields frames attributed to this submitted input's incorporating Run and stops on completed/failed/cancelled/waiting even if the SSE socket is idle. Retained events can sometimes replay on attachment, but trimming, filtering and gaps prevent a lossless-history promise. Raw Thread-wide SSE is available through `client.resources.threads.ref(threadId).stream.get({lastEventId,signal})`; its caller owns the binary body and cursor reconciliation.
+The iterator yields frames attributed to this submitted input's incorporating Run and stops on completed/failed/cancelled/waiting even if the SSE socket is idle. Retained events can sometimes replay on attachment, but trimming, filtering and gaps prevent a lossless-history promise. Raw Thread-wide SSE is available through `client.resources.threads.ref(threadId).stream.get({query:{run,position},lastEventId,signal})`; its caller owns the binary body, framing and cursor reconciliation. The default finite iterator does not silently fetch/apply Items or suppress output using an invented display baseline.
+
+## Open raw SSE from an applied snapshot
+
+For an application that already applies committed Items, the native stream operation supports an explicit coverage baseline. This fragment belongs inside the client `try` block above, after you have obtained `result`; replace the `console.log` with your application's snapshot replacement before opening the stream:
+
+```js
+const { data: snapshot } = await result.run.items();
+console.log("Apply committed snapshot first:", snapshot.items);
+if (snapshot.position !== null) {
+  const raw = await client.resources.threads
+    .ref(interaction.thread.id)
+    .stream.get({
+      query: { run: result.run.id, position: snapshot.position },
+      ...(snapshot.resume_after ? { lastEventId: snapshot.resume_after } : {}),
+      signal: AbortSignal.timeout(5000),
+    });
+  try {
+    console.log("Owned raw SSE:", raw.response.headers.get("Content-Type"));
+    // Parse raw.body with your application's SSE reader, or pass it to a renderer.
+  } finally {
+    await raw.close();
+  }
+}
+```
+
+`run` and `position` must be supplied together. `position` is canonical `attempt-sequence` display coverage, not the Redis `Last-Event-ID`; `resume_after` is an optional confirmed Redis ID covered by that snapshot. Missing/expired/incompatible hints fall back to retained replay filtered by coverage and do not by themselves imply loss. Covered deltas are skipped by Service before decoding; boundaries remain visible. Without a coverage baseline, leave both query parameters out; do not manufacture a position from a cursor. Before the first checkpoint, Items may have `position: null` and no useful hint.
+
+Typed finite `gap` events preserve `event.frame.data.position` when provided. A non-null value identifies the position a replacement snapshot must cover; omission/null means the target is unknown, not that no output was lost. Do not advance complete application coverage across the hole using subsequent deltas. On `reset`, discard superseded provisional output and read a new snapshot; coverage from the previous attempt cannot seed the next attempt. Applying that snapshot and rebuilding a raw reader are application-owned operations, not an SDK recovery facade. Even a sealed snapshot can have dropped/truncated Items.
 
 An early loop break or `interaction.close()` cancels local observation, including a pending `result()`; do not expect another `result()` call to restart it. For final-only output, skip iteration and call `result()` directly—this opens no SSE. Neither closing nor aborting a local stream interrupts the remote Run; `result.run.interrupt()` is a separate, explicit mutation. Continue with [waiting tools](03-waiting-and-tools.md) or [timeout recovery](07-errors-and-recovery.md).
