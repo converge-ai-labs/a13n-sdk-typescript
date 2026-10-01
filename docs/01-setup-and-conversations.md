@@ -104,3 +104,36 @@ The imported JSON is immutable Thread provenance, readable on the Thread, and no
 The first `start()` supplies a typed `options.overrides.instructions` field. It replaces the Agent revision's instructions **for that Run** to request a three-bullet release summary; the later `send()` omits the override and uses its normal configuration. This is replacement, not concatenation: do not use an instructions override to accidentally remove required Agent-level guidance. For a narrow limit that does not replace instructions, `options.max_usage: { requests: 3 }` bounds model requests for the started Run. These choices are forwarded to Service; they do not guarantee that a particular model will follow a style request.
 
 For a chat transcript, read `result.run.items()` rather than assuming `result.output` is text or a `waiting` Run is completed. Each logical request needs a distinct explicit idempotency key; after an uncertain network failure, **reuse** its original key and body rather than generating another. See [streaming](02-streaming-and-readback.md), [Agent creation](06-generated-resources.md#create-an-agent), [waiting Runs](03-waiting-and-tools.md) or [recovery](07-errors-and-recovery.md).
+
+## Select a native Run configuration snapshot
+
+Run configuration is distinct from an Agent revision override. Inside the client lifetime above, pass it in native Run options:
+
+```js
+const interaction = await client.agents
+  .ref(process.env.A13N_AGENT_ID)
+  .start("Review without changing the Agent definition.", {
+    idempotencyKey: randomUUID(),
+    options: {
+      configuration: {
+        allowed_hosts: null,
+        extensions: {
+          "app.example/presentation": {
+            compact: false,
+            title: "",
+            sections: [],
+          },
+        },
+      },
+    },
+  });
+const result = await interaction.result();
+console.log(
+  "Accepted configuration:",
+  result.snapshot.data.options.configuration,
+);
+```
+
+Omission or `configuration:null` selects defaults for a new Run and retains an active Run's snapshot when steering. An explicit object is a **complete snapshot**, not a merge with the previous configuration: `{}` selects the empty default value, `allowed_hosts:null` is unrestricted, and `allowed_hosts:[]` denies every destination. Exact host rules and `regex:` patterns are normalized/validated by Service, not by the SDK. Restrictive policy can reject provider transports that cannot enforce it; it is not an SDK network sandbox. Keep namespaced extensions as native JSON, including false, zero, empty strings/arrays/objects and nested nulls.
+
+Use the same `options.configuration` shape in `send()`. While steering an active Run, a different explicit snapshot raises `ApiError` with conflict reason `run_configuration_immutable`; the SDK neither retries it nor silently queues it as a later Run. Choose `delivery:"next_run"` explicitly to request a new snapshot for later execution. Recovery, child execution and `resume()` successors retain their accepted configuration; resume accepts no replacement configuration field. See [streaming](02-streaming-and-readback.md) for separate execution and observation lifetimes.

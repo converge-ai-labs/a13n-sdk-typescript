@@ -93,7 +93,7 @@ void client.resources.assets.ref("asset").content.get;
 client.resources.memories.ref("memory").revisions.ref("1");
 async function example() {
   const agent = client.agents.ref("agt_example");
-  const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
+  const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { configuration: { allowed_hosts: null, extensions: { "app.example/sdk": { enabled: false, nested: [null, {}, []] } } }, overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
   for await (const event of interaction) {
     if (event.frame.type === "gap") {
       const target: string | null | undefined = event.frame.data.position;
@@ -116,8 +116,18 @@ async function example() {
     model_name: "native", model_api: "openai.responses",
     settings: { reasoning_effort: "high", native: { values: [1, null, false] } },
   };
+  config.characteristics = { image_input: null, video_input: { max_video_bytes: 1048576 }, url_input: { video: ["youtube"] } };
   void config;
-  const followup = await agent.send(interaction.thread.id, "Next", { idempotencyKey: "next-1" });
+  const provider = client.resources.modelProviders.ref("provider");
+  const status: ResourceResult<components["schemas"]["AuthorizationStatus"]> = await provider.authorization.get();
+  const started: ResourceResult<components["schemas"]["AuthorizationStart"]> = await provider.authorize({ new_registration: false });
+  await provider.authorization.callback({ attempt_id: started.data.attempt_id, callback_url: "https://service.example.test/operator/callback?code=opaque" });
+  const disconnected: ResourceResult<components["schemas"]["AuthorizationDisconnect"]> = await provider.authorization.delete();
+  const models: ResourceResult<components["schemas"]["ChatGPTModel"][]> = await provider.models.get();
+  void status; void disconnected; void models;
+  // @ts-expect-error Native configuration is nested in Run options, not a new SDK parameter.
+  await agent.start("Wrong", { idempotencyKey: "wrong", configuration: {} });
+  const followup = await agent.send(interaction.thread.id, "Next", { idempotencyKey: "next-1", options: { configuration: {} } });
   followup.close();
 }
 void example;

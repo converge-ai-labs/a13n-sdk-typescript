@@ -33,7 +33,11 @@ const delta = (id, run_id) =>
     run_id,
     attempt: 1,
     sequence: 1,
-    event: { type: "TEXT_MESSAGE_CONTENT", delta: "fragment" },
+    event: {
+      type: "TEXT_MESSAGE_CONTENT",
+      messageId: "message_one",
+      delta: "fragment",
+    },
     item: null,
   });
 function fixture(fetch) {
@@ -354,4 +358,185 @@ test("a malformed finite stream closes observation without mutating the remote R
   await assert.rejects(interaction.result(), { name: "AbortError" });
   assert.equal(paths.filter(([method]) => method === "POST").length, 1);
   client.close();
+});
+
+test("AG-UI 1.0 media and inline attribution stay native; child terminal never finishes the exact Service Run", async () => {
+  let seal;
+  const sealing = new Promise((resolve) => {
+    seal = resolve;
+  });
+  let reads = 0,
+    cancelled = false;
+  const media = [
+    { type: "text", text: "Tool result" },
+    {
+      type: "image",
+      source: {
+        type: "url",
+        value: "https://media.example.test/result.png",
+        mimeType: "image/png",
+      },
+    },
+    {
+      type: "video",
+      source: {
+        type: "file",
+        value: "file_provider",
+        provider: "native",
+        mimeType: "video/mp4",
+      },
+    },
+    {
+      type: "document",
+      source: {
+        type: "url",
+        value: "https://media.example.test/report.pdf",
+        mimeType: "application/pdf",
+      },
+    },
+  ];
+  const native = [
+    {
+      type: "RUN_STARTED",
+      protocolVersion: "1.0",
+      threadId: "harness_thread",
+      runId: "harness_root",
+    },
+    {
+      type: "SUBAGENT_STARTED",
+      subagentRunId: "harness_child",
+      parentToolCallId: "call_delegation",
+      name: "reviewer",
+    },
+    {
+      type: "TEXT_MESSAGE_CONTENT",
+      messageId: "message_same",
+      delta: "Child text",
+      subagentRunId: "harness_child",
+    },
+    {
+      type: "TOOL_CALL_RESULT",
+      messageId: "message_tool",
+      toolCallId: "call_child",
+      role: "tool",
+      content: media,
+      subagentRunId: "harness_child",
+    },
+    {
+      type: "CUSTOM",
+      name: "a13n.input.media",
+      value: {
+        thread_id: "harness_thread",
+        run_id: "harness_child",
+        sequence: 7,
+        event: {
+          event_kind: "input_media",
+          input_id: "input_one",
+          source: "context",
+          role: "system",
+          message_id: "generated",
+          content: {
+            kind: "video-url",
+            url: "https://media.example.test/movie.mp4",
+          },
+        },
+      },
+      metadata: {
+        display: false,
+        media: true,
+        source_id: "application_one",
+        application: { retained: false },
+      },
+      subagentRunId: "harness_child",
+    },
+    {
+      type: "CUSTOM",
+      name: "vendor.unknown",
+      value: null,
+      metadata: { display: true },
+    },
+    {
+      type: "SUBAGENT_FINISHED",
+      subagentRunId: "harness_child",
+      outcome: { type: "success" },
+    },
+    {
+      type: "RUN_FINISHED",
+      threadId: "harness_thread",
+      runId: "harness_root",
+      outcome: { type: "success" },
+      result: { native: [false, null] },
+    },
+    {
+      type: "TEXT_MESSAGE_CONTENT",
+      messageId: "message_same",
+      delta: "Root text",
+    },
+  ];
+  const client = fixture(async (request) => {
+    const path = new URL(request.url).pathname;
+    if (request.method === "POST")
+      return Response.json(initial, { status: 201 });
+    if (path.endsWith("/inbox/ent_one"))
+      return Response.json(entry("consumed", "run_exact"));
+    if (path.endsWith("/runs/run_exact")) {
+      if (++reads === 1) return Response.json(run("running"));
+      await sealing;
+      return Response.json(run("completed"));
+    }
+    if (path.endsWith("/stream"))
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              new TextEncoder().encode(
+                native
+                  .map((event, index) =>
+                    frame("delta", `${index + 1}-0`, {
+                      run_id: "run_exact",
+                      attempt: 1,
+                      sequence: index + 1,
+                      event,
+                      item: null,
+                    }),
+                  )
+                  .join(""),
+              ),
+            );
+          },
+          cancel() {
+            cancelled = true;
+          },
+        }),
+        { headers: { "Content-Type": "text/event-stream" } },
+      );
+    throw new Error(`Unexpected ${path}`);
+  });
+  try {
+    const interaction = await client.agents
+      .ref("agent_one")
+      .start("Hi", { idempotencyKey: "agui" });
+    const outcome = interaction.result({ pollIntervalMs: 1 });
+    const iterator = interaction[Symbol.asyncIterator]();
+    for (const expected of native) {
+      const actual = await iterator.next();
+      assert.equal(actual.done, false);
+      assert.equal(actual.value.frame.data.run_id, "run_exact");
+      assert.deepEqual(actual.value.frame.data.event, expected);
+    }
+    // Neither inline lifecycle nor a provisional root event substitutes for Service's seal.
+    let settled = false;
+    void outcome.then(() => {
+      settled = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    assert.equal(settled, false);
+    seal();
+    assert.equal((await outcome).run.id, "run_exact");
+    assert.equal((await iterator.next()).done, true);
+    assert.equal(cancelled, true);
+  } finally {
+    seal();
+    client.close();
+  }
 });

@@ -46,7 +46,14 @@ const output = (type, id, sequence) =>
     attempt: 1,
     sequence,
     ...(type === "delta"
-      ? { event: { type: "TEXT_MESSAGE_CONTENT", delta: "x" }, item: null }
+      ? {
+          event: {
+            type: "TEXT_MESSAGE_CONTENT",
+            messageId: "message_one",
+            delta: "x",
+          },
+          item: null,
+        }
       : {}),
   });
 function fixture(fetch) {
