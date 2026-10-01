@@ -350,3 +350,85 @@ export async function streamCoverageTypes() {
     break;
   }
 }
+
+export async function nativeConfigurationAndProviderTypes() {
+  const configuration: Schema["RunConfiguration-Input"] = {
+    allowed_hosts: [],
+    extensions: {
+      "app.example/policy": {
+        enabled: false,
+        limit: 0,
+        values: [null, {}, [], ""],
+      },
+    },
+  };
+  const output: Schema["RunConfiguration-Output"] = configuration;
+  void output;
+  const agent = client.agents.ref("agent_one");
+  for (const options of [
+    {},
+    { configuration: null },
+    { configuration: {} },
+    { configuration },
+    { configuration: { allowed_hosts: null } },
+  ]) {
+    const interaction = await agent.start(
+      {
+        content: [{ type: "url", url: "https://media.example.test/movie.mp4" }],
+      },
+      { idempotencyKey: "native", options },
+    );
+    interaction.close();
+    (
+      await agent.send("thread_one", "Next", {
+        idempotencyKey: "native-send",
+        delivery: "next_run",
+        options,
+      })
+    ).close();
+  }
+  // @ts-expect-error Run configuration is nested inside native Run options, not a parallel SDK facade.
+  await agent.start("No", { idempotencyKey: "wrong", configuration });
+  // @ts-expect-error An empty host list is an array, never a truthy string coercion.
+  configuration.allowed_hosts = "example.test";
+  // @ts-expect-error Service owns known configuration keys; extensions hold consumer namespaces.
+  configuration.unknown_policy = false;
+  const model: Schema["ModelConfig-Input"] = {
+    model_name: "native",
+    model_api: "openai.responses",
+    characteristics: {
+      image_input: null,
+      video_input: { max_video_bytes: 1048576 },
+      url_input: { video: ["youtube"] },
+    },
+  };
+  await client.resources.models
+    .ref("model_one")
+    .update({ config: model }, { ifMatch: '"v1"' });
+  // @ts-expect-error Native video URL capability retains the current enum, not arbitrary SDK media types.
+  model.characteristics = { url_input: { video: ["direct"] } };
+  const provider = client.resources.modelProviders.ref("provider_one");
+  const status: ResourceResult<Schema["AuthorizationStatus"]> =
+    await provider.authorization.get();
+  const started: ResourceResult<Schema["AuthorizationStart"]> =
+    await provider.authorize({ new_registration: false });
+  const method: "manual_callback" | "browser_callback" | undefined =
+    started.data.method;
+  void method;
+  void status;
+  await provider.authorization.callback({
+    attempt_id: started.data.attempt_id,
+    callback_url: "https://service.example.test/operator/callback?code=opaque",
+  });
+  const disconnected: ResourceResult<Schema["AuthorizationDisconnect"]> =
+    await provider.authorization.delete();
+  const models: ResourceResult<Schema["ChatGPTModel"][]> =
+    await provider.models.get();
+  void disconnected;
+  void models;
+  await provider.authorization.callback({
+    attempt_id: "attempt",
+    // @ts-expect-error Callback requires the full native callback URL, not an SDK-invented code field.
+    code: "opaque",
+  });
+}

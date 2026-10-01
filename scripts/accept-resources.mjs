@@ -58,6 +58,42 @@ try {
     ).data.status,
     "succeeded",
   );
+  // These disconnected-provider boundaries perform no issuer authorization,
+  // token exchange or paid Model invocation. Success flows remain mock-tested.
+  stage("native Model Provider authorization boundaries: start");
+  const modelTypes = (await resources.providerTypes.ref("model").list()).data
+    .items;
+  assert.equal(
+    modelTypes.find((type) => type.type === "openai_chatgpt")?.oauth_scheme,
+    "openai-chatgpt",
+  );
+  const disconnected = await resources.modelProviders.create({
+    type: "openai_chatgpt",
+    name: `${key}-oauth`,
+    config: {},
+  });
+  const provider = resources.modelProviders.ref(disconnected.data.id);
+  const status = (await provider.authorization.get()).data;
+  assert.equal(status.state, "disconnected");
+  assert.equal(status.pending, false);
+  await assert.rejects(
+    provider.authorization.callback({
+      attempt_id: "not-started",
+      callback_url: "https://callback.example.test/?code=unused&state=unused",
+    }),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 409 &&
+      error.details.reason === "authorization_not_pending",
+  );
+  const cleared = (await provider.authorization.delete()).data;
+  assert.equal(cleared.local_tokens_cleared, true);
+  assert.equal(cleared.revocation_confirmed, null);
+  // Model Providers have no DELETE operation. The disposable fixture owns
+  // removal of this provider and its database, not a fabricated SDK cleanup.
+  stage(
+    "native Model Provider authorization boundaries: passed (no external OAuth)",
+  );
   stage("probes and shared providers: passed");
   stage("collections: start");
   for (const collection of [

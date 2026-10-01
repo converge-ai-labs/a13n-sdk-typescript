@@ -178,7 +178,7 @@ test("SSE handles split UTF-8, CRLF, multiline data, non-ID frames and cancellat
 test("Thread SSE cursor advances after consumption only for delta/boundary; gap requests readback", async () => {
   const requests = [];
   const responses = [
-    `id: 2-0\nevent: delta\ndata: ${JSON.stringify({ run_id: "run_one", attempt: 1, sequence: 1, event: { type: "TEXT_MESSAGE_CONTENT", delta: "hi" }, item: { id: "itm_one", kind: "text_message", state: "in_progress" } })}\n\nevent: gap\ndata: {"run_id":"run_one"}\n\n`,
+    `id: 2-0\nevent: delta\ndata: ${JSON.stringify({ run_id: "run_one", attempt: 1, sequence: 1, event: { type: "TEXT_MESSAGE_CONTENT", messageId: "message_one", delta: "hi" }, item: { id: "itm_one", kind: "text_message", state: "in_progress" } })}\n\nevent: gap\ndata: {"run_id":"run_one"}\n\n`,
     `id: 3-0\nevent: boundary\ndata: {"run_id":"run_one","attempt":1,"sequence":1}\n\n`,
   ];
   const client = createClient({

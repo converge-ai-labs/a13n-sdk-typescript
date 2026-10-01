@@ -131,3 +131,32 @@ try {
 ```
 
 If another writer has changed the file, Service returns HTTP `412`; reread and decide whether your intended edit still applies instead of overwriting it blindly. A repeat execution adds the note again unless you adapt this example for your actual edit. File Memory revisions use integer sequence selectors, and restoring a creation can remove the file (`file: null`). Provider-backed Memory records instead support search/create/replace/delete, not these file-path operations. See [resource management and CAS](06-generated-resources.md).
+
+## Native image and video input
+
+Use the same generated message parts for media: `{type:"url",url}` for a source URL, or `{type:"asset",asset_id}` for uploaded content. `start()`, `send()` and atomic resume `input` preserve the whole payload, including order and duplicates. These are Service input parts, not AG-UI output `ImagePart`/`VideoPart` values.
+
+A Model's `config.characteristics` selects native preparation policy. This fragment conditionally updates an existing Model; `modelId` and `ifMatch` must come from your authorized Model selection and current ETag:
+
+```js
+await client.resources.models.ref(modelId).update(
+  {
+    config: {
+      model_name: "your-native-model",
+      model_api: "openai.responses",
+      characteristics: {
+        image_input: {
+          max_images: 20,
+          support_gif: false,
+          split_large_images: false,
+        },
+        video_input: { max_video_bytes: 10485760 },
+        url_input: { video: [] },
+      },
+    },
+  },
+  { ifMatch },
+);
+```
+
+Select the calling API and limits for your actual model rather than copying these values blindly. Omitted `image_input` uses native defaults; `image_input:null` disables automatic preparation. `max_images:0` removes image input, while zero image byte/dimension limits disable those specific limits. Video's positive byte budget applies to both one video and the aggregate Base64-after request; native URL subtype support currently includes `youtube` and is not a promise that any URL is usable. Service/Harness owns downloads, redirects, image transformations, video materialization, MIME checks, hostname/TLS enforcement and byte budgets. The SDK neither downloads submitted URLs nor coerces unsupported media into text.
