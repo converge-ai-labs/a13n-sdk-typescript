@@ -1027,6 +1027,7 @@ type Operation128Options = {
 type Operation131 = operations["run_items_api_v1_runs__run_id__items_get"];
 type Operation131Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation131["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation131["parameters"]["header"]
   >["X-Workspace-ID"];
@@ -5547,7 +5548,7 @@ export class RunsRunIdItemsResource {
           .filter(([, value]) => value !== undefined && value !== null)
           .map(([key, value]) => [key, String(value)]),
       ),
-      { signal: options.signal },
+      { signal: options.signal, query: options.query },
     );
   }
 }
