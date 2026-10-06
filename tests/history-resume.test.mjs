@@ -186,3 +186,75 @@ test("native resume sends complete approvals, call outcomes and attachment input
     client.close();
   }
 });
+
+for (const status of ["failed", "cancelled"]) {
+  test(`normal explicit send continues latest ${status} seal without retry, resume or fork`, async () => {
+    const requests = [];
+    const prior = {
+      ...run(`run_${status}`, status),
+      failure: { code: status, message: "Stopped" },
+    };
+    const next = {
+      ...run("run_followup", "completed"),
+      parent_run_id: prior.id,
+      lineage: "continue",
+    };
+    const sealedThread = {
+      ...thread,
+      current_run_id: null,
+      last_run_id: prior.id,
+    };
+    const consumed = { ...entry, status: "consumed", assigned_run_id: next.id };
+    const client = clientWith(async (request) => {
+      const path = new URL(request.url).pathname;
+      requests.push({ method: request.method, path });
+      if (path === `/api/v1/runs/${prior.id}`) return Response.json(prior);
+      if (path === `/api/v1/threads/${thread.id}`)
+        return Response.json(sealedThread);
+      if (
+        request.method === "POST" &&
+        path === `/api/v1/threads/${thread.id}/inbox`
+      ) {
+        assert.equal(
+          request.headers.get("Idempotency-Key"),
+          `continue-${status}`,
+        );
+        assert.deepEqual(await request.json(), {
+          agent_id: "agt_import",
+          payload: {
+            content: [
+              { type: "text", text: "Continue from the last checkpoint" },
+            ],
+          },
+        });
+        return Response.json(
+          { thread: sealedThread, entry: consumed, run: next },
+          { status: 201 },
+        );
+      }
+      if (path.endsWith(`/inbox/${entry.id}`)) return Response.json(consumed);
+      if (path === `/api/v1/runs/${next.id}`) return Response.json(next);
+      throw new Error(`Unexpected ${request.method} ${path}`);
+    });
+    try {
+      assert.equal((await client.runs.ref(prior.id).wait()).status, status);
+      const snapshot = (await client.threads.ref(thread.id).get()).data;
+      assert.equal(snapshot.last_run_id, prior.id);
+      const followup = await client.agents
+        .ref("agt_import")
+        .send(thread.id, "Continue from the last checkpoint", {
+          idempotencyKey: `continue-${status}`,
+        });
+      const result = await followup.result();
+      assert.equal(result.run.id, next.id);
+      assert.equal(result.snapshot.data.parent_run_id, prior.id);
+      assert.equal(result.status, "completed");
+      assert.deepEqual(
+        requests.filter((request) => request.method === "POST"),
+        [{ method: "POST", path: `/api/v1/threads/${thread.id}/inbox` }],
+      );
+    } finally {
+      client.close();
+    }
+  });
+}

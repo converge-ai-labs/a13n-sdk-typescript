@@ -333,11 +333,13 @@ export async function streamCoverageTypes() {
   const display = (await client.runs.ref("run_one").items()).data;
   const hint: string | null | undefined = display.resume_after;
   void hint;
-  const raw = await client.resources.threads.ref("thread_one").stream.get({
-    query: { run: "run_one", position: display.position },
-    ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
-  });
-  await raw.close();
+  if (display.baseline && display.position !== null) {
+    const raw = await client.resources.threads.ref("thread_one").stream.get({
+      query: { run: "run_one", position: display.position },
+      ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
+    });
+    await raw.close();
+  }
   for await (const event of threadStream(
     (options) => client.resources.threads.ref("thread_one").stream.get(options),
     new AbortController().signal,
@@ -431,4 +433,104 @@ export async function nativeConfigurationAndProviderTypes() {
     // @ts-expect-error Callback requires the full native callback URL, not an SDK-invented code field.
     code: "opaque",
   });
+}
+
+export async function pagedDisplayTypes() {
+  const display = (
+    await client.runs.ref("run_one").items({ query: { before: 20, limit: 10 } })
+  ).data;
+  await client.resources.runs
+    .ref("run_one")
+    .items.get({ query: { after: 0, limit: 500 } });
+  // @ts-expect-error Ordinal windows do not accept generic cursor collection paging.
+  await client.runs.ref("run_one").items({ query: { cursor: "opaque" } });
+  // @ts-expect-error Ordinals are numeric, not Redis IDs.
+  await client.runs.ref("run_one").items({ query: { before: "1-2" } });
+  // @ts-expect-error RunItems no longer reports dropped history.
+  void display.dropped;
+  const thread = (await client.threads.ref("thread_one").get()).data;
+  const last: string | null = thread.last_run_id;
+  void last;
+  // @ts-expect-error Every sealed Run continues history; no successful head remains.
+  void thread.head_run_id;
+  const state: Schema["DisplayContinuation"] = {
+    run_id: "run_one",
+    next_ordinal: 20,
+    position: { attempt: 2, sequence: 19 },
+    arguments: {
+      at: "2026-10-06T00:00:00Z",
+      event: null,
+      key: "tool",
+      sequence: 18,
+      size: 0,
+      stream: { native: [null, false] },
+    },
+    fragments: {
+      pending: { fragment: { count: 2, parts: ["partial"], size: 7 } },
+    },
+    observer: {
+      state: {
+        children: {
+          child: {
+            children: {
+              grandchild: {
+                parts: {
+                  cursor: {
+                    kind: "tool_call",
+                    part_id: "call",
+                    tool_name: null,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const continuation: Schema["DisplayContinuation"] | null | undefined =
+    display.continuation;
+  void continuation;
+  void state;
+  const position: string | null | undefined = display.run.display_position;
+  void position;
+  // @ts-expect-error A continuation's semantic cut requires a native StreamPosition.
+  state.position = "2-19";
+  // @ts-expect-error Item ordinal is required even on a historical page.
+  const incomplete: Schema["Item"] = {
+    id: "item",
+    kind: "text_message",
+    state: "completed",
+    content: {},
+    first_stream_id: "1-1",
+    last_stream_id: "1-1",
+    started_at: "2026-10-06T00:00:00Z",
+  };
+  void incomplete;
+}
+
+export function requiredPagedFields(
+  display: Omit<Schema["RunItems"], "baseline">,
+) {
+  // @ts-expect-error Baseline is required, including on sealed historical windows.
+  const missingBaseline: Schema["RunItems"] = display;
+  void missingBaseline;
+  const ref: import("../src/index.js").ThreadStreamFrame = {
+    type: "delta",
+    data: {
+      run_id: "run",
+      attempt: 1,
+      sequence: 1,
+      event: { type: "CUSTOM", subagentRunId: "child" },
+      item: {
+        id: "item",
+        kind: "observation",
+        state: "failed",
+        ordinal: null,
+        response_group: null,
+        failure: { nested: [null, false, {}] },
+      },
+    },
+  };
+  void ref;
 }

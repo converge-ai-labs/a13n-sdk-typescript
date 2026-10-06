@@ -1,6 +1,9 @@
 import { ProtocolError } from "./errors.js";
 import type { components } from "./schema.js";
-import type { ServiceResources } from "./resources/generated.js";
+import type {
+  ServiceResources,
+  RunsRunIdItemsResource,
+} from "./resources/generated.js";
 import type { ResourceResult } from "./resources/base.js";
 import {
   observation,
@@ -85,8 +88,8 @@ export class RunHandle {
     return new RunOutcome(this, snapshot);
   }
 
-  /** Committed Run Items; stream deltas are not a replacement for this readback. */
-  items(options: { signal?: AbortSignal } = {}) {
+  /** Native ordinal window; only unwindowed reads contain a live baseline. */
+  items(options: Parameters<RunsRunIdItemsResource["get"]>[0] = {}) {
     return this.resources.runs.ref(this.id).items.get(options);
   }
 

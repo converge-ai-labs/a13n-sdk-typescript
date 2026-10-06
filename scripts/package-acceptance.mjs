@@ -54,7 +54,30 @@ assert.equal(typeof ApiError, "function");
 const client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
+  fetch: async (request) => {
+    const url = new URL(request.url);
+    assert.equal(url.pathname, "/api/v1/runs/run_example/items");
+    assert.equal(url.searchParams.get("limit"), "1");
+    const historical = url.searchParams.has("before");
+    if (historical) assert.equal(url.searchParams.get("before"), "3");
+    return Response.json({
+      run: { id: "run_example", status: "completed", display_position: null },
+      items: historical ? [{ ordinal: 2 }] : [{ ordinal: 3 }, { ordinal: 4 }],
+      baseline: !historical,
+      continuation: historical ? null : { run_id: "run_example", next_ordinal: 5, position: { attempt: 1, sequence: 4 }, fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } }, observer: { state: { children: { child: { children: { grandchild: { request_index: 3 } } } } } } },
+      position: historical ? null : "1-4", resume_after: null, complete: true,
+    });
+  },
 });
+const baseline = (await client.runs.ref("run_example").items({ query: { limit: 1 } })).data;
+assert.equal(baseline.baseline, true);
+assert.equal(baseline.items.length, 2);
+assert.equal(baseline.continuation.observer.state.children.child.children.grandchild.request_index, 3);
+const history = (await client.runs.ref("run_example").items({ query: { before: 3, limit: 1 } })).data;
+assert.equal(history.baseline, false);
+assert.equal(history.position, null);
+assert.equal(history.continuation, null);
+assert.equal(history.complete, true);
 assert.equal(typeof client.agents.ref("agt_example").start, "function");
 assert.equal(typeof client.agents.ref("agt_example").send, "function");
 assert.equal(typeof client.resources.threads.create, "function");
@@ -95,6 +118,12 @@ async function example() {
   const agent = client.agents.ref("agt_example");
   const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { configuration: { allowed_hosts: null, extensions: { "app.example/sdk": { enabled: false, nested: [null, {}, []] } } }, overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
   for await (const event of interaction) {
+    if (event.frame.type === "delta" && event.frame.data.item) {
+      const ordinal: number | null | undefined = event.frame.data.item.ordinal;
+      const group: string | null | undefined = event.frame.data.item.response_group;
+      const failure: Record<string, unknown> | null | undefined = event.frame.data.item.failure;
+      void ordinal; void group; void failure;
+    }
     if (event.frame.type === "gap") {
       const target: string | null | undefined = event.frame.data.position;
       void target;
@@ -102,10 +131,24 @@ async function example() {
   }
   const outcome = await interaction.result();
   void outcome.output;
-  const display = (await outcome.run.items()).data;
+  const display = (await outcome.run.items({ query: { limit: 1 } })).data;
+  await outcome.run.items({ query: { before: 3, limit: 20 } });
+  await client.resources.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
+  const continuation: components["schemas"]["DisplayContinuation"] = {
+    run_id: "run_example", next_ordinal: 3, position: { attempt: 1, sequence: 2 },
+    fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } },
+    observer: { state: { children: { child: { children: { grandchild: { parts: { part: { kind: "text", part_id: "message" } } } } } } } },
+  };
+  void continuation;
+  // @ts-expect-error Items ordinal windows are not generic cursor collections.
+  await outcome.run.items({ query: { cursor: "opaque" } });
+  // @ts-expect-error Removed display-loss field is not part of the new contract.
+  void display.dropped;
+  // @ts-expect-error The Thread has a last seal, not an earlier successful head.
+  void (await interaction.thread.get()).data.head_run_id;
   const hint: string | null | undefined = display.resume_after;
   void hint;
-  if (display.position !== null) {
+  if (display.baseline && display.position !== null) {
     const raw = await client.resources.threads.ref(interaction.thread.id).stream.get({
       query: { run: outcome.run.id, position: display.position },
       ...(display.resume_after ? { lastEventId: display.resume_after } : {}),

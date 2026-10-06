@@ -26,6 +26,12 @@ Keep changes direct and scoped. Preserve omission/null, bounded read retries, no
 
 Generation replaces generator-owned output directly. Validation exercises the committed bindings through language-native checks and behavior tests, rather than regenerating them for byte comparison or rechecking snapshot hashes. Run `make generate` after changing inputs, templates, or generator code, review the diff, then run `make check-all`. Commit hooks remain a local convenience and are not rerun by the full gate.
 
+### Installed Service acceptance
+
+After building, `node scripts/accept-installed.mjs` packs this checkout and runs the Service acceptance scripts from an isolated installed consumer. Point it only at an authorized disposable Service using `A13N_SERVICE_URL`, `A13N_API_TOKEN`, `A13N_AGENT` and `A13N_CLIENT_TOOL_AGENT` (the fixture also supplies resource-suite settings). It creates real resources and executes Runs; it is separate from `make check-all`.
+
+The interaction suite exercises native ordinal windows, baseline/history separation, sealed recent-window readback, invalid bounds, waiting/resume and normal explicit messages after failed/cancelled seals. Set `A13N_FAILURE_PROMPT` to the fixture's deterministic **current-input-only** failure prompt; without it the failed-continuation case explicitly reports `not_run`, not a pass. Do not use a failure marker that matches all stored history, since that would also fail the normal successor. Cancellation waits for a committed display checkpoint before the explicit interrupt. Whole mutable-tail overflow and recursive continuation are deterministic mock/installed-package cases until a live fixture supplies that scenario; a long text delta alone does not create multiple Items.
+
 ## Releases
 
 Source versions remain `0.0.0`. Tag a main-line commit whose required CI passed with `release/a13n/typescript/<version>`. Versions use stable `X.Y.Z` or `X.Y.Z-rc.N` (positive N, no leading zeroes). Release preparation injects the version only into the ephemeral checkout; do not commit release-only bumps. Release tags are immutable.
