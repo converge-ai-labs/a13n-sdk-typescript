@@ -228,3 +228,77 @@ test("generated raw SSE forwards paired coverage and optional hint without SDK p
     client.close();
   }
 });
+
+test("delta requires nullable item and preserves native item metadata with unknown child events", async () => {
+  const event = {
+    type: "CUSTOM",
+    name: "app.example/unknown",
+    value: { nested: [null, false, 0, ""] },
+    subagentRunId: "native_child",
+    messageId: "shared",
+  };
+  const cases = [
+    null,
+    {
+      id: "shared",
+      kind: "observation",
+      state: "failed",
+      ordinal: 12,
+      response_group: "response_child",
+      failure: { code: "custom", nested: [null, false, { value: 0 }] },
+    },
+    {
+      id: "shared",
+      kind: "text_message",
+      state: "in_progress",
+      ordinal: null,
+      response_group: null,
+      failure: null,
+    },
+    { id: "shared", kind: "text_message", state: "completed" },
+  ];
+  const { client, open } = fixture(async () =>
+    response(
+      cases
+        .map((item, index) =>
+          frame("delta", `${100 + index}-0`, {
+            run_id: "run_one",
+            attempt: 1,
+            sequence: index + 1,
+            event,
+            item,
+          }),
+        )
+        .join(""),
+    ),
+  );
+  const stream = threadStream(open, new AbortController().signal);
+  try {
+    for (const item of cases) {
+      const data = (await stream.next()).value.frame.data;
+      assert.deepEqual(data.event, event);
+      assert.deepEqual(data.item, item);
+    }
+  } finally {
+    await stream.return();
+    client.close();
+  }
+  const missing = fixture(async () =>
+    response(
+      frame("delta", "200-0", {
+        run_id: "run_one",
+        attempt: 1,
+        sequence: 1,
+        event,
+      }),
+    ),
+  );
+  try {
+    await assert.rejects(
+      threadStream(missing.open, new AbortController().signal).next(),
+      ProtocolError,
+    );
+  } finally {
+    missing.client.close();
+  }
+});

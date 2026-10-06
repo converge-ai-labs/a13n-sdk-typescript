@@ -213,7 +213,8 @@ test("Run resume returns distinct handle and committed Items readback, never fol
       return reply({
         run: run("run_one", "completed"),
         items: [],
-        dropped: 0,
+        baseline: true,
+        continuation: null,
         complete: true,
         position: null,
       });

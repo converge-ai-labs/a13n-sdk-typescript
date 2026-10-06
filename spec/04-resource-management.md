@@ -8,6 +8,8 @@ JSON operations preserve response metadata. Blob or byte streams with declared c
 
 ## Model Providers and media policy
 
+Provider/connector metadata is deployment-selected dynamic discovery, not a closed SDK whitelist. Native Model API strings and Connection schemas pass through generated bindings. MCP discovery, transports and issuer policy remain Service-owned; the SDK introduces no provider-specific client or MCP runtime.
+
 The schema-derived Model Provider reference exposes `authorization.get()`, `authorize(body)`, `authorization.callback(body)`, `authorization.delete()` and `models.get()`. Status/disconnect retain nullable safe evidence, discovery returns the native model array, and all calls share workspace selection, session/CSRF, cancellation and non-replayed mutation behavior. Service owns grants (`read` for status, `write` for authorization changes, `run` for discovery) and restricts hosted/browser authorization to an unconfined user login. Manual workspace authorization does not imply that an API key can initiate a hosted flow. Clients follow the returned method and authorization contract; the SDK owns no OAuth browser, callback origin/client identity, credential store or token exchange.
 
 Generated Model characteristics preserve nullable `image_input`, `video_input` byte budget and `url_input.video` native subtype support. Omitted image policy uses native preparation defaults, null disables automatic preparation, and zero image limits preserve their declared semantics. Message input uses native text/URL/Asset/JSON parts; it does not become AG-UI output parts. Service/Harness owns image preparation, video download/transformation, host/TLS enforcement and aggregate byte budgets; the SDK does not perform media I/O or infer modality support.

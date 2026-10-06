@@ -76,7 +76,46 @@ try {
     (await outcome.run.get()).data.options.configuration,
     configuration,
   );
-  assert.ok(Array.isArray((await outcome.run.items()).data.items));
+  const recent = (await outcome.run.items({ query: { limit: 1 } })).data;
+  assert.equal(recent.baseline, true);
+  assert.equal(recent.complete, true);
+  assert.ok(recent.items.length >= 1);
+  assert.ok(
+    recent.items.every(
+      (item) => Number.isInteger(item.ordinal) && item.ordinal >= 1,
+    ),
+  );
+  assert.equal(Object.hasOwn(recent, "dropped"), false);
+  const firstOrdinal = recent.items[0].ordinal;
+  const historical = (
+    await outcome.run.items({ query: { after: 0, limit: 1 } })
+  ).data;
+  assert.equal(historical.baseline, false);
+  assert.equal(historical.continuation, null);
+  assert.equal(historical.position, null);
+  assert.equal(historical.resume_after, null);
+  assert.equal(historical.complete, true);
+  assert.equal(historical.items.length, 1);
+  assert.equal(historical.items[0].ordinal, 1);
+  const older = (
+    await outcome.run.items({ query: { before: firstOrdinal, limit: 1 } })
+  ).data;
+  assert.equal(older.baseline, false);
+  assert.ok(older.items.every((item) => item.ordinal < firstOrdinal));
+  for (const query of [
+    { before: 0 },
+    { after: -1 },
+    { limit: 0 },
+    { limit: 501 },
+    { before: 2, after: 0 },
+  ])
+    await assert.rejects(
+      outcome.run.items({ query }),
+      (error) =>
+        error instanceof ApiError &&
+        error.status === 400 &&
+        error.code === "invalid_argument",
+    );
   // Omission, null and an explicit empty snapshot all reach Service without an SDK merge.
   for (const fields of [{}, { configuration: null }, { configuration: {} }]) {
     const started = await agent.start(
@@ -139,6 +178,60 @@ try {
     configuration,
   );
 
+  // Every seal is continuation history, including explicit failure and cancellation.
+  const continuationCases = [];
+  if (process.env.A13N_FAILURE_PROMPT) {
+    const failed = await agent.start(process.env.A13N_FAILURE_PROMPT, {
+      idempotencyKey: key(),
+    });
+    const failure = await failed.result();
+    assert.equal(failure.status, "failed");
+    continuationCases.push([failed, failure]);
+  } else {
+    console.log(
+      "failed_continuation=not_run (A13N_FAILURE_PROMPT is required for the deterministic current-input failure fixture)",
+    );
+  }
+  const cancelled = await agent.start(
+    "[interruptible] [slow] [long] Preserve this checkpoint before cancellation.",
+    { idempotencyKey: key() },
+  );
+  assert.ok(cancelled.run);
+  const checkpointDeadline = Date.now() + 30_000;
+  while (true) {
+    const checkpoint = (await cancelled.run.items()).data;
+    if (checkpoint.position !== null) break;
+    assert.equal(
+      checkpoint.complete,
+      false,
+      "cancellation probe sealed before its checkpoint",
+    );
+    assert.ok(
+      Date.now() < checkpointDeadline,
+      "cancellation probe never committed a checkpoint",
+    );
+  }
+  await cancelled.run.interrupt();
+  const cancellation = await cancelled.result();
+  assert.equal(cancellation.status, "cancelled");
+  continuationCases.push([cancelled, cancellation]);
+  for (const [submitted, sealed] of continuationCases) {
+    const sealedThread = (await submitted.thread.get()).data;
+    assert.equal(sealedThread.current_run_id, null);
+    assert.equal(sealedThread.last_run_id, sealed.run.id);
+    assert.equal(Object.hasOwn(sealedThread, "head_run_id"), false);
+    const next = await agent.send(
+      submitted.thread.id,
+      "Continue normally from the last sealed checkpoint.",
+      { idempotencyKey: key() },
+    );
+    const continued = await next.result();
+    assert.equal(continued.status, "completed");
+    assert.equal(continued.snapshot.data.parent_run_id, sealed.run.id);
+    assert.equal(continued.snapshot.data.lineage, "continue");
+    assert.equal((await next.thread.get()).data.last_run_id, continued.run.id);
+  }
+
   const toolAgent = client.agents.ref(process.env.A13N_CLIENT_TOOL_AGENT);
   const tool = await toolAgent.start(
     "[client] Run local_review on this request.",
@@ -148,6 +241,17 @@ try {
   assert.equal(pending.status, "waiting");
   assert.deepEqual(pending.snapshot.data.options.configuration, configuration);
   assert.equal((await tool.thread.get()).data.current_run_id, null);
+  const pendingDisplay = (await pending.run.items({ query: { limit: 1 } }))
+    .data;
+  assert.equal(pendingDisplay.baseline, true);
+  assert.equal(pendingDisplay.complete, true);
+  const pendingHistory = (
+    await pending.run.items({ query: { after: 0, limit: 1 } })
+  ).data;
+  assert.equal(pendingHistory.baseline, false);
+  assert.equal(pendingHistory.position, null);
+  assert.equal(pendingHistory.continuation, null);
+  assert.equal(pendingHistory.resume_after, null);
   const calls = pending.pending?.calls ?? [];
   assert.equal(pending.pending?.approvals.length, 0);
   assert.equal(calls.length, 1);
@@ -238,7 +342,7 @@ try {
     await content.close();
   }
   console.log(
-    `Installed interaction acceptance passed: native_configuration=passed immutable_steering=passed next_run_snapshot=passed resume_snapshot=passed thread=${interaction.thread.id} run=${outcome.run.id} frames=${events.join(",")} queued=${queued.entry.id} resumed=${resumed.id} asset=${asset.data.id}`,
+    `Installed interaction acceptance passed: native_configuration=passed immutable_steering=passed next_run_snapshot=passed resume_snapshot=passed ordinal_paging=passed baseline_history=passed failed_continuation=${process.env.A13N_FAILURE_PROMPT ? "passed" : "not_run"} cancelled_continuation=passed thread=${interaction.thread.id} run=${outcome.run.id} frames=${events.join(",")} queued=${queued.entry.id} resumed=${resumed.id} asset=${asset.data.id}`,
   );
 } finally {
   client.close();

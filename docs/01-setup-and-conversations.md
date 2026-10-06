@@ -51,7 +51,7 @@ try {
 }
 ```
 
-Run `node conversation.mjs`. You should see a Thread ID, a status for each message, and committed Items for completed Runs. Save the Thread ID if another process needs to continue later. The follow-up is submitted **only after the first Run completes**: submitting while it waits for a tool or approval could leave the new message queued until that wait is resolved. A Thread is not owned by the first Agent: `send(threadId, input, ...)` always names the Agent that sends. A string input is enough for ordinary text; [files and Memory](04-files-and-memory.md) shows structured input.
+Run `node conversation.mjs`. You should see a Thread ID, a status for each message, and committed Items for completed Runs. Save the Thread ID if another process needs to continue later. This example submits the follow-up after completion. A normal explicit `send()` is also valid after inspecting failed/cancelled outcomes: `Thread.last_run_id` is the latest seal of any outcome and its nearest checkpoint supplies continuation history. Those outcomes pause automatic queue advancement; they do not erase history or require a retry/fork. Resume is only for the exact idle last waiting Run with complete pending results. In contrast, submitting while it waits for a tool or approval could leave the new message queued until that wait is resolved. A Thread is not owned by the first Agent: `send(threadId, input, ...)` always names the Agent that sends. A string input is enough for ordinary text; [files and Memory](04-files-and-memory.md) shows structured input.
 
 ## Import a completed conversation into a new Thread
 
@@ -103,7 +103,7 @@ The imported JSON is immutable Thread provenance, readable on the Thread, and no
 
 The first `start()` supplies a typed `options.overrides.instructions` field. It replaces the Agent revision's instructions **for that Run** to request a three-bullet release summary; the later `send()` omits the override and uses its normal configuration. This is replacement, not concatenation: do not use an instructions override to accidentally remove required Agent-level guidance. For a narrow limit that does not replace instructions, `options.max_usage: { requests: 3 }` bounds model requests for the started Run. These choices are forwarded to Service; they do not guarantee that a particular model will follow a style request.
 
-For a chat transcript, read `result.run.items()` rather than assuming `result.output` is text or a `waiting` Run is completed. Each logical request needs a distinct explicit idempotency key; after an uncertain network failure, **reuse** its original key and body rather than generating another. See [streaming](02-streaming-and-readback.md), [Agent creation](06-generated-resources.md#create-an-agent), [waiting Runs](03-waiting-and-tools.md) or [recovery](07-errors-and-recovery.md).
+For a recent committed display window, read `result.run.items()` and [page earlier ordinals](02-streaming-and-readback.md#page-earlier-display-items) explicitly rather than assuming `result.output` is text or a `waiting` Run is completed. Each logical request needs a distinct explicit idempotency key; after an uncertain network failure, **reuse** its original key and body rather than generating another. See [streaming](02-streaming-and-readback.md), [Agent creation](06-generated-resources.md#create-an-agent), [waiting Runs](03-waiting-and-tools.md) or [recovery](07-errors-and-recovery.md).
 
 ## Select a native Run configuration snapshot
 

@@ -15,6 +15,9 @@ export interface ItemRef {
   id: string;
   kind: "text_message" | "reasoning_message" | "tool_call" | "observation";
   state: "in_progress" | "completed" | "interrupted" | "failed";
+  ordinal?: number | null;
+  response_group?: string | null;
+  failure?: Record<string, unknown> | null;
 }
 export type ThreadStreamFrame =
   | {

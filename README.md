@@ -63,16 +63,16 @@ export A13N_AGENT_ID="ap_your-agent-id"
 node hello.mjs
 ```
 
-The example prints saved messages and tool activity as JSON. `result.output` is the Run's optional output value, not necessarily its conversation text.
+The example prints a recent committed display window of messages and tool activity as JSON; it is not necessarily all history. `run.items({query:{before,limit}})` reads earlier ordinals explicitly; see [display paging](docs/02-streaming-and-readback.md#page-earlier-display-items). `result.output` is the Run's optional output value, not necessarily its conversation text.
 
 Each **new logical request** needs its own idempotency key. The example generates one. If a network failure leaves the outcome uncertain, save and reuse the **same key and request** when reconciling or retrying; generating a fresh key may submit a second message. `result()` waits for this submission to finish or pause without opening a streaming connection. It returns `completed`, `waiting`, `failed`, or `cancelled`—check the status before using the output. The default local wait limit is five minutes; see [timeouts and recovery](docs/07-errors-and-recovery.md).
 
 ## Continue the conversation
 
-To send another message, retain the Thread ID printed above. In the same `try` block, send **only after the first result is `completed`**. A `waiting` Run needs its pending tool or approval resolved first; a premature message can stay queued:
+To send another message, retain the Thread ID printed above. In the same `try` block, send after inspecting a sealed `completed`, `failed` or `cancelled` result. A `waiting` Run needs its pending tool or approval resolved first; a premature message can stay queued:
 
 ```js
-if (result.status === "completed") {
+if (["completed", "failed", "cancelled"].includes(result.status)) {
   const followUp = await agent.send(
     interaction.thread.id,
     "What did you mean?",
@@ -92,6 +92,8 @@ if (result.status === "completed") {
   );
 }
 ```
+
+`Thread.last_run_id` is the latest sealed Run of any outcome. Failed/cancelled Runs pause automatic advancement but keep their nearest checkpoint as the next explicit message's history; normal `send()` continues it without an automatic retry or fork. Resume is only for the exact idle last waiting Run with a complete pending-result batch.
 
 Store the Thread ID if the conversation must survive process restarts. A Thread can receive messages from different Agents; `send` always uses the Agent you selected.
 
