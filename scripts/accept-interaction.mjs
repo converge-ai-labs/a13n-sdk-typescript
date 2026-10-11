@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { ApiError, createClient } from "../dist/index.js";
+import {
+  ApiError,
+  createClient,
+  text,
+  json,
+  returned,
+  PreviewInterruptedError,
+} from "../dist/index.js";
 
 for (const name of [
   "A13N_SERVICE_URL",
@@ -48,7 +55,7 @@ try {
   ];
   const interaction = await agent.start(prompt, {
     idempotencyKey: firstKey,
-    message_history,
+    messageHistory: message_history,
     options: { configuration },
   });
   assert.equal(interaction.receipt.response.status, 201);
@@ -144,7 +151,15 @@ try {
     "[interruptible] [slow] [long] Probe immutable native Run configuration.",
     { idempotencyKey: key(), options: { configuration } },
   );
-  assert.ok(active.run, "the independent probe must accept a Run");
+  const activeResult = active.result({
+    timeoutMs: 60_000,
+    pollIntervalMs: 100,
+  });
+  while (!active.run)
+    await Promise.race([
+      activeResult,
+      new Promise((resolve) => setTimeout(resolve, 10)),
+    ]);
   const activeRun = active.run;
   const runningDeadline = Date.now() + 30_000;
   let activeSnapshot = await activeRun.get();
@@ -167,10 +182,7 @@ try {
       error.status === 409 &&
       error.details.reason === "run_configuration_immutable",
   );
-  const activeOutcome = await active.result({
-    timeoutMs: 60_000,
-    pollIntervalMs: 100,
-  });
+  const activeOutcome = await activeResult;
   assert.equal(activeOutcome.status, "completed");
   assert.equal(activeOutcome.run.id, activeRun.id);
   assert.deepEqual(
@@ -196,7 +208,15 @@ try {
     "[interruptible] [slow] [long] Preserve this checkpoint before cancellation.",
     { idempotencyKey: key() },
   );
-  assert.ok(cancelled.run);
+  const cancelledResult = cancelled.result({
+    timeoutMs: 60_000,
+    pollIntervalMs: 100,
+  });
+  while (!cancelled.run)
+    await Promise.race([
+      cancelledResult,
+      new Promise((resolve) => setTimeout(resolve, 10)),
+    ]);
   const checkpointDeadline = Date.now() + 30_000;
   while (true) {
     const checkpoint = (await cancelled.run.items()).data;
@@ -212,7 +232,7 @@ try {
     );
   }
   await cancelled.run.interrupt();
-  const cancellation = await cancelled.result();
+  const cancellation = await cancelledResult;
   assert.equal(cancellation.status, "cancelled");
   continuationCases.push([cancelled, cancellation]);
   for (const [submitted, sealed] of continuationCases) {
@@ -290,17 +310,24 @@ try {
     },
   };
   const resumeKey = key();
-  const resumed = await pending.run.resume(answers, {
-    idempotencyKey: resumeKey,
-  });
+  const resumed = await pending.run.resume(
+    { [action.tool_call_id]: returned({ reviewed: true }) },
+    {
+      idempotencyKey: resumeKey,
+      input: "Include one caveat in this review.",
+    },
+  );
   assert.equal(resumed.receipt.response.status, 201);
   assert.deepEqual(resumed.receipt.data.options.configuration, configuration);
   const resumedReplay = await resources.runs
     .ref(pending.run.id)
     .resume(answers, { idempotencyKey: resumeKey });
   assert.equal(resumedReplay.response.status, 200);
-  assert.equal(resumedReplay.data.id, resumed.id);
-  assert.equal((await resumed.wait({ timeoutMs: 30_000 })).status, "completed");
+  assert.equal(resumedReplay.data.id, resumed.identity.runId);
+  assert.equal(
+    (await resumed.result({ timeoutMs: 30_000 })).status,
+    "completed",
+  );
   const queuedOutcome = await queued.result();
   assert.equal(queuedOutcome.status, "completed");
   assert.deepEqual(
@@ -308,12 +335,49 @@ try {
     nextConfiguration,
   );
   assert.deepEqual(
-    (await resumed.get()).data.options.configuration,
+    (await resumed.run.get()).data.options.configuration,
     configuration,
   );
   const incorporated = await queued.entry.get();
   assert.equal(incorporated.data.status, "consumed");
   assert.equal(incorporated.data.assigned_run_id, queuedOutcome.run.id);
+
+  const recovered = client.threads
+    .ref(outcome.threadId)
+    .entry(interaction.entry.id)
+    .interaction({ timeoutMs: 30_000 });
+  assert.equal(recovered.receipt, undefined);
+  assert.equal(recovered.run, null);
+  assert.equal((await recovered.result()).runId, outcome.runId);
+  await recovered.close();
+  const exact = outcome.run.observe({ timeoutMs: 30_000 });
+  assert.equal((await exact.result()).threadId, outcome.threadId);
+  await exact.close();
+  const preview = await agent.start([
+    text("Reply briefly to this public-input preview probe."),
+    json({ enabled: false, count: 0 }),
+  ]);
+  assert.match(preview.idempotencyKey, /^[a-f0-9-]{36}$/);
+  const chunks = [];
+  try {
+    try {
+      for await (const chunk of preview.textStream()) {
+        assert.equal(typeof chunk, "string");
+        chunks.push(chunk);
+      }
+    } catch (error) {
+      if (!(error instanceof PreviewInterruptedError)) throw error;
+      console.log("preview_interrupted=" + error.message);
+    }
+    const final = await preview.result();
+    assert.equal(final.status, "completed");
+    assert.equal(
+      final.text,
+      typeof final.output === "string" ? final.output : undefined,
+    );
+  } finally {
+    await preview.close();
+  }
 
   const bytes = new Uint8Array([0, 255, 17, 3, 39, 100]);
   const upload = (
@@ -342,7 +406,7 @@ try {
     await content.close();
   }
   console.log(
-    `Installed interaction acceptance passed: native_configuration=passed immutable_steering=passed next_run_snapshot=passed resume_snapshot=passed ordinal_paging=passed baseline_history=passed failed_continuation=${process.env.A13N_FAILURE_PROMPT ? "passed" : "not_run"} cancelled_continuation=passed thread=${interaction.thread.id} run=${outcome.run.id} frames=${events.join(",")} queued=${queued.entry.id} resumed=${resumed.id} asset=${asset.data.id}`,
+    `Installed interaction acceptance passed: native_configuration=passed immutable_steering=passed next_run_snapshot=passed resume_snapshot=passed ordinal_paging=passed baseline_history=passed failed_continuation=${process.env.A13N_FAILURE_PROMPT ? "passed" : "not_run"} cancelled_continuation=passed thread=${interaction.thread.id} run=${outcome.run.id} frames=${events.join(",")} queued=${queued.entry.id} resumed=${resumed.identity.runId} asset=${asset.data.id}`,
   );
 } finally {
   client.close();

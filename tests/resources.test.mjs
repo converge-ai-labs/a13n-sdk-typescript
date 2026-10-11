@@ -78,7 +78,7 @@ test("bound pagination advances once per page and handles can be closed with for
   client.close();
 });
 
-test("Run wait polls the selected workspace and times out without mutation", async () => {
+test("Run result polls the selected workspace and times out without mutation", async () => {
   let calls = 0;
   const client = createClient({
     baseUrl,
@@ -89,6 +89,7 @@ test("Run wait polls the selected workspace and times out without mutation", asy
       return json({
         status: calls === 2 ? "completed" : "running",
         id: "run_one",
+        thread_id: "thread",
       });
     },
   });
@@ -96,12 +97,12 @@ test("Run wait polls the selected workspace and times out without mutation", asy
     (
       await client.runs
         .ref("run_one")
-        .wait({ timeoutMs: 1000, pollIntervalMs: 1 })
+        .result({ timeoutMs: 1000, pollIntervalMs: 1 })
     ).status,
     "completed",
   );
   await assert.rejects(
-    client.runs.ref("run_one").wait({ timeoutMs: -1 }),
+    client.runs.ref("run_one").result({ timeoutMs: -1 }),
     RangeError,
   );
   client.close();

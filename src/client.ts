@@ -12,7 +12,7 @@ export function createClient(options: ClientOptions) {
   const resources = new ServiceResources(transport);
   return {
     agents: new AgentCollection(resources, transport.signal),
-    threads: new ThreadCollection(resources),
+    threads: new ThreadCollection(resources, transport.signal),
     runs: new RunCollection(resources, transport.signal),
     resources,
     setCsrfToken: (token: string | undefined) => transport.setCsrfToken(token),

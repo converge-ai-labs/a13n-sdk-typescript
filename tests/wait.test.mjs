@@ -46,7 +46,7 @@ for (const stage of ["fetch", "body", "authentication", "retry"]) {
         : undefined,
     );
     try {
-      await assert.rejects(run.wait({ timeoutMs: 10 }), timeout);
+      await assert.rejects(run.result({ timeoutMs: 10 }), timeout);
       if (stage !== "authentication") assert.equal(requestSignal.aborted, true);
     } finally {
       client.close();
@@ -66,7 +66,12 @@ test(
         });
         const { client, run } = setup(async (request) => {
           started();
-          if (sleeping) return Response.json({ id: "run", status: "running" });
+          if (sleeping)
+            return Response.json({
+              id: "run",
+              thread_id: "thread",
+              status: "running",
+            });
           return new Promise((_, reject) =>
             request.signal.addEventListener(
               "abort",
@@ -77,7 +82,7 @@ test(
         });
         const caller = new AbortController();
         const reason = new Error("Caller cancelled");
-        const pending = run.wait({
+        const pending = run.result({
           timeoutMs: 1000,
           pollIntervalMs: 500,
           signal: caller.signal,
@@ -102,11 +107,11 @@ test("wait returns waiting and terminal representations with their HTTP evidence
     const { client, run } = setup(async () => {
       calls++;
       return Response.json(
-        { id: "run", status },
+        { id: "run", thread_id: "thread", status },
         { headers: { ETag: '"run:1"' } },
       );
     });
-    const result = await run.wait({ timeoutMs: 100 });
+    const result = await run.result({ timeoutMs: 100 });
     assert.equal(result.status, status);
     assert.equal(result.snapshot.response.headers.get("ETag"), '"run:1"');
     assert.equal(calls, 1);
@@ -121,21 +126,21 @@ test("invalid intervals, expired deadlines and pre-aborted/closed waits dispatch
     return Response.json({ status: "completed" });
   });
   for (const timeoutMs of [-1, NaN, Infinity, 2_147_483_648])
-    await assert.rejects(run.wait({ timeoutMs }), RangeError);
+    await assert.rejects(run.result({ timeoutMs }), RangeError);
   for (const pollIntervalMs of [0, -1, NaN, Infinity])
     await assert.rejects(
-      run.wait({ timeoutMs: 10, pollIntervalMs }),
+      run.result({ timeoutMs: 10, pollIntervalMs }),
       RangeError,
     );
-  await assert.rejects(run.wait({ timeoutMs: 0 }), WaitTimeoutError);
+  await assert.rejects(run.result({ timeoutMs: 0 }), WaitTimeoutError);
   const reason = new Error("already aborted");
   await assert.rejects(
-    run.wait({ timeoutMs: 10, signal: AbortSignal.abort(reason) }),
+    run.result({ timeoutMs: 10, signal: AbortSignal.abort(reason) }),
     (error) => error === reason,
   );
   client.close();
   await assert.rejects(
-    run.wait({ timeoutMs: 10, signal: new AbortController().signal }),
+    run.result({ timeoutMs: 10, signal: new AbortController().signal }),
     { name: "AbortError" },
   );
   assert.equal(calls, 0);

@@ -1,4 +1,5 @@
 import { ProtocolError } from "../errors.js";
+import { inheritDispatch } from "../dispatch.js";
 import type { Transport } from "../transport.js";
 
 export interface ResourceResult<T> {
@@ -58,7 +59,13 @@ export async function jsonRequest<T>(
   };
   if (hasBody) init.body = JSON.stringify(body);
   const response = await transport.fetch(
-    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
+    inheritDispatch(
+      new Request(
+        `${transport.baseUrl}${withQuery(path, options.query)}`,
+        init,
+      ),
+      options.signal,
+    ),
   );
   if (response.status === 204 || response.status === 205)
     return { data: undefined as T, response };
@@ -158,7 +165,13 @@ export async function uploadRequest<T>(
   };
   if (body instanceof ReadableStream) init.duplex = "half";
   const response = await transport.fetch(
-    new Request(`${transport.baseUrl}${withQuery(path, options.query)}`, init),
+    inheritDispatch(
+      new Request(
+        `${transport.baseUrl}${withQuery(path, options.query)}`,
+        init,
+      ),
+      options.signal,
+    ),
   );
   const text = await response.text();
   if (!text) return { data: undefined as T, response };

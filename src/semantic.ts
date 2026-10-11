@@ -1,32 +1,104 @@
-import { ProtocolError } from "./errors.js";
+import {
+  isServiceRejection,
+  isRecord,
+  PreviewInterruptedError,
+  ProtocolError,
+  SubmissionUnknownError,
+} from "./errors.js";
 import type { components } from "./schema.js";
 import type {
   ServiceResources,
   RunsRunIdItemsResource,
 } from "./resources/generated.js";
-import type { ResourceResult } from "./resources/base.js";
-import {
-  observation,
-  textPayload,
-  waitForRun,
-  type WaitOptions,
-} from "./resources/interaction.js";
+import type { BinaryResult, ResourceResult } from "./resources/base.js";
+import { observation, type WaitOptions } from "./resources/interaction.js";
 import { abortable, delay } from "./transport.js";
+import { trackDispatch } from "./dispatch.js";
 import { threadStream, type ThreadEvent } from "./streams/thread-stream.js";
+import {
+  messagePayload,
+  resumePayload,
+  sendFields,
+  startFields,
+  submissionKey,
+  type MessageInput,
+  type ResumeAnswers,
+  type ResumeOptions,
+  type SendOptions,
+  type StartOptions,
+  type SubmissionOptions,
+} from "./workflow.js";
 
 type Schema = components["schemas"];
-export type MessageInput = string | Schema["MessagePayload"];
-/** New-Thread fields, including a one-time imported message_history seed. */
-export type StartOptions = Omit<Schema["NewThread"], "agent_id" | "payload"> & {
-  idempotencyKey: string;
-  signal?: AbortSignal;
-};
-export type SendOptions = Omit<Schema["Message"], "agent_id" | "payload"> & {
-  idempotencyKey: string;
-  signal?: AbortSignal;
-};
+export type { MessageInput, StartOptions, SendOptions } from "./workflow.js";
 
-/** The Entry was settled without incorporation. Keep the safe IDs and original evidence. */
+/** Safe local identity, not incorporation or terminal evidence. */
+export interface InteractionIdentity {
+  readonly origin: "submitted" | "resumed" | "recovered_entry" | "exact_run";
+  readonly threadId?: string;
+  readonly entryId?: string;
+  readonly runId?: string;
+  readonly idempotencyKey?: string;
+}
+type Receipt =
+  ResourceResult<Schema["Submitted"]> | ResourceResult<Schema["RunView"]>;
+
+async function mutation<T>(
+  operation: "start" | "send" | "resume",
+  identities: { agentId?: string; threadId?: string; runId?: string },
+  options: SubmissionOptions,
+  submit: (request: {
+    idempotencyKey: string;
+    signal: AbortSignal;
+  }) => Promise<T>,
+): Promise<{ value: T; key: string }> {
+  const key = submissionKey(options.idempotencyKey);
+  const signal = AbortSignal.any(options.signal ? [options.signal] : []);
+  const dispatch = trackDispatch(signal);
+  try {
+    signal.throwIfAborted();
+    return { value: await submit({ idempotencyKey: key, signal }), key };
+  } catch (cause) {
+    if (!dispatch.attempted || isServiceRejection(cause)) throw cause;
+    throw new SubmissionUnknownError(
+      key,
+      operation,
+      Object.freeze({ ...identities }),
+      cause,
+    );
+  }
+}
+
+function submittedIdentity(
+  receipt: ResourceResult<Schema["Submitted"]>,
+  threadId?: string,
+) {
+  const value: unknown = receipt.data;
+  if (
+    !isRecord(value) ||
+    !isRecord(value.thread) ||
+    !isRecord(value.entry) ||
+    typeof value.thread.id !== "string" ||
+    !value.thread.id ||
+    typeof value.entry.id !== "string" ||
+    !value.entry.id ||
+    value.entry.thread_id !== value.thread.id ||
+    (threadId !== undefined && value.thread.id !== threadId) ||
+    !(
+      value.run === null ||
+      (isRecord(value.run) &&
+        typeof value.run.id === "string" &&
+        value.run.id &&
+        value.run.thread_id === value.thread.id)
+    )
+  )
+    throw new ProtocolError(
+      "Service returned an invalid submission receipt identity.",
+    );
+  return { threadId: value.thread.id, entryId: value.entry.id };
+}
+
+/** The Entry was settled without incorporation; this is not a failed Run. */
 export class SubmissionDispositionError extends Error {
   override readonly name = "SubmissionDispositionError";
   readonly threadId: string;
@@ -40,7 +112,7 @@ export class SubmissionDispositionError extends Error {
   }
 }
 
-/** Immutable projection of an authoritative exact-Run read, not an inferred stream result. */
+/** Authoritative exact-Run HTTP evidence, never reconstructed from Items or preview. */
 export class RunOutcome {
   constructor(
     readonly run: RunHandle,
@@ -52,11 +124,26 @@ export class RunOutcome {
   get output() {
     return this.snapshot.data.output;
   }
+  get text(): string | undefined {
+    return typeof this.output === "string" ? this.output : undefined;
+  }
   get pending() {
     return this.snapshot.data.pending;
   }
+  get pendingApprovals() {
+    return this.pending?.approvals ?? [];
+  }
+  get pendingCalls() {
+    return this.pending?.calls ?? [];
+  }
   get failure() {
     return this.snapshot.data.failure;
+  }
+  get threadId() {
+    return this.snapshot.data.thread_id;
+  }
+  get runId() {
+    return this.snapshot.data.id;
   }
 }
 
@@ -65,50 +152,68 @@ export class RunHandle {
     readonly id: string,
     private readonly resources: ServiceResources,
     private readonly shutdown: AbortSignal,
-    /** Original resume receipt when this handle was returned from resume(). */
-    readonly receipt?: ResourceResult<Schema["RunView"]>,
   ) {}
-
   get(options: { signal?: AbortSignal } = {}) {
     return this.resources.runs.ref(this.id).get(options);
   }
-
-  /** Observe only this Run; waiting/failed/cancelled are distinct from completed. */
-  async wait(options: WaitOptions = {}): Promise<RunOutcome> {
-    const snapshot = await waitForRun(
-      async (request) => {
-        const result = await this.resources.runs.ref(this.id).get(request);
-        if (result.data.id !== this.id)
-          throw new ProtocolError("Service returned a different Run.");
-        return result;
-      },
+  observe(options: WaitOptions = {}): Interaction {
+    return new Interaction(
+      { origin: "exact_run", runId: this.id },
+      this.resources,
       this.shutdown,
+      undefined,
+      undefined,
       options,
     );
-    return new RunOutcome(this, snapshot);
   }
-
-  /** Native ordinal window; only unwindowed reads contain a live baseline. */
+  async result(options: WaitOptions = {}): Promise<RunOutcome> {
+    return this.observe(options).result();
+  }
   items(options: Parameters<RunsRunIdItemsResource["get"]>[0] = {}) {
     return this.resources.runs.ref(this.id).items.get(options);
   }
-
   interrupt(options: { signal?: AbortSignal } = {}) {
     return this.resources.runs.ref(this.id).interrupt(options);
   }
-
-  /** Submit the complete pending results and optional input as one successor intent. */
+  /** Atomic complete answer map; Service alone validates coverage. Returns the exact successor. */
   async resume(
-    request: Schema["Resume"],
-    options: { idempotencyKey: string; signal?: AbortSignal },
-  ): Promise<RunHandle> {
-    const receipt = await this.resources.runs
-      .ref(this.id)
-      .resume(request, options);
-    return new RunHandle(
-      receipt.data.id,
+    answers: ResumeAnswers,
+    options: ResumeOptions = {},
+  ): Promise<Interaction> {
+    const request = resumePayload(answers, options.input);
+    const { value: receipt, key } = await mutation(
+      "resume",
+      { runId: this.id },
+      options,
+      async (requestOptions) => {
+        const result = await this.resources.runs
+          .ref(this.id)
+          .resume(request, requestOptions);
+        const value: unknown = result.data;
+        if (
+          !isRecord(value) ||
+          typeof value.id !== "string" ||
+          !value.id ||
+          value.id === this.id ||
+          typeof value.thread_id !== "string" ||
+          !value.thread_id
+        )
+          throw new ProtocolError(
+            "Service returned an invalid successor receipt identity.",
+          );
+        return result;
+      },
+    );
+    return new Interaction(
+      {
+        origin: "resumed",
+        runId: receipt.data.id,
+        threadId: receipt.data.thread_id,
+        idempotencyKey: key,
+      },
       this.resources,
       this.shutdown,
+      options.signal,
       receipt,
     );
   }
@@ -118,223 +223,478 @@ export class ThreadHandle {
   constructor(
     readonly id: string,
     private readonly resources: ServiceResources,
+    private readonly shutdown: AbortSignal,
   ) {}
-
   get(options: { signal?: AbortSignal } = {}) {
     return this.resources.threads.ref(this.id).get(options);
   }
-
   entry(id: string) {
-    return new EntryHandle(id, this.id, this.resources);
+    return new EntryHandle(id, this.id, this.resources, this.shutdown);
   }
 }
-
 export class EntryHandle {
   constructor(
     readonly id: string,
     readonly threadId: string,
     private readonly resources: ServiceResources,
+    private readonly shutdown: AbortSignal,
   ) {}
-
   get(options: { signal?: AbortSignal } = {}) {
     return this.resources.threads
       .ref(this.threadId)
       .inbox.ref(this.id)
       .get(options);
   }
-}
-
-class SubmissionObserver {
-  readonly thread: ThreadHandle;
-  readonly entry: EntryHandle;
-  readonly run: RunHandle | null;
-  constructor(
-    readonly receipt: ResourceResult<Schema["Submitted"]>,
-    private readonly resources: ServiceResources,
-    private readonly shutdown: AbortSignal,
-  ) {
-    this.thread = new ThreadHandle(receipt.data.thread.id, resources);
-    this.entry = this.thread.entry(receipt.data.entry.id);
-    this.run = receipt.data.run
-      ? new RunHandle(receipt.data.run.id, resources, shutdown)
-      : null;
-  }
-
-  /** One observer owns both Entry incorporation and exact-Run termination. */
-  async wait(
-    options: WaitOptions = {},
-    onBound?: (run: RunHandle) => void,
-  ): Promise<RunOutcome> {
-    const watch = observation(this.shutdown, options);
-    try {
-      while (true) {
-        watch.signal.throwIfAborted();
-        const entry = await abortable(
-          this.entry.get({ signal: watch.signal }),
-          watch.signal,
-        );
-        if (
-          entry.data.id !== this.entry.id ||
-          entry.data.thread_id !== this.thread.id
-        )
-          throw new ProtocolError(
-            "Service returned a different submission entry.",
-          );
-        if (entry.data.status === "failed" || entry.data.status === "withdrawn")
-          throw new SubmissionDispositionError(entry);
-        if (entry.data.status === "consumed") {
-          if (!entry.data.assigned_run_id)
-            throw new ProtocolError(
-              "Consumed submission has no incorporating Run ID.",
-            );
-          const run = new RunHandle(
-            entry.data.assigned_run_id,
-            this.resources,
-            this.shutdown,
-          );
-          onBound?.(run);
-          while (true) {
-            watch.signal.throwIfAborted();
-            const snapshot = await abortable(
-              run.get({ signal: watch.signal }),
-              watch.signal,
-            );
-            if (
-              snapshot.data.id !== run.id ||
-              snapshot.data.thread_id !== this.thread.id
-            )
-              throw new ProtocolError(
-                "Service returned a different incorporating Run.",
-              );
-            if (
-              ["completed", "waiting", "failed", "cancelled"].includes(
-                snapshot.data.status,
-              )
-            ) {
-              watch.signal.throwIfAborted();
-              return new RunOutcome(run, snapshot);
-            }
-            await delay(watch.pollIntervalMs, watch.signal);
-          }
-        }
-        // An assigned entry can return to pending at a seal; neither is incorporation.
-        await delay(watch.pollIntervalMs, watch.signal);
-      }
-    } catch (error) {
-      if (watch.signal.aborted) throw watch.signal.reason;
-      throw error;
-    } finally {
-      watch.close();
-    }
+  /** Recover only an identity, without I/O or a fabricated receipt. */
+  interaction(options: WaitOptions = {}): Interaction {
+    return new Interaction(
+      { origin: "recovered_entry", threadId: this.threadId, entryId: this.id },
+      this.resources,
+      this.shutdown,
+      undefined,
+      undefined,
+      options,
+    );
   }
 }
 
-/** A finite, single-submission interaction. Its result is an exact committed Run read. */
+/** One finite exact-bound observation, shared by submission, resume and identity recovery. */
 export class Interaction implements AsyncIterable<ThreadEvent> {
-  readonly receipt: ResourceResult<Schema["Submitted"]>;
-  readonly thread: ThreadHandle;
-  readonly entry: EntryHandle;
-  readonly run: RunHandle | null;
-  private readonly observer: SubmissionObserver;
-  private readonly observationAbort = new AbortController();
+  readonly identity: InteractionIdentity;
+  readonly receiptRun: RunHandle | null;
+  readonly entry: EntryHandle | null;
+  private threadHandle: ThreadHandle | null;
+  private runHandle: RunHandle | null = null;
+  private readonly localAbort = new AbortController();
+  private watch?: ReturnType<typeof observation>;
   private outcomePromise?: Promise<RunOutcome>;
   private boundPromise?: Promise<RunHandle>;
+  private reader?: AsyncGenerator<ThreadEvent>;
+  private binary?: BinaryResult;
   private streamAbort?: AbortController;
+  private readerClose?: Promise<void>;
+  private closePromise?: Promise<void>;
   private closed = false;
-  private iterated = false;
+  private settled = false;
+  private consumer: "raw" | "text" | null = null;
+  private rawUsed = false;
+  private previewUsed = false;
+  private previewFailure?: PreviewInterruptedError;
 
   constructor(
-    receipt: ResourceResult<Schema["Submitted"]>,
-    private readonly interactionResources: ServiceResources,
+    identity: InteractionIdentity,
+    private readonly resources: ServiceResources,
     private readonly shutdown: AbortSignal,
     private readonly invocationSignal?: AbortSignal,
+    readonly receipt?: Receipt,
+    private readonly initialOptions: WaitOptions = {},
   ) {
-    this.observer = new SubmissionObserver(
-      receipt,
-      interactionResources,
-      shutdown,
-    );
-    this.receipt = receipt;
-    this.thread = this.observer.thread;
-    this.entry = this.observer.entry;
-    this.run = this.observer.run;
+    this.identity = Object.freeze({ ...identity });
+    this.threadHandle = identity.threadId
+      ? new ThreadHandle(identity.threadId, resources, shutdown)
+      : null;
+    this.entry =
+      identity.entryId && identity.threadId
+        ? new EntryHandle(
+            identity.entryId,
+            identity.threadId,
+            resources,
+            shutdown,
+          )
+        : null;
+    const provisional =
+      identity.origin === "submitted" && receipt
+        ? (receipt.data as Schema["Submitted"]).run
+        : null;
+    this.receiptRun = provisional
+      ? new RunHandle(provisional.id, resources, shutdown)
+      : null;
+  }
+  get thread() {
+    return this.threadHandle;
+  }
+  /** Authoritative only after consumed Entry binding or a validated exact Run read. */
+  get run() {
+    return this.runHandle;
+  }
+  get idempotencyKey() {
+    return this.identity.idempotencyKey;
   }
 
-  /** Result-only usage does not open SSE. The first call fixes observation options. */
+  /** No SSE for result-only callers. First observation fixes one deadline for all consumers. */
   result(options: WaitOptions = {}): Promise<RunOutcome> {
     if (this.outcomePromise) {
       if (Object.keys(options).length)
         throw new TypeError(
-          "The interaction observation has already started; set options on its first result() call.",
+          "The interaction observation has already started; set options before starting it.",
         );
       return this.outcomePromise;
     }
-    if (this.closed) return Promise.reject(this.observationAbort.signal.reason);
+    if (this.closed) return Promise.reject(this.localAbort.signal.reason);
+    const settings = { ...this.initialOptions, ...options };
+    const signal = AbortSignal.any([
+      this.localAbort.signal,
+      ...(this.invocationSignal ? [this.invocationSignal] : []),
+      ...(this.initialOptions.signal ? [this.initialOptions.signal] : []),
+      ...(options.signal ? [options.signal] : []),
+    ]);
+    this.watch = observation(this.shutdown, { ...settings, signal });
     let resolveBound!: (run: RunHandle) => void;
-    let rejectBound!: (error: unknown) => void;
-    this.boundPromise = new Promise<RunHandle>((resolve, reject) => {
+    let rejectBound!: (cause: unknown) => void;
+    this.boundPromise = new Promise((resolve, reject) => {
       resolveBound = resolve;
       rejectBound = reject;
     });
-    // Result-only callers never await the binding promise.
     void this.boundPromise.catch(() => undefined);
-    const signal = AbortSignal.any([
-      this.observationAbort.signal,
-      ...(this.invocationSignal ? [this.invocationSignal] : []),
-      ...(options.signal ? [options.signal] : []),
-    ]);
-    this.outcomePromise = this.observer.wait(
-      { ...options, signal },
-      resolveBound,
-    );
+    this.outcomePromise = this.poll(this.watch, resolveBound).finally(() => {
+      this.settled = true;
+      this.watch!.close();
+      void this.stopReader().catch(() => undefined);
+    });
     void this.outcomePromise.catch(rejectBound);
     return this.outcomePromise;
   }
 
-  /** Stop local observation and streaming; never interrupt the remote Run. */
-  close(): void {
-    if (this.closed) return;
-    this.closed = true;
-    const reason = new DOMException("Interaction closed.", "AbortError");
-    this.observationAbort.abort(reason);
-    this.streamAbort?.abort(reason);
+  private async poll(
+    watch: ReturnType<typeof observation>,
+    onBound: (run: RunHandle) => void,
+  ): Promise<RunOutcome> {
+    try {
+      let runId = this.identity.runId;
+      if (this.entry) {
+        while (!runId) {
+          watch.signal.throwIfAborted();
+          const snapshot = await abortable(
+            this.entry.get({ signal: watch.signal }),
+            watch.signal,
+          );
+          if (
+            snapshot.data.id !== this.entry.id ||
+            snapshot.data.thread_id !== this.entry.threadId
+          )
+            throw new ProtocolError(
+              "Service returned a different submission entry.",
+            );
+          if (
+            snapshot.data.status === "failed" ||
+            snapshot.data.status === "withdrawn"
+          )
+            throw new SubmissionDispositionError(snapshot);
+          if (snapshot.data.status === "consumed") {
+            if (!snapshot.data.assigned_run_id)
+              throw new ProtocolError(
+                "Consumed submission has no incorporating Run ID.",
+              );
+            runId = snapshot.data.assigned_run_id;
+            this.runHandle = new RunHandle(
+              runId,
+              this.resources,
+              this.shutdown,
+            );
+            onBound(this.runHandle);
+          } else await delay(watch.pollIntervalMs, watch.signal);
+        }
+      }
+      if (!runId)
+        throw new ProtocolError(
+          "Interaction has no exact Run or Entry identity.",
+        );
+      const run =
+        this.runHandle ?? new RunHandle(runId, this.resources, this.shutdown);
+      while (true) {
+        watch.signal.throwIfAborted();
+        const snapshot = await abortable(
+          run.get({ signal: watch.signal }),
+          watch.signal,
+        );
+        if (
+          snapshot.data.id !== runId ||
+          typeof snapshot.data.thread_id !== "string" ||
+          !snapshot.data.thread_id ||
+          (this.threadHandle &&
+            snapshot.data.thread_id !== this.threadHandle.id)
+        )
+          throw new ProtocolError("Service returned a different exact Run.");
+        if (!this.runHandle) {
+          this.runHandle = run;
+          this.threadHandle = new ThreadHandle(
+            snapshot.data.thread_id,
+            this.resources,
+            this.shutdown,
+          );
+          onBound(run);
+        }
+        if (
+          ["completed", "waiting", "failed", "cancelled"].includes(
+            snapshot.data.status,
+          )
+        ) {
+          watch.signal.throwIfAborted();
+          return new RunOutcome(run, snapshot);
+        }
+        await delay(watch.pollIntervalMs, watch.signal);
+      }
+    } catch (cause) {
+      if (watch.signal.aborted) throw watch.signal.reason;
+      throw cause;
+    }
+  }
+
+  private async nextEvent(): Promise<IteratorResult<ThreadEvent>> {
+    const outcome = this.result();
+    const run = await this.boundPromise!;
+    if (this.closed) this.localAbort.signal.throwIfAborted();
+    if (this.settled) {
+      await outcome;
+      return { done: true, value: undefined };
+    }
+    if (!this.reader) {
+      this.streamAbort = new AbortController();
+      const signal = AbortSignal.any([
+        this.watch!.signal,
+        this.streamAbort.signal,
+      ]);
+      this.reader = threadStream(
+        async (options) => {
+          const opening = this.resources.threads
+            .ref(this.threadHandle!.id)
+            .stream.get(options);
+          // A late opening is still owned and must be closed after local cancellation.
+          void opening.then(
+            (binary) => {
+              if (signal.aborted) void binary.close().catch(() => undefined);
+            },
+            () => undefined,
+          );
+          const binary = await abortable(opening, signal);
+          this.binary = binary;
+          return binary;
+        },
+        this.shutdown,
+        { signal },
+      );
+    }
+    try {
+      while (true) {
+        const next = await this.reader.next();
+        if (this.closed) this.localAbort.signal.throwIfAborted();
+        if (this.settled) {
+          await outcome;
+          return { done: true, value: undefined };
+        }
+        if (next.done) return next;
+        if (
+          next.value.frame.type !== "changed" &&
+          next.value.frame.data.run_id === run.id
+        )
+          return next;
+      }
+    } catch (cause) {
+      if (this.settled) {
+        await outcome;
+        return { done: true, value: undefined };
+      }
+      throw cause;
+    }
+  }
+
+  private stopReader(): Promise<void> {
+    this.streamAbort?.abort(
+      new DOMException("Interaction reader stopped.", "AbortError"),
+    );
+    if (!this.readerClose && this.reader)
+      this.readerClose = (async () => {
+        // Cancel the actual transport read first, even if the consumer is paused at yield.
+        try {
+          await this.binary
+            ?.close()
+            .catch((cause: unknown) => this.readerCancellation(cause));
+        } finally {
+          await this.reader!.return(undefined).catch((cause: unknown) =>
+            this.readerCancellation(cause),
+          );
+        }
+      })();
+    return this.readerClose ?? Promise.resolve();
+  }
+
+  private readerCancellation(cause: unknown): void {
+    for (const signal of [
+      this.watch?.signal,
+      this.localAbort.signal,
+      this.streamAbort?.signal,
+      this.shutdown,
+    ]) {
+      if (signal?.aborted && cause === signal.reason) return;
+    }
+    throw cause;
+  }
+
+  /** Joined local cleanup. Never interrupts or resumes remote execution. */
+  close(): Promise<void> {
+    if (!this.closePromise) {
+      this.closed = true;
+      this.localAbort.abort(
+        new DOMException("Interaction closed.", "AbortError"),
+      );
+      this.closePromise = (async () => {
+        try {
+          await this.stopReader();
+        } finally {
+          await this.outcomePromise?.catch(() => undefined);
+        }
+      })();
+    }
+    return this.closePromise;
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<ThreadEvent> {
-    if (this.iterated)
-      throw new TypeError("An interaction may be iterated only once.");
-    this.iterated = true;
-    if (this.closed) return;
-    const outcome = this.result();
-    const run = await this.boundPromise!;
-    if (this.closed) return;
-    const streamAbort = new AbortController();
-    this.streamAbort = streamAbort;
-    // One completion reaction, independent of how many frames the consumer pulls.
-    void outcome.then(
-      () => streamAbort.abort(),
-      () => streamAbort.abort(),
-    );
-    const stream = threadStream(
-      (options) =>
-        this.interactionResources.threads
-          .ref(this.thread.id)
-          .stream.get(options),
-      this.shutdown,
-      { signal: streamAbort.signal },
-    );
+    if (this.consumer || this.rawUsed)
+      throw new TypeError(
+        "Only one raw or text consumer may read an Interaction at a time.",
+      );
+    this.rawUsed = true;
+    this.consumer = "raw";
     try {
-      for await (const event of stream) {
-        if (event.frame.type === "changed") continue;
-        if (event.frame.data.run_id === run.id) yield event;
+      while (true) {
+        const next = await this.nextEvent();
+        if (next.done) return;
+        yield next.value;
       }
-    } catch (error) {
-      if (!streamAbort.signal.aborted) throw error;
-      await outcome;
     } finally {
-      this.close();
+      this.consumer = null;
+      await this.close();
     }
-    await outcome;
+  }
+
+  /** Lazy preview only; interruption is sticky and leaves result/sequential raw access open. */
+  async *textStream(): AsyncGenerator<string> {
+    if (this.previewFailure) throw this.previewFailure;
+    if (this.consumer || this.previewUsed || this.rawUsed)
+      throw new TypeError(
+        "Only one preview consumer is allowed, before raw consumption.",
+      );
+    this.previewUsed = true;
+    this.consumer = "text";
+    const active = new Map<string, boolean>();
+    let previous: { attempt: number; sequence: number } | undefined;
+    try {
+      while (true) {
+        const next = await this.nextEvent();
+        if (next.done) return;
+        const frame = next.value.frame;
+        if (frame.type === "gap" || frame.type === "reset")
+          throw new PreviewInterruptedError(
+            `Text preview interrupted by ${frame.type}.`,
+          );
+        if (frame.type === "boundary") {
+          if (
+            previous &&
+            (frame.data.attempt !== previous.attempt ||
+              frame.data.sequence > previous.sequence)
+          )
+            throw new PreviewInterruptedError(
+              "Text preview boundary covers unseen Service deltas.",
+            );
+          // A first boundary establishes only a coordinate, never reconstructed message content.
+          previous ??= {
+            attempt: frame.data.attempt,
+            sequence: frame.data.sequence,
+          };
+          continue;
+        }
+        if (frame.type !== "delta") continue;
+        // Service positions include child and hidden deltas; Redis and inner AG-UI coordinates do not.
+        // Late boundaries never regress the received delta high-water mark.
+        if (
+          previous &&
+          (frame.data.attempt !== previous.attempt ||
+            frame.data.sequence !== previous.sequence + 1)
+        )
+          throw new PreviewInterruptedError(
+            "Text preview encountered a discontinuous Service delta position.",
+          );
+        previous = {
+          attempt: frame.data.attempt,
+          sequence: frame.data.sequence,
+        };
+        const event = frame.data.event;
+        if (event.subagentRunId !== undefined && event.subagentRunId !== null)
+          continue;
+        const hidden =
+          isRecord(event.metadata) && event.metadata.display === false;
+        if (
+          hidden &&
+          event.type !== "TEXT_MESSAGE_START" &&
+          event.type !== "TEXT_MESSAGE_END"
+        )
+          continue;
+        if (event.type === "CUSTOM" && event.name === "a13n.stream.fragment")
+          throw new PreviewInterruptedError(
+            "Text preview does not assemble root custom fragments.",
+          );
+        if (event.type === "TEXT_MESSAGE_START") {
+          if (
+            typeof event.messageId !== "string" ||
+            typeof event.role !== "string" ||
+            active.has(event.messageId)
+          )
+            throw new PreviewInterruptedError(
+              "Text preview received an ambiguous message start.",
+            );
+          if (active.size >= 8)
+            throw new PreviewInterruptedError(
+              "Text preview exceeded eight active root message identities.",
+            );
+          active.set(event.messageId, !hidden && event.role === "assistant");
+        } else if (event.type === "TEXT_MESSAGE_CONTENT") {
+          if (
+            typeof event.messageId !== "string" ||
+            !active.has(event.messageId)
+          )
+            throw new PreviewInterruptedError(
+              "Text preview content has no trustworthy start or string delta.",
+            );
+          if (!active.get(event.messageId)) continue;
+          if (typeof event.delta !== "string")
+            throw new PreviewInterruptedError(
+              "Text preview content has no string delta.",
+            );
+          yield event.delta;
+        } else if (event.type === "TEXT_MESSAGE_END") {
+          if (
+            hidden &&
+            (typeof event.messageId !== "string" ||
+              !active.has(event.messageId))
+          )
+            continue;
+          if (
+            typeof event.messageId !== "string" ||
+            !active.delete(event.messageId)
+          )
+            throw new PreviewInterruptedError(
+              "Text preview received an unmatched message end.",
+            );
+        }
+      }
+    } catch (cause) {
+      if (
+        cause instanceof PreviewInterruptedError ||
+        cause instanceof ProtocolError
+      ) {
+        this.previewFailure =
+          cause instanceof PreviewInterruptedError
+            ? cause
+            : new PreviewInterruptedError(
+                "Text preview interrupted by a protocol discontinuity.",
+                cause,
+              );
+        throw this.previewFailure;
+      }
+      throw cause;
+    } finally {
+      this.consumer = null;
+    }
   }
 }
 
@@ -344,43 +704,72 @@ export class AgentHandle {
     private readonly resources: ServiceResources,
     private readonly shutdown: AbortSignal,
   ) {}
-
   async start(
     input: MessageInput,
-    options: StartOptions,
+    options: StartOptions = {},
   ): Promise<Interaction> {
-    const { idempotencyKey, signal, ...fields } = options;
-    const receipt = await this.resources.threads.create(
-      {
-        ...fields,
-        agent_id: this.id,
-        payload: typeof input === "string" ? textPayload(input) : input,
+    const body = {
+      ...startFields(options),
+      agent_id: this.id,
+      payload: messagePayload(input),
+    };
+    const { value: receipt, key } = await mutation(
+      "start",
+      { agentId: this.id },
+      options,
+      async (request) => {
+        const result = await this.resources.threads.create(body, request);
+        submittedIdentity(result);
+        return result;
       },
-      { idempotencyKey, ...(signal ? { signal } : {}) },
     );
-    return new Interaction(receipt, this.resources, this.shutdown, signal);
+    return new Interaction(
+      {
+        origin: "submitted",
+        ...submittedIdentity(receipt),
+        idempotencyKey: key,
+      },
+      this.resources,
+      this.shutdown,
+      options.signal,
+      receipt,
+    );
   }
-
   async send(
     threadId: string,
     input: MessageInput,
-    options: SendOptions,
+    options: SendOptions = {},
   ): Promise<Interaction> {
-    const { idempotencyKey, signal, ...fields } = options;
-    const receipt = await this.resources.threads.ref(threadId).inbox.create(
-      {
-        ...fields,
-        agent_id: this.id,
-        payload: typeof input === "string" ? textPayload(input) : input,
+    const body = {
+      ...sendFields(options),
+      agent_id: this.id,
+      payload: messagePayload(input),
+    };
+    const { value: receipt, key } = await mutation(
+      "send",
+      { agentId: this.id, threadId },
+      options,
+      async (request) => {
+        const result = await this.resources.threads
+          .ref(threadId)
+          .inbox.create(body, request);
+        submittedIdentity(result, threadId);
+        return result;
       },
-      { idempotencyKey, ...(signal ? { signal } : {}) },
     );
-    if (receipt.data.thread.id !== threadId)
-      throw new ProtocolError("Service submitted to another Thread.");
-    return new Interaction(receipt, this.resources, this.shutdown, signal);
+    return new Interaction(
+      {
+        origin: "submitted",
+        ...submittedIdentity(receipt),
+        idempotencyKey: key,
+      },
+      this.resources,
+      this.shutdown,
+      options.signal,
+      receipt,
+    );
   }
 }
-
 export class AgentCollection {
   constructor(
     private readonly resources: ServiceResources,
@@ -391,9 +780,12 @@ export class AgentCollection {
   }
 }
 export class ThreadCollection {
-  constructor(private readonly resources: ServiceResources) {}
+  constructor(
+    private readonly resources: ServiceResources,
+    private readonly shutdown: AbortSignal,
+  ) {}
   ref(id: string) {
-    return new ThreadHandle(id, this.resources);
+    return new ThreadHandle(id, this.resources, this.shutdown);
   }
 }
 export class RunCollection {

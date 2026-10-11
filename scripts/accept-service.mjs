@@ -90,16 +90,18 @@ try {
     },
   };
   const resumeKey = key();
-  const successor = await pending.run.resume(answers, {
+  const successor = await pending.run.resume(answers.calls, {
     idempotencyKey: resumeKey,
+    input: answers.input,
   });
   assert.equal(successor.receipt.response.status, 201);
   const resumedReplay = await client.resources.runs
     .ref(pending.run.id)
     .resume(answers, { idempotencyKey: resumeKey });
   assert.equal(resumedReplay.response.status, 200);
-  assert.equal(resumedReplay.data.id, successor.id);
-  const completed = await successor.wait();
+  assert.equal(resumedReplay.data.id, successor.identity.runId);
+  const completed = await successor.result();
+  await successor.close();
   assert.equal(completed.status, "completed");
   await wait(async () => {
     const current = await client.resources.threads
