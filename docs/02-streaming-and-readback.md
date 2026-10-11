@@ -2,7 +2,35 @@
 
 To show progress while an Agent runs, use the same Service URL, API key and Agent ID as in [client setup](01-setup-and-conversations.md). The interaction is both a finite async iterator and the source of its final result; you do not need a second stream.
 
-## Preview events, then replace them with committed Items
+## Preview string chunks, then read the authoritative output
+
+Use the same client setup and Agent ID as below. The ordinary reply needs no Items read:
+
+```js
+import { PreviewInterruptedError } from "@converge.ai/a13n";
+
+const live = await agent.start("Explain the release plan.");
+try {
+  try {
+    for await (const chunk of live.textStream()) process.stdout.write(chunk);
+  } catch (error) {
+    if (!(error instanceof PreviewInterruptedError)) throw error;
+    console.error("Preview stopped:", error.message);
+  }
+  const result = await live.result();
+  console.log(result.status, result.text ?? result.output);
+} finally {
+  await live.close();
+}
+```
+
+Preview emits only root assistant string CONTENT matched to trustworthy START. Child `subagentRunId` and `metadata.display:false` events are excluded. A trustworthy hidden START retains suppression for its message ID until END, even when subsequent chunks omit metadata; it shares the bounded active-ID state. At most eight active root message IDs are tracked, not a transcript buffer; exhaustion interrupts rather than evicts. Gap/reset, missing/ambiguous starts, non-string content, unmatched ends and trustworthy same-Service-domain delta discontinuities raise sticky `PreviewInterruptedError`. A boundary beyond the received Service delta sequence proves missing delivery and interrupts; equal/late boundaries never regress the high-water mark or repair text. A first boundary establishes only a position coordinate, not message content. Redis cursors and embedded AG-UI sequence values are unrelated domains, not inferred text holes; filtered foreign Runs do not affect preview continuity.
+
+Unrelated unknown CUSTOM events are ignored by preview and preserved by raw access. An unexcluded root `CUSTOM` named `a13n.stream.fragment` interrupts conservatively because its value is a slice of original CUSTOM JSON, not a text suffix. No substring parsing, fragment assembly, baseline repair or reducer is performed; this is an unsupported-framing limitation, not a claim that all fragments contain assistant text.
+
+Interruption stops only preview: result remains available, and deliberate sequential raw access may continue while open. No concurrent raw/text consumers or multiple previews are supported. A preview break leaves local observation open; use `finally { await live.close(); }`. Joined close cancels owned transport reads even when the public iterator is paused. Final output is authoritative independently of preview completeness.
+
+## Read native events and application-owned committed Items
 
 Save this as `stream.mjs`. The raw `delta` event may contain structured data rather than plain text. When a stream gap occurs, stop trusting any preview accumulated from deltas and rebuild it from the saved Items; do not concatenate replayed deltas onto an old preview:
 
@@ -98,7 +126,7 @@ if (snapshot.baseline && snapshot.position !== null) {
 
 Typed finite `gap` events preserve `event.frame.data.position` when provided. A non-null value identifies the position a replacement snapshot must cover; omission/null means the target is unknown, not that no output was lost. Do not advance complete application coverage across the hole using subsequent deltas. On `reset`, discard superseded provisional output and read a new snapshot; coverage from the previous attempt cannot seed the next attempt. Applying that snapshot and rebuilding a raw reader are application-owned operations, not an SDK recovery facade. Even a sealed baseline can be a recent window with truncated content; a historical window must never seal a live consumer or heal a gap.
 
-An early loop break or `interaction.close()` cancels local observation, including a pending `result()`; do not expect another `result()` call to restart it. For final-only output, skip iteration and call `result()` directly—this opens no SSE. Neither closing nor aborting a local stream interrupts the remote Run; `result.run.interrupt()` is a separate, explicit mutation. Continue with [waiting tools](03-waiting-and-tools.md) or [timeout recovery](07-errors-and-recovery.md).
+An early **raw** loop break or `await interaction.close()` cancels local observation, including a pending `result()`; do not expect another `result()` call to restart it. For final-only output, skip iteration and call `result()` directly—this opens no SSE. Neither closing nor aborting a local stream interrupts the remote Run; `result.run.interrupt()` is a separate, explicit mutation. Continue with [waiting tools](03-waiting-and-tools.md) or [timeout recovery](07-errors-and-recovery.md).
 
 ## Keep AG-UI 1.0 payloads and inline child attribution intact
 

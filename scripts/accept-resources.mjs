@@ -234,7 +234,7 @@ try {
     (
       await client.runs
         .ref(submitted.data.run.id)
-        .wait({ timeoutMs: 60_000, pollIntervalMs: 100 })
+        .result({ timeoutMs: 60_000, pollIntervalMs: 100 })
     ).status,
     "completed",
   );

@@ -4,6 +4,18 @@ import {
   type components,
   type ResourceResult,
   textPayload,
+  text,
+  json,
+  url,
+  asset,
+  approve,
+  deny,
+  returned,
+  failed,
+  type RunOptions,
+  type RunConfiguration,
+  type AgentOverride,
+  type MessageHistory,
 } from "../src/index.js";
 import { threadStream } from "../src/streams/thread-stream.js";
 
@@ -96,7 +108,7 @@ export async function acceptedServiceTypes() {
       { idempotencyKey: "submit" },
     );
   if (receipt.data.run !== null)
-    await client.runs.ref(receipt.data.run.id).wait({ timeoutMs: 1000 });
+    await client.runs.ref(receipt.data.run.id).result({ timeoutMs: 1000 });
   for await (const event of threadStream(
     (options) => thread.stream.get(options),
     new AbortController().signal,
@@ -207,9 +219,9 @@ export async function importedHistoryAndAtomicResumeTypes() {
   const agent = client.agents.ref("agent");
   const started = await agent.start(attachment, {
     idempotencyKey: "import-once",
-    message_history: history,
+    messageHistory: history,
   });
-  const readback: Schema["MessageHistory"] = (await started.thread.get()).data
+  const readback: Schema["MessageHistory"] = (await started.thread!.get()).data
     .message_history;
   void readback;
   await workspace.threads.create(
@@ -219,7 +231,7 @@ export async function importedHistoryAndAtomicResumeTypes() {
   await agent.send("thread", "Next", {
     idempotencyKey: "next",
     // @ts-expect-error The imported seed belongs to NewThread, not an inbox message.
-    message_history: history,
+    messageHistory: history,
   });
   const batch: Schema["Resume"] = {
     approvals: { approval_one: { action: "approve" } },
@@ -228,21 +240,22 @@ export async function importedHistoryAndAtomicResumeTypes() {
   };
   await client.runs
     .ref("run")
-    .resume(batch, { idempotencyKey: "atomic-resume" });
+    .resume(
+      { approval_one: approve(), call_one: returned({ reviewed: true }) },
+      { idempotencyKey: "atomic-resume", input: attachment },
+    );
   await workspace.runs
     .ref("run")
     .resume(batch, { idempotencyKey: "native-resume" });
   await client.runs.ref("run").resume(
-    // @ts-expect-error Both result maps are required by the wire request.
+    // @ts-expect-error Each answer is a decision or call result, not a payload.
     { input: attachment },
     { idempotencyKey: "missing-results" },
   );
   await client.runs.ref("run").resume(
     {
-      approvals: {},
-      calls: {},
-      // @ts-expect-error Resume input uses a full message payload, not a plain string.
-      input: "text",
+      // @ts-expect-error A public answer must be constructed or structurally valid.
+      call_one: "text",
     },
     { idempotencyKey: "wrong-input" },
   );
@@ -294,7 +307,7 @@ export async function semanticTypes() {
     { idempotencyKey: "full-body" },
   );
   if (submitted.data.run)
-    await client.runs.ref(submitted.data.run.id).wait({ timeoutMs: 1000 });
+    await client.runs.ref(submitted.data.run.id).result({ timeoutMs: 1000 });
   for await (const event of threadStream(
     (options) => thread.stream.get(options),
     new AbortController().signal,
@@ -533,4 +546,103 @@ export function requiredPagedFields(
     },
   };
   void ref;
+}
+
+/** Ordinary consumers never import generated components to choose an uncommon workflow field. */
+export async function publicWorkflowTypes() {
+  const configuration: RunConfiguration = {
+    allowed_hosts: [],
+    extensions: { native: { values: [null, false, 0, "", {}, []] } },
+  };
+  const overrides: AgentOverride = {
+    instructions: "Run only",
+    model: null,
+    model_settings: { uncommon: { value: 0 } },
+    model_characteristics: null,
+    media_understanding: null,
+    output_spec: null,
+    client_tools: [],
+    connection_tools: [],
+    plugins: [],
+    retries: null,
+    reviewer: null,
+    skills: [],
+    subagents: { optional_child: null },
+    toolsets: {},
+  };
+  const options: RunOptions = {
+    configuration,
+    overrides,
+    labels: { purpose: "test" },
+    max_usage: { requests: 3 },
+  };
+  const messageHistory: MessageHistory = [
+    { kind: "response", parts: [{ part_kind: "text", content: "seed" }] },
+  ];
+  const agent = client.agents.ref("agent");
+  const interaction = await agent.start(
+    [
+      "Hi",
+      text(""),
+      json({ n: 0 }),
+      url("https://example.test/a"),
+      asset("asset"),
+    ],
+    {
+      options,
+      messageHistory,
+      sessionId: null,
+      agentRevisionId: null,
+      memories: [],
+      environments: [],
+      mcpHeaders: {},
+    },
+  );
+  const result = await interaction.result();
+  const output: unknown = result.output;
+  const previewText: string | undefined = result.text;
+  const status: import("../src/index.js").RunStatus = result.status;
+  const pending: import("../src/index.js").PendingCall[] = result.pendingCalls;
+  const failure: import("../src/index.js").Failure | null = result.failure;
+  void output;
+  void previewText;
+  void status;
+  void pending;
+  void failure;
+  const resumed = await result.run.resume(
+    {
+      allowed: approve(),
+      denied: deny(null),
+      external: returned(null),
+      failure: failed("unanswered"),
+    },
+    { input: ["Follow up", asset("asset")] },
+  );
+  const authoritative = await resumed.result();
+  void authoritative.runId;
+  await resumed.close();
+  const recovered = client.threads
+    .ref(result.threadId)
+    .entry("entry")
+    .interaction({ timeoutMs: 1000 });
+  void recovered.receipt;
+  for await (const chunk of recovered.textStream()) {
+    const value: string = chunk;
+    void value;
+    break;
+  }
+  await recovered.close();
+  await interaction.close();
+  const exact = client.runs.ref(result.runId).observe();
+  await exact.close();
+  // @ts-expect-error Removed authored wait does not create a competing polling API.
+  await result.run.wait();
+  // @ts-expect-error No generic output assertion exists on Agent binding.
+  client.agents.ref<{ promised: true }>("agent");
+  // @ts-expect-error Returned requires an explicit JSON value; null is valid, omission is not.
+  returned();
+  // @ts-expect-error Top-level wire selector names are not a duplicate public submission shape.
+  await agent.start("No", { agent_revision_id: null });
+  // @ts-expect-error Grouped options cannot be flattened into an override alias.
+  await agent.start("No", { overrides });
 }

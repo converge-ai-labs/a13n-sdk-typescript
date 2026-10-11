@@ -1,48 +1,54 @@
 # Timeouts, errors and uncertain submissions
 
-A timeout or connection failure is not proof that Service rejected your message. Keep one idempotency key with each **logical request**, save the body and returned IDs when available, and use the same key/body if you deliberately replay after reconciliation. A fresh key may create another message. No SDK write is automatically retried.
+A timeout or connection failure is not proof that Service rejected your message. No SDK mutation is automatically retried. High-level start/send/resume may omit a key; the SDK chooses one browser-compatible random key before dispatch and exposes it on a returned Interaction. Durable jobs instead persist their own key and identical logical body **before** sending. A fresh key can duplicate work, and a generated key is not promised recoverable from a cancelled invocation that never returned.
 
 ## Submit once and persist the receipt
 
-The following server-side Node.js example expects `A13N_REQUEST_KEY` to have been persisted by your application **before** submission, in addition to the URL, API key and Agent ID from [setup](01-setup-and-conversations.md). Do not regenerate that key on an uncertain retry:
+This example expects `A13N_REQUEST_KEY` to have been persisted before submission, with the URL, key and Agent ID from [setup](01-setup-and-conversations.md):
 
 ```js
 import {
   ApiError,
+  SubmissionUnknownError,
   SubmissionDispositionError,
   WaitTimeoutError,
   createClient,
 } from "@converge.ai/a13n";
 
 const key = process.env.A13N_REQUEST_KEY;
-if (!key)
-  throw new Error("Persist A13N_REQUEST_KEY before making this request.");
+if (!key) throw new Error("Persist A13N_REQUEST_KEY and body before dispatch.");
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const agent = client.agents.ref(process.env.A13N_AGENT_ID);
-  const interaction = await agent.start("Summarize the release plan.", {
-    idempotencyKey: key,
-  });
-  console.log(
-    "Accepted Thread:",
-    interaction.thread.id,
-    "Entry:",
-    interaction.entry.id,
-  );
-  const result = await interaction.result({ timeoutMs: 30_000 });
-  console.log("Run:", result.run.id, "status:", result.status);
-  if (result.status === "completed") {
-    console.log((await result.run.items()).data.items);
-  } else console.log(result.pending ?? result.failure);
+  const interaction = await client.agents
+    .ref(process.env.A13N_AGENT_ID)
+    .start("Summarize the release plan.", { idempotencyKey: key });
+  try {
+    // Persist these IDs with the original key/body before awaiting result.
+    console.log("Accepted identity:", interaction.identity);
+    const result = await interaction.result({ timeoutMs: 30_000 });
+    console.log(result.runId, result.status, result.text ?? result.output);
+  } finally {
+    await interaction.close();
+  }
 } catch (error) {
-  if (error instanceof WaitTimeoutError) {
-    console.error("Local wait expired; the remote Run may still proceed.");
+  if (error instanceof SubmissionUnknownError) {
+    console.error(
+      "Reconcile before any deliberate replay:",
+      error.operation,
+      error.idempotencyKey,
+      error.identities,
+    );
+    // error.cause is the original Fetch/cancellation/protocol failure, not proof of rollback.
+  } else if (error instanceof WaitTimeoutError) {
+    console.error(
+      "Local observation expired; remote execution may still proceed.",
+    );
   } else if (error instanceof SubmissionDispositionError) {
     console.error(
-      "Entry settled without running:",
+      "Entry settled without incorporation:",
       error.entryId,
       error.status,
     );
@@ -54,7 +60,7 @@ try {
       error.requestId,
     );
   } else {
-    console.error("Network/cancellation outcome may be unknown:", error);
+    // Pre-dispatch auth/validation/cancellation retains its native error.
     throw error;
   }
 } finally {
@@ -62,63 +68,48 @@ try {
 }
 ```
 
-With a completed Run you get exact Run identity and committed Items. If the 30-second local deadline expires, the script reports the timeout; it does **not** interrupt execution. The default `interaction.result()` deadline is 300 seconds, with 500-ms polling. Specify `{timeoutMs,pollIntervalMs,signal}` on the **first** `result()` call if you need different limits; beginning stream iteration starts the same observer using defaults. `AbortSignal`, early iterator break, `interaction.close()` and `client.close()` stop local work only. Call `run.interrupt()` only when a remote interruption is intended.
+`SubmissionUnknownError` means a mutation was actually attempted without reliable acknowledgement, including malformed accepted JSON or receipt identity. It retains the chosen key, safe operation/known IDs and original `cause`, not the body or auth. A canonical Service rejection envelope remains `ApiError`. A bare/noncanonical gateway status (for example, HTML 504 or an unreadable error body) is unknown acknowledgement: its native ApiError status and original body read/parse cause are retained in the cause chain. Low-level resources still return ApiError. Pre-dispatch validation/auth/cancellation is **not** an unknown outcome. Recover or deliberately replay the identical key/body only after reconciling; never treat cancellation as rollback.
+
+The default local observation limit is 300 seconds with 500-ms polling. One deadline spans Entry, exact Run and SSE/readback. Specify `{timeoutMs,pollIntervalMs,signal}` on the first result call, or when constructing Run/Entry observations; repeated result/iteration cannot restart it. Absolute caller AbortSignals include earlier mutation time. `await interaction.close()` joins local observer and reader cleanup without interrupting remote execution. A completed result remains readable; a closed pending one cannot restart. Raw iterator break closes locally; preview break/interruption leaves an explicit lifetime for `finally` cleanup.
 
 ## Recover with saved Thread and Entry IDs
 
-Persist both `interaction.thread.id` and `interaction.entry.id` alongside the original body and idempotency key **before** awaiting `result()`. Set `A13N_THREAD_ID` and `A13N_ENTRY_ID` to those saved values and run this `recover.mjs` in another process. It waits for **consumed**, then binds only the `assigned_run_id` from that Entry; an earlier `assigned` state may roll back to pending. The function does not infer the Run from Thread history or follow a newer Run:
+Persist `interaction.identity.threadId` and `.entryId` alongside the original body/key. Set `A13N_THREAD_ID` and `A13N_ENTRY_ID`, then run this in a fresh process:
 
 ```js
 import { createClient } from "@converge.ai/a13n";
 
-async function recoverSubmitted(client, threadId, entryId) {
-  const signal = AbortSignal.timeout(30_000);
-  const entry = client.threads.ref(threadId).entry(entryId);
-  while (true) {
-    signal.throwIfAborted();
-    const snapshot = await entry.get({ signal });
-    const state = snapshot.data;
-    if (state.id !== entryId || state.thread_id !== threadId)
-      throw new Error("Service returned a different Entry.");
-    if (state.status === "failed" || state.status === "withdrawn")
-      throw new Error(`Entry ${entryId} settled as ${state.status}.`);
-    if (state.status === "consumed") {
-      if (!state.assigned_run_id)
-        throw new Error("Consumed Entry has no incorporating Run ID.");
-      const exactRun = client.runs.ref(state.assigned_run_id);
-      const outcome = await exactRun.wait({ signal, timeoutMs: 30_000 });
-      if (outcome.snapshot.data.thread_id !== threadId)
-        throw new Error("Run belongs to a different Thread.");
-      return outcome;
-    }
-    // An assigned Entry can revert to pending; neither is incorporation.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-}
-
 if (!process.env.A13N_THREAD_ID || !process.env.A13N_ENTRY_ID)
-  throw new Error("Set the saved A13N_THREAD_ID and A13N_ENTRY_ID.");
+  throw new Error("Set the saved Thread and Entry IDs.");
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
+const recovered = client.threads
+  .ref(process.env.A13N_THREAD_ID)
+  .entry(process.env.A13N_ENTRY_ID)
+  .interaction({ timeoutMs: 30_000 });
 try {
-  const outcome = await recoverSubmitted(
-    client,
-    process.env.A13N_THREAD_ID,
-    process.env.A13N_ENTRY_ID,
+  // Construction is local: no POST, GET, fabricated receipt or invented key.
+  const outcome = await recovered.result();
+  console.log(
+    outcome.threadId,
+    outcome.runId,
+    outcome.status,
+    outcome.text ?? outcome.output,
   );
-  console.log("Exact Run:", outcome.run.id, "status:", outcome.status);
-  if (outcome.status === "completed")
-    console.log((await outcome.run.items()).data.items);
-  else console.log(outcome.pending ?? outcome.failure);
 } finally {
+  await recovered.close();
   client.close();
 }
 ```
 
-The 30-second bound is local; an expiration means observe again later, not that the remote Run was cancelled. The saved Entry may also have failed or been withdrawn, in which case this function stops instead of selecting a different Run. If no IDs were ever received, replay the **original** `agent.start` or `agent.send` request with the identical body and persisted idempotency key from the submission example; its returned receipt provides the IDs to save. Do not generate a new key for uncertain dispatch. If neither key nor IDs were saved, do not guess whether a new request would duplicate work—reconcile with your application's records or Service operator first. A `SubmissionDispositionError` from `interaction.result()` carries the failed/withdrawn Entry snapshot, not a successful Run.
+Recovery uses the same finite core: wait for **consumed**, bind only that Entry's exact `assigned_run_id`, then read that Run. Assignment can revert to pending; Thread history or latest pointers cannot select its outcome. A failed/withdrawn Entry raises `SubmissionDispositionError` instead of following an unrelated Run. A fresh recovery observation has a fresh explicit budget, not an extension of the old observer.
 
-## Interpret errors without retrying blindly
+For a saved exact Run ID, use `client.runs.ref(runId).observe({timeoutMs:30_000})` for the same result/raw/preview workflow, or `client.runs.ref(runId).result({timeoutMs:30_000})` for result-only observation. The authored `Run.wait()` shape is removed. These helpers never follow successor Runs. Recovered identities have no original receipt; `interaction.run` is authoritative only after Entry consumption or a validated exact read. `receiptRun` is explicitly provisional submission evidence.
 
-For HTTP errors, `ApiError` exposes status, code, details, request ID and retry-after. Treat `401` as an authentication issue, `403` as missing permission or CSRF, `409` as state/idempotency conflict, `412` as an obsolete ETag, and `428` as a missing precondition; inspect the structured details rather than parsing the message. A conditional write that receives `412` should read the latest state before deciding on a new update. `ProtocolError` means a response or stream could not be interpreted. Platform Fetch failures may carry implementation-specific information; avoid logging credentials or sensitive payloads.
+If no IDs were received, `SubmissionUnknownError.idempotencyKey` or your persisted key identifies the original logical request for deliberate reconciliation/replay. If neither key nor IDs were saved, do not guess whether another request would duplicate work—reconcile with application records or the Service operator.
+
+## Interpret native evidence without retrying blindly
+
+`ApiError` retains status, code, details, request ID and retry-after. A conditional write receiving `412` needs a current read and a new decision, not blind overwrite. `ProtocolError` means native response/stream interpretation failed; malformed accepted high-level submission receipts are instead wrapped as unknown acknowledgement with their original cause. `PreviewInterruptedError` stops only text projection, not a still-open result observer. Native resources retain their HTTP/error/ETag semantics. Fetch causes can contain implementation-specific diagnostics; avoid logging credentials or sensitive payloads.

@@ -91,7 +91,7 @@ test("native imported history passes through both resource and Agent start, neve
     assert.deepEqual(raw.data.thread.message_history, history);
     const interaction = await client.agents.ref("agt_import").start(payload, {
       idempotencyKey: "semantic-history",
-      message_history: history,
+      messageHistory: history,
     });
     assert.equal((await interaction.result()).run.id, "run_imported");
     assert.deepEqual(
@@ -162,10 +162,14 @@ test("native resume sends complete approvals, call outcomes and attachment input
         idempotencyKey: "raw-resume",
       });
     assert.equal(raw.data.id, "run_successor");
-    const successor = await client.runs.ref("run_waiting").resume(complete, {
-      idempotencyKey: "semantic-resume",
-    });
-    assert.equal((await successor.wait()).status, "completed");
+    const successor = await client.runs.ref("run_waiting").resume(
+      { ...complete.approvals, ...complete.calls },
+      {
+        idempotencyKey: "semantic-resume",
+        input: complete.input,
+      },
+    );
+    assert.equal((await successor.result()).status, "completed");
     assert.deepEqual(
       requests.map((r) => r.path),
       ["/api/v1/runs/run_waiting/resume", "/api/v1/runs/run_waiting/resume"],
@@ -237,7 +241,7 @@ for (const status of ["failed", "cancelled"]) {
       throw new Error(`Unexpected ${request.method} ${path}`);
     });
     try {
-      assert.equal((await client.runs.ref(prior.id).wait()).status, status);
+      assert.equal((await client.runs.ref(prior.id).result()).status, status);
       const snapshot = (await client.threads.ref(thread.id).get()).data;
       assert.equal(snapshot.last_run_id, prior.id);
       const followup = await client.agents

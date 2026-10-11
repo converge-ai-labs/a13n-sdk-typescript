@@ -1,4 +1,5 @@
 import { requireSuccess } from "./errors.js";
+import { markDispatch } from "./dispatch.js";
 import { isWorkspaceScopedRoute } from "./workspace-scope.js";
 
 export type Authentication =
@@ -195,6 +196,8 @@ export class Transport {
     for (let attempt = 0; ; attempt++) {
       let response: Response;
       try {
+        signal.throwIfAborted();
+        markDispatch(input.signal);
         response = await this.fetcher(retries ? request.clone() : request);
       } catch (error) {
         if (signal.aborted) throw error;
