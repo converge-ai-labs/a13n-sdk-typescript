@@ -197,6 +197,11 @@
             "title": "Instructions",
             "type": "string"
           },
+          "lazy_environment": {
+            "default": true,
+            "title": "Lazy Environment",
+            "type": "boolean"
+          },
           "media_understanding": {
             "$ref": "#/components/schemas/MediaUnderstandingSelection"
           },
@@ -347,6 +352,11 @@
             "maxLength": 262144,
             "title": "Instructions",
             "type": "string"
+          },
+          "lazy_environment": {
+            "default": true,
+            "title": "Lazy Environment",
+            "type": "boolean"
           },
           "media_understanding": {
             "$ref": "#/components/schemas/MediaUnderstandingSelection"
@@ -629,6 +639,17 @@
             ],
             "title": "Instructions"
           },
+          "lazy_environment": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lazy Environment"
+          },
           "media_understanding": {
             "anyOf": [
               {
@@ -825,6 +846,17 @@
               }
             ],
             "title": "Instructions"
+          },
+          "lazy_environment": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lazy Environment"
           },
           "media_understanding": {
             "anyOf": [
@@ -17892,7 +17924,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "pattern": "^(creating|starting|ready|stopping|stopped|deleting|deleted)$",
+                  "pattern": "^(reserved|creating|starting|ready|stopping|stopped|deleting|deleted)$",
                   "type": "string"
                 },
                 {
