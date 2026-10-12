@@ -77,7 +77,7 @@ Run it with the same three environment variables as [conversation.mjs](01-setup-
 
 Treat stream deltas as an ephemeral preview. On `gap` or `reset`, invalidate that preview and read `result.run.items()` (or the bound Run's `items()` while it is active); replace, rather than append to, what the UI rendered from deltas. This example suppresses later deltas until final readback. For a continuously updating UI, refresh committed Items during the run and rebuild the view from each snapshot, optionally continuing live preview only after your application has reconciled a trustworthy stream cursor. The returned `complete` flag means the Run is sealed, including waiting/failed/cancelled as well as completed: when false, refresh the **same Run** later instead of claiming its Items are final. The default result is a recent baseline window, not all display history. Earlier Items remain available through explicit ordinal paging; content itself can still be truncated. Do not interpret a seal or a short recent window as proof of a full transcript. Only a baseline's committed position covering the missing range can repair a gap; historical windows cannot.
 
-The iterator yields frames attributed to this submitted input's incorporating Run and stops on completed/failed/cancelled/waiting even if the SSE socket is idle. Retained events can sometimes replay on attachment, but trimming, filtering and gaps prevent a lossless-history promise. Raw Thread-wide SSE is available through `client.resources.threads.ref(threadId).stream.get({query:{run,position},lastEventId,signal})`; its caller owns the binary body, framing and cursor reconciliation. The default finite iterator does not silently fetch/apply Items or suppress output using an invented display baseline.
+The iterator yields frames attributed to this submitted input's incorporating Run and stops on completed/failed/cancelled/waiting even if the SSE socket is idle. Retained events can sometimes replay on attachment, but trimming, filtering and gaps prevent a lossless-history promise. Raw Thread-wide SSE is available through `client.api.threads.ref(threadId).stream.get({query:{run,position},lastEventId,signal})`; its caller owns the binary body, framing and cursor reconciliation. The default finite iterator does not silently fetch/apply Items or suppress output using an invented display baseline.
 
 ## Page earlier display Items
 
@@ -106,13 +106,11 @@ For an application that already applies committed Items, the native stream opera
 const { data: snapshot } = await result.run.items();
 console.log("Apply committed snapshot first:", snapshot.items);
 if (snapshot.baseline && snapshot.position !== null) {
-  const raw = await client.resources.threads
-    .ref(interaction.thread.id)
-    .stream.get({
-      query: { run: result.run.id, position: snapshot.position },
-      ...(snapshot.resume_after ? { lastEventId: snapshot.resume_after } : {}),
-      signal: AbortSignal.timeout(5000),
-    });
+  const raw = await client.api.threads.ref(interaction.thread.id).stream.get({
+    query: { run: result.run.id, position: snapshot.position },
+    ...(snapshot.resume_after ? { lastEventId: snapshot.resume_after } : {}),
+    signal: AbortSignal.timeout(5000),
+  });
   try {
     console.log("Owned raw SSE:", raw.response.headers.get("Content-Type"));
     // Parse raw.body with your application's SSE reader, or pass it to a renderer.

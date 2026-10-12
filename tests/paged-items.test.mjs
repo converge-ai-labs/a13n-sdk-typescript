@@ -123,7 +123,7 @@ test("native Items forwards ordinal queries and preserves whole mutable tail and
     assert.equal(older.data.complete, true); // Sealed, but ordinal 16 is not all history.
     assert.equal(older.data.baseline, false);
     assert.equal(older.data.position, null);
-    const newer = await client.resources.runs
+    const newer = await client.api.runs
       .ref(run.id)
       .items.get({ query: { after: 0, limit: 500 } });
     assert.deepEqual(newer.data, history);

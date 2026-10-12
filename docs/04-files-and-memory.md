@@ -13,20 +13,20 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const upload = await client.resources.uploads.create(
+  const upload = await client.api.uploads.create(
     { file: new Blob(["Revenue grew in Q2."], { type: "text/plain" }) },
     { idempotencyKey: randomUUID() },
   );
-  const asset = await client.resources.assets.create({
+  const asset = await client.api.assets.create({
     upload_id: upload.data.upload_id,
     name: "report.txt",
   });
   console.log("Asset ID:", asset.data.id);
-  const memory = await client.resources.memories.create({
+  const memory = await client.api.memories.create({
     name: `Review notes ${randomUUID()}`,
   });
   console.log("Memory ID:", memory.data.id);
-  await client.resources.memories.ref(memory.data.id).files.create({
+  await client.api.memories.ref(memory.data.id).files.create({
     path: "context.md",
     content: "Pay particular attention to quarter-over-quarter changes.",
   });
@@ -67,7 +67,7 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const download = await client.resources.assets
+  const download = await client.api.assets
     .ref(process.env.A13N_ASSET_ID)
     .content.get();
   try {
@@ -108,7 +108,7 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const file = client.resources.memories
+  const file = client.api.memories
     .ref(process.env.A13N_MEMORY_ID)
     .files.ref("context.md");
   const current = await file.get();
@@ -134,7 +134,7 @@ Use root public constructors for media: `url(sourceUrl)` for a URL or `asset(ass
 A Model's `config.characteristics` selects native preparation policy. This fragment conditionally updates an existing Model; `modelId` and `ifMatch` must come from your authorized Model selection and current ETag:
 
 ```js
-await client.resources.models.ref(modelId).update(
+await client.api.models.ref(modelId).update(
   {
     config: {
       model_name: "your-native-model",

@@ -28,7 +28,7 @@ test("conditional Agent, Thread and inbox operations send If-Match and expose Se
       return Response.json({ id: "agent_one" });
     },
   });
-  const workspace = client.resources;
+  const workspace = client.api;
   const agent = workspace.agents.ref("agent_one");
   await agent.archive({ ifMatch: '"v1"' });
   await agent.unarchive({ ifMatch: '"v2"' });
@@ -80,7 +80,7 @@ test("management ref methods follow actual verbs and specialized response shapes
       return Response.json({ id: "agent_one" });
     },
   });
-  const workspace = client.resources;
+  const workspace = client.api;
   assert.equal(
     (
       await workspace.agents
@@ -98,7 +98,7 @@ test("management ref methods follow actual verbs and specialized response shapes
     ).data.signing_secret,
     "once",
   );
-  await client.resources.modelProviders.ref("provider_one").test();
+  await client.api.modelProviders.ref("provider_one").test();
   assert.deepEqual(
     calls.map(([method]) => method),
     ["PATCH", "POST", "POST"],

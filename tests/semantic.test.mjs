@@ -44,6 +44,66 @@ function fixture(fetch) {
   });
 }
 
+test("native api and authored Agent share session scope, transport and shutdown without a resources alias", async () => {
+  const seen = [];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session", workspaceId: "ws_initial", csrfToken: "initial" },
+    fetch: async (request) => {
+      const path = new URL(request.url).pathname;
+      seen.push([
+        path,
+        request.headers.get("X-Workspace-ID"),
+        request.headers.get("X-CSRF-Token"),
+      ]);
+      if (request.method === "POST") {
+        assert.deepEqual(await request.json(), {
+          agent_id: "agt_one",
+          payload: { content: [{ type: "text", text: "Hello" }] },
+        });
+        return reply(initial, 201);
+      }
+      return reply({ id: "agt_one" });
+    },
+  });
+  let interaction;
+  try {
+    assert.equal("resources" in client, false);
+    assert.equal(client.api, client.api);
+    const native = client.api.agents.ref("agt_one");
+    const authored = client.agents.ref("agt_one");
+    assert.equal(typeof native.start, "undefined");
+    assert.equal(typeof authored.get, "undefined");
+    assert.deepEqual((await native.get()).data, { id: "agt_one" });
+    client.setWorkspaceId("ws_selected");
+    client.setCsrfToken("selected");
+    interaction = await authored.start("Hello", { idempotencyKey: "once" });
+    assert.equal(interaction.thread.id, "th_original");
+    assert.deepEqual((await native.get()).data, { id: "agt_one" });
+    assert.deepEqual(seen, [
+      ["/api/v1/agents/agt_one", "ws_initial", null],
+      ["/api/v1/threads", "ws_selected", "selected"],
+      ["/api/v1/agents/agt_one", "ws_selected", null],
+    ]);
+    client.close();
+    await assert.rejects(native.get(), { name: "AbortError" });
+    await assert.rejects(
+      authored.start("Hello", { idempotencyKey: "closed" }),
+      {
+        name: "AbortError",
+      },
+    );
+    assert.equal(
+      seen.length,
+      3,
+      "both layers stop before dispatch after close",
+    );
+  } finally {
+    await interaction?.close();
+    client.close();
+  }
+});
+
 test("Agent start and send keep full typed request fields, explicit keys and receipt identities", async () => {
   const requests = [];
   const client = fixture(async (request) => {
@@ -253,10 +313,10 @@ test("session sends workspace only to declared business routes and preserves adm
       return reply({ items: [], next_cursor: null });
     },
   });
-  await client.resources.agents.list();
-  await client.resources.organizations.list();
-  await client.resources.auth.session.get();
-  await client.resources.threads.create(
+  await client.api.agents.list();
+  await client.api.organizations.list();
+  await client.api.auth.session.get();
+  await client.api.threads.create(
     { agent_id: "agt_one", payload: { content: [] } },
     { idempotencyKey: "once" },
   );

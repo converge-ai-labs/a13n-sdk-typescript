@@ -30,7 +30,7 @@ test(
   { timeout: 3000 },
   async (t) => {
     const client = await fixture(t);
-    const raw = await client.resources.threads.ref("first").stream.get();
+    const raw = await client.api.threads.ref("first").stream.get();
     const reader = raw.body.getReader();
     try {
       assert.equal(
@@ -53,7 +53,7 @@ test(
   { timeout: 3000 },
   async (t) => {
     const client = await fixture(t);
-    const raw = await client.resources.threads
+    const raw = await client.api.threads
       .ref("idle")
       .stream.get({ signal: AbortSignal.timeout(100) });
     const reader = raw.body.getReader();
@@ -74,7 +74,7 @@ test(
   { timeout: 3000 },
   async (t) => {
     const client = await fixture(t);
-    const raw = await client.resources.threads.ref("idle").stream.get();
+    const raw = await client.api.threads.ref("idle").stream.get();
     await raw.close();
     assert.equal(raw.closed, true);
   },

@@ -44,7 +44,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
       : Response.json({ items: [], next_cursor: null }, { status });
   });
   try {
-    const memories = client.resources.memories;
+    const memories = client.api.memories;
     await memories.list();
     await memories.create({ key: "notes", name: "Notes" });
     const memory = memories.ref("mem_one");
@@ -70,7 +70,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await memory.records.search({ query: "this" });
     await memory.records.ref("rec_one").replace({ text: "updated" });
     await memory.records.ref("rec_one").delete();
-    const mounts = client.resources.threads.ref("thr_one").memories;
+    const mounts = client.api.threads.ref("thr_one").memories;
     await mounts.list();
     await mounts.create(
       { name: "notes", memory_id: "mem_one", access: "write" },
@@ -78,7 +78,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     );
     await mounts.ref("notes").update({ access: "read", recall: false }, match);
     await mounts.ref("notes").delete(match);
-    const providers = client.resources.memoryProviders;
+    const providers = client.api.memoryProviders;
     await providers.list();
     await providers.create({
       key: "mem0",
@@ -89,7 +89,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await providers.ref("prv_one").get();
     await providers.ref("prv_one").update({ enabled: false }, match);
     await providers.ref("prv_one").test();
-    await client.resources.auth.bootstrap({
+    await client.api.auth.bootstrap({
       email: "owner@example.test",
       password: "test-only",
     });
@@ -130,7 +130,7 @@ test("files preserve nested Unicode paths, ETags, history bodies and nullable re
         );
   });
   try {
-    const memory = client.resources.memories.ref("mem_one");
+    const memory = client.api.memories.ref("mem_one");
     const result = await memory.files.ref(path).get();
     assert.equal(result.data.content, "text");
     assert.equal(result.response.headers.get("ETag"), '"file:3"');
@@ -184,7 +184,7 @@ test("record search stays in the body; record and mount handles do not invent GE
         });
   });
   try {
-    const workspace = client.resources;
+    const workspace = client.api;
     const records = workspace.memories.ref("mem_one").records;
     const found = await records.search({ query: "private query", limit: 3 });
     assert.equal(found.data.items[0].score, null);
@@ -227,7 +227,7 @@ test("memory collection pages snapshot repeated labels and preserve opaque recor
     });
   });
   try {
-    const memories = client.resources.memories;
+    const memories = client.api.memories;
     const filters = { label: ["team:a", "scope:b"], kind: "file" };
     const pages = memories.pages({ query: filters });
     filters.label.push("later");
@@ -267,7 +267,7 @@ test("memory stale and unconfirmed writes preserve Service errors without replay
   });
   try {
     await assert.rejects(
-      client.resources.memories
+      client.api.memories
         .ref("mem_one")
         .records.create({ text: "one attempt" }),
       (error) =>

@@ -1,6 +1,6 @@
 # Manage resources with ETags and pages
 
-The Agent workflow handles ordinary conversations; `client.resources` exposes the complete typed Service API for administration, files, providers and specialized actions. Business collections such as `agents`, `threads`, `models` and `memories` live at the root. `workspaces.ref(id)` and `organizations.ref(id)` manage those entities specifically—they do not wrap every business request. Each call still needs suitable Service grants.
+The Agent workflow handles ordinary conversations; `client.api` exposes the complete typed Service API for administration, files, providers and specialized actions. Business collections such as `agents`, `threads`, `models` and `memories` live directly under `client.api`. `client.api.agents.ref(id)` manages a stored Agent; `client.agents.ref(id)` runs the authored workflow using the same authentication and lifetime. Replace obsolete `client.resources` access with `client.api`; no compatibility alias is provided. `workspaces.ref(id)` and `organizations.ref(id)` manage those entities specifically—they do not wrap every business request. Each call still needs suitable Service grants.
 
 ## Create an Agent
 
@@ -17,21 +17,21 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const created = await client.resources.agents.create({
+  const created = await client.api.agents.create({
     name: `Reviewer ${randomUUID()}`,
     config: {
       model: process.env.A13N_MODEL_KEY,
       instructions: "Review clearly.",
     },
   });
-  const agent = client.resources.agents.ref(created.data.id);
+  const agent = client.api.agents.ref(created.data.id);
   const current = await agent.get();
   const ifMatch = current.response.headers.get("ETag");
   if (!ifMatch) throw new Error("Agent read did not include an ETag.");
   const updated = await agent.update({ name: "Reviewer II" }, { ifMatch });
   console.log("Agent ID:", updated.data.id, "HTTP:", updated.response.status);
 
-  for await (const page of client.resources.agents.pages({
+  for await (const page of client.api.agents.pages({
     query: { limit: 10 },
   })) {
     console.log(
@@ -49,7 +49,7 @@ Run it with `A13N_SERVICE_URL`, `A13N_API_TOKEN` and `A13N_MODEL_KEY`; it create
 
 Conditional writes need the **ETag of the object being changed**. A stale precondition raises HTTP `412`; read the current state and reconcile, rather than automatically overwriting another writer. Memory files use file ETags; Thread inbox and mount changes use the Thread ETag. File Memory revisions use integer sequence selectors, and restoring a creation can return `file: null`. See [files and Memory](04-files-and-memory.md).
 
-JSON calls return `{data,response}` for status, headers and request IDs. Binary downloads and raw SSE calls instead own an unbuffered `{body,response,close()}`: consume or close it in `finally`. For example, `client.resources.assets.ref(assetId).content.get()` returns a body you can stream without buffering the entire file. The raw Thread-wide stream at `threads.ref(threadId).stream.get({lastEventId,signal})` is lower-level than [finite Agent streaming](02-streaming-and-readback.md); the caller owns cursor application and committed readback.
+JSON calls return `{data,response}` for status, headers and request IDs. Binary downloads and raw SSE calls instead own an unbuffered `{body,response,close()}`: consume or close it in `finally`. For example, `client.api.assets.ref(assetId).content.get()` returns a body you can stream without buffering the entire file. The raw Thread-wide stream at `threads.ref(threadId).stream.get({lastEventId,signal})` is lower-level than [finite Agent streaming](02-streaming-and-readback.md); the caller owns cursor application and committed readback.
 
 Generated request bodies retain wire names and omission-versus-null behavior. For native `options.configuration`, see the [Run configuration snapshot](01-setup-and-conversations.md#select-a-native-run-configuration-snapshot); it is separate from the [instructions override](01-setup-and-conversations.md#limit-a-configuration-change-to-one-run) and from editing a stored Agent revision. The SDK does not infer provider policy from submitted options. The [pinned OpenAPI](../openapi.json) and [SDK specification](../spec/README.md) describe the remaining specialized routes. The removed Service secret resource is not available, although provider credentials and authentication still exist.
 
@@ -58,7 +58,7 @@ Generated request bodies retain wire names and omission-versus-null behavior. Fo
 The native generated provider reference exposes all five authorization/discovery operations:
 
 ```js
-const provider = client.resources.modelProviders.ref(providerId);
+const provider = client.api.modelProviders.ref(providerId);
 const status = await provider.authorization.get();
 console.log(
   "Authorization state:",
@@ -81,6 +81,6 @@ Do not hardcode a callback origin, loopback port, client ID or issuer endpoints 
 
 ## Discover deployment-selected providers and MCP connections
 
-Provider types are deployment-selected metadata, not an SDK-owned exhaustive list. Use `client.resources.providerTypes.ref("model").list()` to discover supported model APIs and `client.resources.connectorProviders.list()` for connection metadata. Model `config.model_api` remains a native string; additions such as Vercel, Cerebras, SambaNova or xAI do not require a new SDK enum or a separate provider client. Follow the returned schemas and available capabilities rather than treating these examples as the complete list.
+Provider types are deployment-selected metadata, not an SDK-owned exhaustive list. Use `client.api.providerTypes.ref("model").list()` to discover supported model APIs and `client.api.connectorProviders.list()` for connection metadata. Model `config.model_api` remains a native string; additions such as Vercel, Cerebras, SambaNova or xAI do not require a new SDK enum or a separate provider client. Follow the returned schemas and available capabilities rather than treating these examples as the complete list.
 
 MCP-backed tools are exposed through native Connections and Service discovery/configuration. The SDK forwards their generated configuration and frozen Thread headers; it does not create its own MCP transport, perform issuer discovery or interpret provider credentials.

@@ -20,7 +20,7 @@ const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
-const resources = client.resources;
+const resources = client.api;
 const key = () => `ts-managed-${randomUUID()}`;
 const configuration = {
   allowed_hosts: null,

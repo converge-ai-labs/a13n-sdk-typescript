@@ -1,6 +1,6 @@
 # TypeScript SDK Overview
 
-`@converge.ai/a13n` has two layers and one wire implementation. The authored Agent-oriented layer supplies finite `Interaction` with iteration, authoritative result and Thread/receipt together. The complete generated `client.resources` layer maps each pinned schema operation to one typed HTTP call. Both use the same transport, authentication, error handling and generated route bindings; no parallel HTTP facade, workspace-scoped business tree, or client-side Agent executor exists.
+`@converge.ai/a13n` has two layers and one wire implementation. The authored Agent-oriented layer supplies finite `Interaction` with iteration, authoritative result and Thread/receipt together. The complete generated `client.api` layer maps each pinned schema operation to one typed HTTP call. Both use the same transport, authentication, error handling and generated route bindings; no parallel HTTP facade, workspace-scoped business tree, or client-side Agent executor exists.
 
 ```mermaid
 flowchart LR
