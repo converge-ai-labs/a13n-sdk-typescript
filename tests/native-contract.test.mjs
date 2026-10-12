@@ -72,11 +72,11 @@ test("start, send and generated message preserve omitted/null/empty/native confi
           .ref("agent_one")
           .send("thread_one", payload, { ...invocation, delivery: "next_run" })
       ).close();
-      await client.resources.threads.create(
+      await client.api.threads.create(
         { agent_id: "agent_one", payload, options },
         { idempotencyKey: invocation.idempotencyKey },
       );
-      await client.resources.threads
+      await client.api.threads
         .ref("thread_one")
         .inbox.create(
           { agent_id: "agent_one", payload, delivery: "steer", options },
@@ -180,7 +180,7 @@ test("generated model characteristics forward native preparation policy without 
           model_api: "native.api",
         },
       };
-      const result = await client.resources.models
+      const result = await client.api.models
         .ref("model_one")
         .update(body, { ifMatch: '"v1"' });
       assert.deepEqual(result.data, body);
@@ -243,7 +243,7 @@ test("all five OAuth/discovery bindings preserve native bodies, scoped session a
     },
   });
   try {
-    const provider = client.resources.modelProviders.ref("provider_one");
+    const provider = client.api.modelProviders.ref("provider_one");
     assert.deepEqual((await provider.authorization.get()).data, status);
     const started = await provider.authorize({ new_registration: false });
     assert.deepEqual(started.data, start);
@@ -307,7 +307,7 @@ test("manual workspace-key authorization forwards returned method and hosted ref
     },
   });
   try {
-    const provider = client.resources.modelProviders.ref("provider_one");
+    const provider = client.api.modelProviders.ref("provider_one");
     assert.equal((await provider.authorize({})).data.method, "manual_callback");
     await assert.rejects(
       provider.authorize({ new_registration: true }),

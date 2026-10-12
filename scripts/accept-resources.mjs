@@ -17,7 +17,7 @@ const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
-const resources = client.resources;
+const resources = client.api;
 const workspaceId = process.env.A13N_WORKSPACE;
 const workspace = resources.workspaces.ref(workspaceId);
 const org = resources.organizations.ref(process.env.A13N_ORGANIZATION);
@@ -234,7 +234,7 @@ try {
     (
       await client.runs
         .ref(submitted.data.run.id)
-        .wait({ timeoutMs: 60_000, pollIntervalMs: 100 })
+        .result({ timeoutMs: 60_000, pollIntervalMs: 100 })
     ).status,
     "completed",
   );

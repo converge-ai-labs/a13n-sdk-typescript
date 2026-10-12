@@ -24,7 +24,7 @@ test("workspace submission and replay-capable commands are not retried automatic
     },
   });
   await assert.rejects(
-    client.resources.threads.create(
+    client.api.threads.create(
       {
         agent_id: "agent_example",
         payload: { content: [{ type: "text", text: "Hi" }] },
@@ -34,7 +34,7 @@ test("workspace submission and replay-capable commands are not retried automatic
     ApiError,
   );
   await assert.rejects(
-    client.resources.threads.ref("th_test").inbox.create(
+    client.api.threads.ref("th_test").inbox.create(
       {
         agent_id: "agent_example",
         payload: { content: [{ type: "text", text: "Next" }] },
@@ -62,7 +62,7 @@ test("null overrides remain explicit while omitted options are untouched", async
     { overrides: null },
     { overrides: { model: { model_id: "model_example" } } },
   ]) {
-    await client.resources.threads.create(
+    await client.api.threads.create(
       {
         agent_id: "agent_example",
         payload: { content: [{ type: "text", text: "Hi" }] },
@@ -92,7 +92,7 @@ test("resource references select explicit scope without credential discovery", a
       return Response.json({ items: [], next_cursor: null });
     },
   });
-  const workspace = client.resources;
+  const workspace = client.api;
   await workspace.agents.list();
   await workspace.agents.ref("agent_example").get();
   assert.deepEqual(urls, [

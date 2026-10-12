@@ -17,8 +17,8 @@ test("flat business resources use the key's implicit workspace", async () => {
       );
     },
   });
-  const workspace = client.resources;
-  const organization = client.resources;
+  const workspace = client.api;
+  const organization = client.api;
   assert.equal(requests.length, 0);
   await workspace.skills.list({ query: { limit: 5 } });
   await workspace.skills.ref("skill_one").get();
@@ -49,7 +49,7 @@ test("management updates propagate conditional version and preserve response met
       return Response.json({ id: "model_one" }, { headers: { ETag: '"v2"' } });
     },
   });
-  const result = await client.resources.models
+  const result = await client.api.models
     .ref("model_one")
     .update({ name: "updated" }, { ifMatch: '"v1"' });
   assert.equal(result.response.headers.get("ETag"), '"v2"');

@@ -31,8 +31,7 @@ try {
   const result = await first.result();
   console.log("Thread:", first.thread.id, "status:", result.status);
   if (result.status === "completed") {
-    const committed = await result.run.items();
-    console.log(JSON.stringify(committed.data.items, null, 2));
+    console.log(result.text ?? result.output);
 
     const next = await agent.send(first.thread.id, "What are the risks?", {
       idempotencyKey: randomUUID(),
@@ -40,9 +39,7 @@ try {
     const followUp = await next.result();
     console.log("Follow-up status:", followUp.status);
     if (followUp.status === "completed") {
-      console.log(
-        JSON.stringify((await followUp.run.items()).data.items, null, 2),
-      );
+      console.log(followUp.text ?? followUp.output);
     } else console.log(followUp.pending ?? followUp.failure);
   } else if (result.status === "waiting") console.log(result.pending);
   else console.log(result.failure);
@@ -51,11 +48,11 @@ try {
 }
 ```
 
-Run `node conversation.mjs`. You should see a Thread ID, a status for each message, and committed Items for completed Runs. Save the Thread ID if another process needs to continue later. This example submits the follow-up after completion. A normal explicit `send()` is also valid after inspecting failed/cancelled outcomes: `Thread.last_run_id` is the latest seal of any outcome and its nearest checkpoint supplies continuation history. Those outcomes pause automatic queue advancement; they do not erase history or require a retry/fork. Resume is only for the exact idle last waiting Run with complete pending results. In contrast, submitting while it waits for a tool or approval could leave the new message queued until that wait is resolved. A Thread is not owned by the first Agent: `send(threadId, input, ...)` always names the Agent that sends. A string input is enough for ordinary text; [files and Memory](04-files-and-memory.md) shows structured input.
+Run `node conversation.mjs`. You should see a Thread ID, a status for each message, and authoritative output for completed Runs, without Items requests. Save the Thread ID if another process needs to continue later. This example submits the follow-up after completion. A normal explicit `send()` is also valid after inspecting failed/cancelled outcomes: `Thread.last_run_id` is the latest seal of any outcome and its nearest checkpoint supplies continuation history. Those outcomes pause automatic queue advancement; they do not erase history or require a retry/fork. Resume is only for the exact idle last waiting Run with complete pending results. In contrast, submitting while it waits for a tool or approval could leave the new message queued until that wait is resolved. A Thread is not owned by the first Agent: `send(threadId, input, ...)` always names the Agent that sends. A string input is enough for ordinary text; [files and Memory](04-files-and-memory.md) shows structured input.
 
 ## Import a completed conversation into a new Thread
 
-To continue context originally produced outside Service, pass native Pydantic AI model-message JSON objects as `message_history` **only on `start()`**. The imported history is not an array of display Items or OpenAI chat-role records. Save this example as `import-history.mjs`; set the same Service URL, key and Agent ID used above.
+To continue context originally produced outside Service, pass native Pydantic AI model-message JSON objects as `messageHistory` **only on `start()`**. The imported history is not an array of display Items or OpenAI chat-role records. Save this example as `import-history.mjs`; set the same Service URL, key and Agent ID used above.
 
 ```js
 import { randomUUID } from "node:crypto";
@@ -82,7 +79,7 @@ try {
     .ref(process.env.A13N_AGENT_ID)
     .start("What information is still needed to choose a window?", {
       idempotencyKey: randomUUID(),
-      message_history: history,
+      messageHistory: history,
     });
   const result = await interaction.result();
   console.log("Thread:", interaction.thread.id, "status:", result.status);
@@ -90,8 +87,7 @@ try {
     "Imported JSON:",
     (await interaction.thread.get()).data.message_history,
   );
-  if (result.status === "completed")
-    console.log((await result.run.items()).data.items);
+  if (result.status === "completed") console.log(result.text ?? result.output);
 } finally {
   client.close();
 }
@@ -99,11 +95,13 @@ try {
 
 The imported JSON is immutable Thread provenance, readable on the Thread, and not historical Service Runs, Entries, Items or usage. Only completed user text, model text and _closed_ tool-call/JSON-result exchanges are accepted. The Service validates the Pydantic AI message format and the limits (256 messages and 256 KiB of normalized JSON); the SDK does not build a second type hierarchy or independently revalidate it. A tool call must be paired with its return before another prompt. On first execution Service seeds native context and then incorporates the new payload; a subsequent `send()` continues the stored checkpoint rather than importing the history again. Preserve the original history and idempotency key for an uncertain retry. See the [pinned Runs contract](../contract/semantics/runs.md#imported-model-context) for supported parts and ordering.
 
+Public root types `RunOptions`, `RunConfiguration`, `AgentOverride`, `MessageHistory`, `MemoryMount`, `EnvironmentMounts` and `McpHeaders` are structural aliases to the full pinned contract. Top-level selectors are `sessionId`, `agentRevisionId`, `messageHistory` and `mcpHeaders`; nested option/mount/history fields retain native wire names. Omitted values remain omitted, and explicit null/empty JSON remains distinct. There are no flattened configuration or override aliases.
+
 ## Limit a configuration change to one Run
 
 The first `start()` supplies a typed `options.overrides.instructions` field. It replaces the Agent revision's instructions **for that Run** to request a three-bullet release summary; the later `send()` omits the override and uses its normal configuration. This is replacement, not concatenation: do not use an instructions override to accidentally remove required Agent-level guidance. For a narrow limit that does not replace instructions, `options.max_usage: { requests: 3 }` bounds model requests for the started Run. These choices are forwarded to Service; they do not guarantee that a particular model will follow a style request.
 
-For a recent committed display window, read `result.run.items()` and [page earlier ordinals](02-streaming-and-readback.md#page-earlier-display-items) explicitly rather than assuming `result.output` is text or a `waiting` Run is completed. Each logical request needs a distinct explicit idempotency key; after an uncertain network failure, **reuse** its original key and body rather than generating another. See [streaming](02-streaming-and-readback.md), [Agent creation](06-generated-resources.md#create-an-agent), [waiting Runs](03-waiting-and-tools.md) or [recovery](07-errors-and-recovery.md).
+For a recent committed display window, read `result.run.items()` and [page earlier ordinals](02-streaming-and-readback.md#page-earlier-display-items) explicitly rather than assuming `result.output` is text or a `waiting` Run is completed. Each logical request needs a distinct key (generated once if omitted); durable jobs persist an explicit key/body before dispatch; after an uncertain network failure, **reuse** its original key and body rather than generating another. See [streaming](02-streaming-and-readback.md), [Agent creation](06-generated-resources.md#create-an-agent), [waiting Runs](03-waiting-and-tools.md) or [recovery](07-errors-and-recovery.md).
 
 ## Select a native Run configuration snapshot
 

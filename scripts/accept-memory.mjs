@@ -21,7 +21,7 @@ const etag = (result) => {
   return { ifMatch };
 };
 try {
-  const resources = client.resources;
+  const resources = client.api;
   const provider = resources.memoryProviders.ref(
     process.env.A13N_MEMORY_PROVIDER,
   );
@@ -103,7 +103,7 @@ try {
   const thread = resources.threads.ref(submitted.data.thread.id);
   const run = client.runs.ref(submitted.data.run.id);
   assert.equal(
-    (await run.wait({ timeoutMs: 60_000, pollIntervalMs: 100 })).status,
+    (await run.result({ timeoutMs: 60_000, pollIntervalMs: 100 })).status,
     "completed",
   );
   const mounted = await thread.memories

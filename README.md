@@ -1,10 +1,10 @@
 # @converge.ai/a13n
 
-Start an Agent, continue its conversation, or follow its output from a Node.js application. The SDK talks to an existing a13n Service; it does not run Agents locally.
+Start an Agent, get its authoritative reply, continue its conversation, or preview text from a Node.js application. The SDK talks to an existing a13n Service; it does not run Agents locally.
 
 ## Get ready
 
-You need Node.js 22.14+, a Service URL, a workspace API key, and the **ID** of an Agent you can run. Get the URL, key, and Agent ID from your Service administrator or Console. The key selects its workspace automatically; there is no workspace setting in the example. The Agent also needs a configured Model and provider access to produce a response. Keep the key out of source control and browser bundles.
+You need Node.js 22.14+, a Service URL, a workspace API key, and the **ID** of an Agent you can run. Obtain them from your Service administrator or Console. The key selects its workspace automatically. The Agent needs a configured Model and provider access. Keep API keys out of source control and browser bundles.
 
 **Install from this checkout during pre-release development:**
 
@@ -17,44 +17,40 @@ cd /path/to/your-node-app
 npm install /path/to/a13n-sdk-typescript/converge.ai-a13n-0.0.0.tgz
 ```
 
-The source version is `0.0.0`; a published registry package is **not** implied. After a release, install that published version with `npm install @converge.ai/a13n` instead.
+The source version is `0.0.0`; this does not imply a published registry package. After a release, install that published version with `npm install @converge.ai/a13n` instead. This checkout targets the pinned Service contract, not unverified newer endpoints.
 
 ## Ask your Agent
 
-Save this as `hello.mjs` in your Node.js app:
+Save this as `hello.mjs`:
 
 ```js
-import { randomUUID } from "node:crypto";
 import { createClient } from "@converge.ai/a13n";
 
 for (const name of ["A13N_SERVICE_URL", "A13N_API_TOKEN", "A13N_AGENT_ID"]) {
   if (!process.env[name]) throw new Error(`${name} is required`);
 }
-
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
-
 try {
   const agent = client.agents.ref(process.env.A13N_AGENT_ID);
-  const interaction = await agent.start("Say hello in one sentence.", {
-    idempotencyKey: randomUUID(),
-  });
-  const result = await interaction.result();
-  console.log(result.status);
-  if (result.status === "completed") {
-    const messages = await result.run.items();
-    console.log(JSON.stringify(messages.data.items, null, 2));
-  } else if (result.status === "waiting") console.log(result.pending);
-  else console.log(result.failure);
-  console.log("Thread ID:", interaction.thread.id);
+  const interaction = await agent.start("Say hello in one sentence.");
+  try {
+    const result = await interaction.result();
+    if (result.status === "completed")
+      console.log(result.text ?? result.output);
+    else if (result.status === "waiting")
+      console.log(result.pendingCalls, result.pendingApprovals);
+    else console.log(result.status, result.failure);
+    console.log("Thread ID:", result.threadId, "Run ID:", result.runId);
+  } finally {
+    await interaction.close();
+  }
 } finally {
   client.close();
 }
 ```
-
-Set the variables in your shell, then run the file:
 
 ```bash
 export A13N_SERVICE_URL="https://your-service.example"
@@ -63,71 +59,95 @@ export A13N_AGENT_ID="ap_your-agent-id"
 node hello.mjs
 ```
 
-The example prints a recent committed display window of messages and tool activity as JSON; it is not necessarily all history. `run.items({query:{before,limit}})` reads earlier ordinals explicitly; see [display paging](docs/02-streaming-and-readback.md#page-earlier-display-items). `result.output` is the Run's optional output value, not necessarily its conversation text.
+The first reply comes directly from exact Run output—no Items scan, reducer or extra display request. `output` preserves structured JSON including null, false, zero and empty containers. Optional `text` exists only for string output, including the empty string. Check `status`: completed, waiting, failed and cancelled are distinct. `snapshot` retains the original HTTP response evidence.
 
-Each **new logical request** needs its own idempotency key. The example generates one. If a network failure leaves the outcome uncertain, save and reuse the **same key and request** when reconciling or retrying; generating a fresh key may submit a second message. `result()` waits for this submission to finish or pause without opening a streaming connection. It returns `completed`, `waiting`, `failed`, or `cancelled`—check the status before using the output. The default local wait limit is five minutes; see [timeouts and recovery](docs/07-errors-and-recovery.md).
+Each logical request needs one key. When omitted, the SDK chooses a random key once before dispatch and exposes `interaction.idempotencyKey`; it **never retries mutations**. Durable jobs must persist their own key and identical body before sending. A generated key is not promised recoverable from a cancelled invocation that never returns. See [uncertain submissions and recovery](docs/07-errors-and-recovery.md).
+
+`result()` opens no SSE and observes only this submission's consumed Entry and exact incorporating Run. The default local deadline is five minutes, not a remote execution timeout. An initial assigned receipt Run is only `receiptRun` evidence; `interaction.run` becomes authoritative after incorporation.
 
 ## Continue the conversation
 
-To send another message, retain the Thread ID printed above. In the same `try` block, send after inspecting a sealed `completed`, `failed` or `cancelled` result. A `waiting` Run needs its pending tool or approval resolved first; a premature message can stay queued:
+Retain `result.threadId`. Inside the same client lifetime, after inspecting a completed, failed or cancelled result:
 
 ```js
-if (["completed", "failed", "cancelled"].includes(result.status)) {
-  const followUp = await agent.send(
-    interaction.thread.id,
-    "What did you mean?",
-    {
-      idempotencyKey: randomUUID(),
+const followUp = await agent.send(result.threadId, "What did you mean?");
+try {
+  const next = await followUp.result();
+  console.log(next.status, next.text ?? next.output);
+} finally {
+  await followUp.close();
+}
+```
+
+A waiting Run needs its pending batch resolved first; a premature send can remain queued. `Thread.last_run_id` is the latest seal of any outcome. Failed/cancelled Runs retain checkpoint history for the next explicit send without automatic retry or fork. A Thread can receive messages from different Agents; send uses the selected Agent.
+
+## Preview text as it arrives
+
+For a new interaction, consume the lazy string-chunk preview and then read the authoritative result:
+
+```js
+import { PreviewInterruptedError } from "@converge.ai/a13n";
+
+const live = await agent.start("Explain your answer step by step.");
+try {
+  try {
+    for await (const chunk of live.textStream()) process.stdout.write(chunk);
+  } catch (error) {
+    if (!(error instanceof PreviewInterruptedError)) throw error;
+    console.error("Preview stopped:", error.message);
+  }
+  const final = await live.result();
+  console.log("\nFinal:", final.status, final.text ?? final.output);
+} finally {
+  await live.close();
+}
+```
+
+Only trusted root assistant string content is projected; child/hidden events are excluded. Gaps, missing starts, unsupported root custom fragments and other discontinuities interrupt preview explicitly rather than silently constructing a partial answer. Preview interruption is sticky, but the final result remains available and deliberate sequential raw access is allowed while open. No concurrent raw/text or multiple preview consumers are supported. Preview break leaves a local lifetime to close in `finally`; raw iterator break closes observation. `await close()` joins cleanup even if an iterator is paused. Local close never interrupts remote execution.
+
+For native events use `for await (const event of interaction)`. For full application-owned presentation, generated operations preserve raw AG-UI, HTTP status/ETags, binary ownership and display Items. See [streaming and readback](docs/02-streaming-and-readback.md).
+
+## Public input and options
+
+```js
+import { text, json, url, asset } from "@converge.ai/a13n";
+
+const request = await agent.start(
+  [
+    text("Inspect these"),
+    json({ enabled: false }),
+    url("https://example.test/report"),
+    asset("ast_uploaded"),
+  ],
+  {
+    agentRevisionId: null,
+    options: {
+      configuration: { allowed_hosts: null, extensions: {} },
+      overrides: { model_settings: { native: [null, 0, false] } },
+      labels: { purpose: "review" },
+      max_usage: { requests: 3 },
     },
-  );
-  const nextResult = await followUp.result();
-  console.log(nextResult.status);
-  if (nextResult.status === "completed") {
-    console.log((await nextResult.run.items()).data.items);
-  }
-} else {
-  console.log(
-    "Resolve or inspect the first Run before continuing:",
-    result.status,
-  );
-}
+  },
+);
+await request.close();
 ```
 
-`Thread.last_run_id` is the latest sealed Run of any outcome. Failed/cancelled Runs pause automatic advancement but keep their nearest checkpoint as the next explicit message's history; normal `send()` continues it without an automatic retry or fork. Resume is only for the exact idle last waiting Run with a complete pending-result batch.
+Top-level submission selectors are camelCase; nested native options stay grouped. Root structural types include `RunOptions`, `RunConfiguration`, `AgentOverride`, `MessageHistory`, mount/header types and pending/status/failure primitives. Every supported uncommon override remains available without a generated-schema import. Output is native structured JSON: validate it in your application rather than asserting an Agent generic type.
 
-Store the Thread ID if the conversation must survive process restarts. A Thread can receive messages from different Agents; `send` always uses the Agent you selected.
+## Native Service API
 
-## Watch output as it arrives
+Use `client.api.agents.ref(agentId).get()` to read a stored Agent with its HTTP metadata, and `client.agents.ref(agentId).start(input)` to run it. Both layers share the same client, authentication and lifetime; the complete generated API is available under `client.api`.
 
-For a **new** interaction, iterate the returned object before asking it for the final result:
-
-```js
-const live = await agent.start("Explain your answer step by step.", {
-  idempotencyKey: randomUUID(),
-});
-for await (const event of live) {
-  if (event.frame.type === "delta") console.log(event.frame.data.event);
-  if (event.frame.type === "gap" || event.frame.type === "reset") {
-    console.log("Some live updates may be missing; use committed readback.");
-  }
-}
-const finalResult = await live.result();
-console.log(finalResult.status);
-if (finalResult.status === "completed") {
-  console.log((await finalResult.run.items()).data.items);
-}
-```
-
-This finite stream stops when that interaction finishes or pauses, even if the connection is idle. Live events may be incomplete; for committed display state use `await finalResult.run.items()`. Do not break out of the loop if you still need `live.result()`: an early break closes this interaction's local observation. Closing or cancelling locally does **not** interrupt the remote Run. See [streaming and committed output](docs/02-streaming-and-readback.md).
+**Migration:** replace `client.resources` with `client.api`. The obsolete entry is removed without an alias in this pre-0.1 cutover; authored Agent, Thread and Run workflows are unchanged.
 
 ## Go further
 
 - [Configure conversations and continue across calls](docs/01-setup-and-conversations.md)
 - [Stream updates and reconcile committed output](docs/02-streaming-and-readback.md)
-- [Handle waiting Runs and client tools](docs/03-waiting-and-tools.md)
+- [Resolve waiting Runs with one public answer map](docs/03-waiting-and-tools.md)
 - [Attach files and mount Memory](docs/04-files-and-memory.md)
 - [Use a same-origin browser session](docs/05-browser-sessions.md)
-- [Create Agents and manage resources with ETags](docs/06-generated-resources.md)
-- [Recover from timeouts and uncertain submissions](docs/07-errors-and-recovery.md)
+- [Manage generated resources with ETags](docs/06-generated-resources.md)
+- [Recover saved Entry/Run identities without resubmitting](docs/07-errors-and-recovery.md)
 
-For the complete wire contract, see the [pinned OpenAPI](openapi.json) and [SDK specification](spec/README.md). Contributors can use [CONTRIBUTING.md](CONTRIBUTING.md) for generation, validation, and release procedures.
+The complete wire contract is in the [pinned OpenAPI](openapi.json) and [SDK specification](spec/README.md). [CONTRIBUTING.md](CONTRIBUTING.md) owns generation, validation and release procedures.

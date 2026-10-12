@@ -24,7 +24,7 @@ test("bound resource handles are local; create, replay and queued receipts retai
       return json(submitted, requests.length === 1 ? 201 : 200);
     },
   });
-  const workspace = client.resources;
+  const workspace = client.api;
   assert.equal(requests.length, 0);
   const first = await workspace.threads.create(
     { agent_id: "agent_one", payload: textPayload("Hello") },
@@ -69,7 +69,7 @@ test("bound pagination advances once per page and handles can be closed with for
     },
   });
   const ids = [];
-  for await (const item of client.resources.threads.items({
+  for await (const item of client.api.threads.items({
     query: { limit: 1 },
   }))
     ids.push(item.id);
@@ -78,7 +78,7 @@ test("bound pagination advances once per page and handles can be closed with for
   client.close();
 });
 
-test("Run wait polls the selected workspace and times out without mutation", async () => {
+test("Run result polls the selected workspace and times out without mutation", async () => {
   let calls = 0;
   const client = createClient({
     baseUrl,
@@ -89,6 +89,7 @@ test("Run wait polls the selected workspace and times out without mutation", asy
       return json({
         status: calls === 2 ? "completed" : "running",
         id: "run_one",
+        thread_id: "thread",
       });
     },
   });
@@ -96,12 +97,12 @@ test("Run wait polls the selected workspace and times out without mutation", asy
     (
       await client.runs
         .ref("run_one")
-        .wait({ timeoutMs: 1000, pollIntervalMs: 1 })
+        .result({ timeoutMs: 1000, pollIntervalMs: 1 })
     ).status,
     "completed",
   );
   await assert.rejects(
-    client.runs.ref("run_one").wait({ timeoutMs: -1 }),
+    client.runs.ref("run_one").result({ timeoutMs: -1 }),
     RangeError,
   );
   client.close();

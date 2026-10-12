@@ -47,7 +47,7 @@ try {
   writeFileSync(
     join(temporaryRoot, "consumer.mjs"),
     `import assert from "node:assert/strict";
-import { ApiError, createClient } from "@converge.ai/a13n";
+import { ApiError, createClient, text, json, url, asset, approve, deny, returned, failed, PreviewInterruptedError, SubmissionUnknownError } from "@converge.ai/a13n";
 
 assert.equal(typeof createClient, "function");
 assert.equal(typeof ApiError, "function");
@@ -80,11 +80,73 @@ assert.equal(history.continuation, null);
 assert.equal(history.complete, true);
 assert.equal(typeof client.agents.ref("agt_example").start, "function");
 assert.equal(typeof client.agents.ref("agt_example").send, "function");
-assert.equal(typeof client.resources.threads.create, "function");
-assert.equal(typeof client.resources.organizations.ref("org_example").get, "function");
-assert.equal(typeof client.resources.healthz.get, "function");
-assert.equal(typeof client.resources.uploads.create, "function");
+assert.equal("resources" in client, false);
+assert.equal(typeof client.api.agents.ref("agt_example").get, "function");
+assert.equal(typeof client.api.threads.create, "function");
+assert.equal(typeof client.api.organizations.ref("org_example").get, "function");
+assert.equal(typeof client.api.healthz.get, "function");
+assert.equal(typeof client.api.uploads.create, "function");
 client.close();
+
+let writes = 0;
+let requests = 0;
+const workflow = createClient({
+  baseUrl: "https://service.example.test",
+  auth: { type: "bearer", token: "test" },
+  fetch: async (request) => {
+    requests++;
+    assert.equal(request.headers.get("Authorization"), "Bearer test");
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/agents/agent") {
+      assert.equal(request.method, "GET");
+      return Response.json({ id: "agent" }, { headers: { ETag: '"agent-v1"' } });
+    }
+    if (request.method === "POST") {
+      writes++;
+      const body = await request.json();
+      assert.ok(request.headers.get("Idempotency-Key"));
+      if (path.endsWith("/resume")) {
+        assert.deepEqual(body, { approvals: { decision: approve() }, calls: { external: returned(null) }, input: { content: [text("Continue")] } });
+        return Response.json({ id: "successor", thread_id: "thread", status: "accepted" }, { status: 201 });
+      }
+      assert.deepEqual(body.payload.content, [text("Hi"), json(false), url("https://example.test/a"), asset("asset")]);
+      return Response.json({ thread: { id: "thread" }, entry: { id: "entry", thread_id: "thread" }, run: null }, { status: 201 });
+    }
+    if (path.endsWith("/inbox/entry")) return Response.json({ id: "entry", thread_id: "thread", status: "consumed", assigned_run_id: "exact" });
+    const id = path.endsWith("/successor") ? "successor" : "exact";
+    return Response.json({ id, thread_id: "thread", status: "completed", output: "", pending: null, failure: null });
+  },
+});
+try {
+  assert.equal("resources" in workflow, false);
+  const native = await workflow.api.agents.ref("agent").get();
+  assert.equal(native.data.id, "agent");
+  assert.equal(native.response.headers.get("ETag"), '"agent-v1"');
+  const interaction = await workflow.agents.ref("agent").start(["Hi", json(false), url("https://example.test/a"), asset("asset")]);
+  assert.equal(interaction.run, null);
+  assert.match(interaction.idempotencyKey, /^[a-f0-9-]{36}$/);
+  const outcome = await interaction.result();
+  assert.equal(outcome.text, "");
+  assert.equal(outcome.threadId, "thread");
+  const recovered = workflow.threads.ref("thread").entry("entry").interaction();
+  assert.equal(recovered.receipt, undefined);
+  assert.equal((await recovered.result()).runId, "exact");
+  const successor = await outcome.run.resume({ decision: approve(), external: returned(null) }, { input: "Continue" });
+  assert.equal(successor.entry, null);
+  assert.equal((await successor.result()).runId, "successor");
+  assert.equal(writes, 2);
+  assert.equal(typeof interaction.textStream, "function");
+  assert.equal(typeof workflow.runs.ref("exact").observe, "function");
+  assert.equal(typeof PreviewInterruptedError, "function");
+  assert.equal(typeof SubmissionUnknownError, "function");
+  assert.deepEqual(deny(null), { action: "deny", reason: null });
+  assert.deepEqual(failed("failed"), { status: "failed", message: "failed" });
+  await successor.close(); await recovered.close(); await interaction.close();
+} finally { workflow.close(); }
+const requestsAtClose = requests;
+await assert.rejects(workflow.api.agents.ref("agent").get(), { name: "AbortError" });
+await assert.rejects(workflow.agents.ref("agent").start("Closed", { idempotencyKey: "closed" }), { name: "AbortError" });
+assert.equal(requests, requestsAtClose);
 `,
   );
   execFileSync(process.execPath, [join(temporaryRoot, "consumer.mjs")], {
@@ -99,21 +161,31 @@ client.close();
   type Client,
   type ResourceResult,
   type components,
+  text, json, url, asset, approve, deny, returned, failed,
+  type RunOptions, type RunConfiguration, type AgentOverride, type MessageHistory,
 } from "@converge.ai/a13n";
 
 const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
 });
-const organization = client.resources.organizations.ref("org_example");
-void client.resources.runs.ref("run_example").get;
-void client.resources.threads.pages({ query: { limit: 10 } });
+// @ts-expect-error No obsolete public resources entry or compatibility alias.
+void client.resources;
+const nativeAgent = client.api.agents.ref("agt_example");
+void nativeAgent.get;
+// @ts-expect-error Native management references do not own authored start.
+void nativeAgent.start;
+// @ts-expect-error Authored Agent workflow references do not own native get.
+void client.agents.ref("agt_example").get;
+const organization = client.api.organizations.ref("org_example");
+void client.api.runs.ref("run_example").get;
+void client.api.threads.pages({ query: { limit: 10 } });
 void organization.get;
-void client.resources.modelProviders.list;
-void client.resources.memories.pages({ query: { label: ["a"] } });
-void client.resources.assets.ref("asset").content.get;
+void client.api.modelProviders.list;
+void client.api.memories.pages({ query: { label: ["a"] } });
+void client.api.assets.ref("asset").content.get;
 // @ts-expect-error Revision selectors retain their numeric contract in the published package.
-client.resources.memories.ref("memory").revisions.ref("1");
+client.api.memories.ref("memory").revisions.ref("1");
 async function example() {
   const agent = client.agents.ref("agt_example");
   const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { configuration: { allowed_hosts: null, extensions: { "app.example/sdk": { enabled: false, nested: [null, {}, []] } } }, overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
@@ -133,7 +205,7 @@ async function example() {
   void outcome.output;
   const display = (await outcome.run.items({ query: { limit: 1 } })).data;
   await outcome.run.items({ query: { before: 3, limit: 20 } });
-  await client.resources.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
+  await client.api.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
   const continuation: components["schemas"]["DisplayContinuation"] = {
     run_id: "run_example", next_ordinal: 3, position: { attempt: 1, sequence: 2 },
     fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } },
@@ -145,11 +217,11 @@ async function example() {
   // @ts-expect-error Removed display-loss field is not part of the new contract.
   void display.dropped;
   // @ts-expect-error The Thread has a last seal, not an earlier successful head.
-  void (await interaction.thread.get()).data.head_run_id;
+  void (await client.threads.ref(outcome.threadId).get()).data.head_run_id;
   const hint: string | null | undefined = display.resume_after;
   void hint;
   if (display.baseline && display.position !== null) {
-    const raw = await client.resources.threads.ref(interaction.thread.id).stream.get({
+    const raw = await client.api.threads.ref(outcome.threadId).stream.get({
       query: { run: outcome.run.id, position: display.position },
       ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
     });
@@ -161,7 +233,7 @@ async function example() {
   };
   config.characteristics = { image_input: null, video_input: { max_video_bytes: 1048576 }, url_input: { video: ["youtube"] } };
   void config;
-  const provider = client.resources.modelProviders.ref("provider");
+  const provider = client.api.modelProviders.ref("provider");
   const status: ResourceResult<components["schemas"]["AuthorizationStatus"]> = await provider.authorization.get();
   const started: ResourceResult<components["schemas"]["AuthorizationStart"]> = await provider.authorize({ new_registration: false });
   await provider.authorization.callback({ attempt_id: started.data.attempt_id, callback_url: "https://service.example.test/operator/callback?code=opaque" });
@@ -170,8 +242,32 @@ async function example() {
   void status; void disconnected; void models;
   // @ts-expect-error Native configuration is nested in Run options, not a new SDK parameter.
   await agent.start("Wrong", { idempotencyKey: "wrong", configuration: {} });
-  const followup = await agent.send(interaction.thread.id, "Next", { idempotencyKey: "next-1", options: { configuration: {} } });
-  followup.close();
+  const followup = await agent.send(outcome.threadId, "Next", { idempotencyKey: "next-1", options: { configuration: {} } });
+  await followup.close();
+  const configuration: RunConfiguration = { allowed_hosts: [], extensions: { native: { zero: 0, flag: false } } };
+  const overrides: AgentOverride = { instructions: null, model: null, model_settings: { custom: [null, false, 0] }, model_characteristics: null, media_understanding: null, output_spec: null, client_tools: [], connection_tools: [], plugins: [], retries: null, reviewer: null, skills: [], subagents: { removed: null }, toolsets: {} };
+  const options: RunOptions = { configuration, overrides, labels: { purpose: "installed" }, max_usage: { requests: 2 } };
+  const messageHistory: MessageHistory = [];
+  const publicInput = await agent.start([text("Hi"), json(0), url("https://example.test/a"), asset("asset")], { options, messageHistory, sessionId: null, agentRevisionId: null, mcpHeaders: {}, environments: [], memories: [] });
+  try {
+    for await (const chunk of publicInput.textStream()) { const value: string = chunk; void value; }
+    const result = await publicInput.result();
+    const textResult: string | undefined = result.text;
+    const structured: unknown = result.output;
+    void textResult; void structured; void result.pendingCalls; void result.pendingApprovals;
+    const successor = await result.run.resume({ accepted: approve(), rejected: deny(null), external: returned(null), failure: failed("unanswered") }, { input: "Follow-up" });
+    await successor.result(); await successor.close();
+    const recovered = client.threads.ref(result.threadId).entry("entry").interaction({ timeoutMs: 1000 });
+    await recovered.close();
+    const exact = client.runs.ref(result.runId).observe({ timeoutMs: 1000 });
+    await exact.close();
+    // @ts-expect-error Returned requires an explicit value.
+    returned();
+    // @ts-expect-error No competing authored Run.wait shape.
+    result.run.wait();
+    // @ts-expect-error No asserted Agent generic output type.
+    client.agents.ref<{ output: true }>("agent");
+  } finally { await publicInput.close(); }
 }
 void example;
 const result: ResourceResult<{ ok: true }> = {

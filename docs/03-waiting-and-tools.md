@@ -1,6 +1,6 @@
 # Resolve a waiting Run with complete results
 
-A Run in `waiting` has not finished its conversation. Its `pending.approvals` and `pending.calls` identify different obligations: approvals authorize or deny Service-side work; calls need an external result (including client tools and built-in questions). `resume()` submits results for the **entire** pending batch, optionally accompanied by new user content, and returns a distinct successor Run. A queued ordinary `send()` does not resolve a wait. Use the Service URL and API key from [setup](01-setup-and-conversations.md).
+A Run in `waiting` has not finished its conversation. Its `pending.approvals` and `pending.calls` identify different obligations: approvals authorize or deny Service-side work; calls need an external result (including client tools and built-in questions). `resume()` submits results for the **entire** pending batch, optionally accompanied by new user content, and returns an Interaction for a distinct successor Run. A queued ordinary `send()` does not resolve a wait. Use the Service URL and API key from [setup](01-setup-and-conversations.md).
 
 ## Execute a known client tool
 
@@ -8,7 +8,13 @@ Set `A13N_AGENT_ID` to an existing Agent whose model can select client tools. Sa
 
 ```js
 import { randomUUID } from "node:crypto";
-import { createClient } from "@converge.ai/a13n";
+import {
+  createClient,
+  approve,
+  deny,
+  returned,
+  failed,
+} from "@converge.ai/a13n";
 
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
@@ -43,10 +49,10 @@ try {
   if (outcome.status !== "waiting") {
     console.log("Run status:", outcome.status);
     if (outcome.status === "completed")
-      console.log((await outcome.run.items()).data.items);
+      console.log(outcome.text ?? outcome.output);
   } else {
-    const approvals = outcome.pending?.approvals ?? [];
-    const calls = outcome.pending?.calls ?? [];
+    const approvals = outcome.pendingApprovals;
+    const calls = outcome.pendingCalls;
     if (approvals.length !== 0 || calls.length !== 1)
       throw new Error("Review the complete pending batch before resuming.");
     const call = calls[0];
@@ -58,21 +64,14 @@ try {
       throw new Error("Unexpected tool or arguments; do not execute.");
     const policy = { currency: "USD", daily_limit: 75 };
     const successor = await outcome.run.resume(
-      {
-        approvals: {},
-        calls: {
-          [call.tool_call_id]: { status: "returned", value: policy },
-        },
-        input: {
-          content: [{ type: "text", text: "Also mention any caveats." }],
-        },
-      },
-      { idempotencyKey: randomUUID() },
+      { [call.tool_call_id]: returned(policy) },
+      { idempotencyKey: randomUUID(), input: "Also mention any caveats." },
     );
-    const resumed = await successor.wait();
+    const resumed = await successor.result();
+    await successor.close();
     console.log("Successor status:", resumed.status);
     if (resumed.status === "completed")
-      console.log((await resumed.run.items()).data.items);
+      console.log(resumed.text ?? resumed.output);
     else console.log(resumed.pending ?? resumed.failure);
   }
 } finally {
@@ -80,7 +79,7 @@ try {
 }
 ```
 
-Run `node client-tool.mjs` with `A13N_SERVICE_URL`, `A13N_API_TOKEN` and `A13N_AGENT_ID`. Only the expected tool and arguments produce a result; unexpected or multiple pending calls fail before local execution or resume. The single-Run `client_tools` override replaces, rather than extends, the Agent revision's client-tool list. Replace the illustrative policy object with a real, authorized lookup. A failed external operation can instead use `{status:"failed",message:"..."}` in `calls`; returning `{status:"returned",value:{error:"..."}}` is still a successful tool return. The optional `input` is ordinary message content **in the same resume request**, after deferred results; it neither answers a call nor creates an inbox Entry. To attach an existing Asset, include `{type:"asset",asset_id:"..."}` as another `input.content` part. Persist the complete request and its idempotency key if retrying after an uncertain network outcome.
+Run `node client-tool.mjs` with `A13N_SERVICE_URL`, `A13N_API_TOKEN` and `A13N_AGENT_ID`. Only the expected tool and arguments produce a result; unexpected or multiple pending calls fail before local execution or resume. The single-Run `client_tools` override replaces, rather than extends, the Agent revision's client-tool list. Replace the illustrative policy object with a real, authorized lookup. A failed external operation can instead use `failed("...")`; `returned({error:"..."})` is still a successful tool return. `returned(value)` requires an explicit JSON value, including null. The optional `input` is ordinary message content **in the same resume request**, after deferred results; it neither answers a call nor creates an inbox Entry. To attach an existing Asset, include `{type:"asset",asset_id:"..."}` as another `input.content` part. Persist the complete request and its idempotency key if retrying after an uncertain network outcome.
 
 ## Ask a person to approve or deny
 
@@ -89,7 +88,13 @@ Set `A13N_WAITING_RUN_ID` to the ID of a Run already waiting on an approval. Sav
 ```js
 import { randomUUID } from "node:crypto";
 import { createInterface } from "node:readline/promises";
-import { createClient } from "@converge.ai/a13n";
+import {
+  createClient,
+  approve,
+  deny,
+  returned,
+  failed,
+} from "@converge.ai/a13n";
 
 if (!process.env.A13N_WAITING_RUN_ID)
   throw new Error("Set the waiting approval Run ID.");
@@ -133,26 +138,21 @@ try {
     throw new Error("No decision submitted.");
   const successor = await run.resume(
     {
-      approvals: {
-        [call.tool_call_id]:
-          decision === "approve"
-            ? { action: "approve" }
-            : { action: "deny", reason: "Denied by reviewer" },
-      },
-      calls: {},
+      [call.tool_call_id]:
+        decision === "approve" ? approve() : deny("Denied by reviewer"),
     },
     { idempotencyKey: randomUUID() },
   );
-  const result = await successor.wait();
+  const result = await successor.result();
+  await successor.close();
   console.log("Successor status:", result.status);
-  if (result.status === "completed")
-    console.log((await result.run.items()).data.items);
+  if (result.status === "completed") console.log(result.text ?? result.output);
   else console.log(result.pending ?? result.failure);
 } finally {
   client.close();
 }
 ```
 
-For a real approval UI, store the reviewed decision and one resume idempotency key before submitting; a competing decision may cause a conflict, requiring a fresh read of the waiting head. `approvals` and `calls` must each cover **every** pending ID of their respective category, without extras. Missing, mismatched or duplicate IDs reject the whole request rather than silently denying an omitted approval. Do not infer a category from the tool name when `pending.approvals` versus `pending.calls` already states it.
+For a real approval UI, store the reviewed decision and one resume idempotency key before submitting; a competing decision may cause a conflict, requiring a fresh read of the waiting head. The public answer map must cover **every** pending ID without extras. Decisions and results are partitioned into native `approvals` and `calls` in one atomic POST; Service validates complete coverage. Missing, mismatched or duplicate IDs reject the whole request rather than silently denying an omitted approval. Do not infer a category from the tool name when `pending.approvals` versus `pending.calls` already states it.
 
-A built-in `ask_user_question` appears among `pending.calls`, not as an approval. Its returned `value` follows the Harness question response shape, for example `{answers:{"Which region?":"US"}}`; inspect the actual question and choices in `call.arguments` and collect the person's response before returning it through the `calls` map under that call's ID. Service validates question responses against the exact pending arguments. To intentionally skip a question, submit a native failed call result with a nonblank message. Ordinary `agent.send(...)` does not answer it. See [recovery](07-errors-and-recovery.md) for handling uncertain submissions.
+A built-in `ask_user_question` appears among `pending.calls`, not as an approval. Its returned `value` follows the Harness question response shape, for example `{answers:{"Which region?":"US"}}`; inspect the actual question and choices in `call.arguments` and collect the person's response before returning `returned(value)` in the answer map under that call's ID. Service validates question responses against the exact pending arguments. To intentionally skip a question, submit a native failed call result with a nonblank message. Ordinary `agent.send(...)` does not answer it. See [recovery](07-errors-and-recovery.md) for handling uncertain submissions.

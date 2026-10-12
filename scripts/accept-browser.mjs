@@ -65,7 +65,7 @@ try {
     const client = createClient({baseUrl: location.origin, auth: {type: 'session', workspaceId: ${JSON.stringify(process.env.A13N_WORKSPACE)}}});
     try {
       client.setCsrfToken(csrf);
-      const session = await client.resources.auth.session.get();
+      const session = await client.api.auth.session.get();
       if (session.response.status !== 200) throw new Error('Browser session unavailable');
       const interaction = await client.agents.ref(${JSON.stringify(process.env.A13N_AGENT)}).start(
         'Reply briefly to this browser SDK probe.', {idempotencyKey: ${JSON.stringify(`ts-browser-${randomUUID()}`)}}

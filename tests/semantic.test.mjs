@@ -44,6 +44,66 @@ function fixture(fetch) {
   });
 }
 
+test("native api and authored Agent share session scope, transport and shutdown without a resources alias", async () => {
+  const seen = [];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "session", workspaceId: "ws_initial", csrfToken: "initial" },
+    fetch: async (request) => {
+      const path = new URL(request.url).pathname;
+      seen.push([
+        path,
+        request.headers.get("X-Workspace-ID"),
+        request.headers.get("X-CSRF-Token"),
+      ]);
+      if (request.method === "POST") {
+        assert.deepEqual(await request.json(), {
+          agent_id: "agt_one",
+          payload: { content: [{ type: "text", text: "Hello" }] },
+        });
+        return reply(initial, 201);
+      }
+      return reply({ id: "agt_one" });
+    },
+  });
+  let interaction;
+  try {
+    assert.equal("resources" in client, false);
+    assert.equal(client.api, client.api);
+    const native = client.api.agents.ref("agt_one");
+    const authored = client.agents.ref("agt_one");
+    assert.equal(typeof native.start, "undefined");
+    assert.equal(typeof authored.get, "undefined");
+    assert.deepEqual((await native.get()).data, { id: "agt_one" });
+    client.setWorkspaceId("ws_selected");
+    client.setCsrfToken("selected");
+    interaction = await authored.start("Hello", { idempotencyKey: "once" });
+    assert.equal(interaction.thread.id, "th_original");
+    assert.deepEqual((await native.get()).data, { id: "agt_one" });
+    assert.deepEqual(seen, [
+      ["/api/v1/agents/agt_one", "ws_initial", null],
+      ["/api/v1/threads", "ws_selected", "selected"],
+      ["/api/v1/agents/agt_one", "ws_selected", null],
+    ]);
+    client.close();
+    await assert.rejects(native.get(), { name: "AbortError" });
+    await assert.rejects(
+      authored.start("Hello", { idempotencyKey: "closed" }),
+      {
+        name: "AbortError",
+      },
+    );
+    assert.equal(
+      seen.length,
+      3,
+      "both layers stop before dispatch after close",
+    );
+  } finally {
+    await interaction?.close();
+    client.close();
+  }
+});
+
 test("Agent start and send keep full typed request fields, explicit keys and receipt identities", async () => {
   const requests = [];
   const client = fixture(async (request) => {
@@ -59,10 +119,10 @@ test("Agent start and send keep full typed request fields, explicit keys and rec
   assert.equal(requests.length, 0, "Agent binding is local");
   const submitted = await agent.start("Hello", {
     idempotencyKey: "start-001",
-    session_id: "ses_one",
-    agent_revision_id: null,
+    sessionId: "ses_one",
+    agentRevisionId: null,
     memories: [{ name: "notes", memory_id: "mem_one", access: "read" }],
-    mcp_headers: { search: { Authorization: "one" } },
+    mcpHeaders: { search: { Authorization: "one" } },
     options: {
       overrides: {
         model_settings: {
@@ -81,7 +141,7 @@ test("Agent start and send keep full typed request fields, explicit keys and rec
     { content: [{ type: "text", text: "Next" }] },
     {
       idempotencyKey: "send-002",
-      agent_revision_id: "rev_one",
+      agentRevisionId: "rev_one",
     },
   );
   assert.equal(followup.thread.id, "th_original");
@@ -199,7 +259,7 @@ test("one deadline covers Entry and Run reads; cancellation inside read preserve
   client.close();
 });
 
-test("Run resume returns distinct handle and committed Items readback, never follows successors", async () => {
+test("Run resume returns a distinct successor Interaction and committed Items readback, never follows successors", async () => {
   const requests = [];
   const client = fixture(async (request) => {
     requests.push([
@@ -221,14 +281,13 @@ test("Run resume returns distinct handle and committed Items readback, never fol
     return reply(run("run_one", "completed"));
   });
   const original = client.runs.ref("run_one");
-  const successor = await original.resume(
-    { approvals: {}, calls: {} },
-    { idempotencyKey: "resume-001" },
-  );
-  assert.equal(successor.id, "run_successor");
+  const successor = await original.resume({}, { idempotencyKey: "resume-001" });
+  assert.equal(successor.identity.runId, "run_successor");
+  assert.equal(successor.entry, null);
+  assert.equal(successor.run, null);
   assert.equal(original.id, "run_one");
   assert.equal(successor.receipt.response.status, 201);
-  const outcome = await original.wait({ timeoutMs: 1000 });
+  const outcome = await original.result({ timeoutMs: 1000 });
   assert.equal(outcome.run.id, "run_one");
   assert.equal(outcome.status, "completed");
   assert.equal((await original.items()).data.run.id, "run_one");
@@ -254,10 +313,10 @@ test("session sends workspace only to declared business routes and preserves adm
       return reply({ items: [], next_cursor: null });
     },
   });
-  await client.resources.agents.list();
-  await client.resources.organizations.list();
-  await client.resources.auth.session.get();
-  await client.resources.threads.create(
+  await client.api.agents.list();
+  await client.api.organizations.list();
+  await client.api.auth.session.get();
+  await client.api.threads.create(
     { agent_id: "agt_one", payload: { content: [] } },
     { idempotencyKey: "once" },
   );
@@ -270,14 +329,14 @@ test("session sends workspace only to declared business routes and preserves adm
   client.close();
 });
 
-test("Run wait rejects an unrelated running response on the first read", async () => {
+test("Run result rejects an unrelated running response on the first read", async () => {
   let reads = 0;
   const client = fixture(async () => {
     reads++;
     return reply(run("run_other", "running"));
   });
   await assert.rejects(
-    client.runs.ref("run_exact").wait({ timeoutMs: 1000, pollIntervalMs: 1 }),
+    client.runs.ref("run_exact").result({ timeoutMs: 1000, pollIntervalMs: 1 }),
     ProtocolError,
   );
   assert.equal(reads, 1);

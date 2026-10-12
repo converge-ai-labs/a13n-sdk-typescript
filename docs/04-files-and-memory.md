@@ -6,42 +6,37 @@ The example creates a small text Asset and a file Memory, then sends both in one
 
 ```js
 import { randomUUID } from "node:crypto";
-import { createClient } from "@converge.ai/a13n";
+import { createClient, asset as assetPart, text } from "@converge.ai/a13n";
 
 const client = createClient({
   baseUrl: process.env.A13N_SERVICE_URL,
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const upload = await client.resources.uploads.create(
+  const upload = await client.api.uploads.create(
     { file: new Blob(["Revenue grew in Q2."], { type: "text/plain" }) },
     { idempotencyKey: randomUUID() },
   );
-  const asset = await client.resources.assets.create({
+  const asset = await client.api.assets.create({
     upload_id: upload.data.upload_id,
     name: "report.txt",
   });
   console.log("Asset ID:", asset.data.id);
-  const memory = await client.resources.memories.create({
+  const memory = await client.api.memories.create({
     name: `Review notes ${randomUUID()}`,
   });
   console.log("Memory ID:", memory.data.id);
-  await client.resources.memories.ref(memory.data.id).files.create({
+  await client.api.memories.ref(memory.data.id).files.create({
     path: "context.md",
     content: "Pay particular attention to quarter-over-quarter changes.",
   });
 
   const agent = client.agents.ref(process.env.A13N_AGENT_ID);
   const interaction = await agent.start(
-    {
-      content: [
-        {
-          type: "text",
-          text: "Summarize the attached report using the notes.",
-        },
-        { type: "asset", asset_id: asset.data.id },
-      ],
-    },
+    [
+      text("Summarize the attached report using the notes."),
+      assetPart(asset.data.id),
+    ],
     {
       idempotencyKey: randomUUID(),
       memories: [{ name: "notes", memory_id: memory.data.id, access: "read" }],
@@ -50,14 +45,14 @@ try {
   const result = await interaction.result();
   console.log("Status:", result.status, "Thread:", interaction.thread.id);
   if (result.status === "completed") {
-    console.log((await result.run.items()).data.items);
+    console.log(result.text ?? result.output);
   } else console.log(result.pending ?? result.failure);
 } finally {
   client.close();
 }
 ```
 
-A successful call reports the new Thread and Run state; a completed Run's Items are the saved display record. The Asset part is referenced by `asset_id`, not by embedding binary data in JSON. New Thread and continuation inputs both support a full message payload; `agent.send(threadId, payload, {idempotencyKey})` uses the same shape. Remember that creating content here persists resources—use disposable workspace data for experiments and manage its lifecycle explicitly.
+A successful call reports the new Thread and Run state; a completed Run's output is authoritative without an Items request. Items remain available for advanced committed display. The Asset part is referenced by `asset_id`, not by embedding binary data in JSON. New Thread and continuation inputs both support a full message payload; `agent.send(threadId, payload, {idempotencyKey})` uses the same shape. Remember that creating content here persists resources—use disposable workspace data for experiments and manage its lifecycle explicitly.
 
 ## Download the Asset you just created
 
@@ -72,7 +67,7 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const download = await client.resources.assets
+  const download = await client.api.assets
     .ref(process.env.A13N_ASSET_ID)
     .content.get();
   try {
@@ -113,7 +108,7 @@ const client = createClient({
   auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
 });
 try {
-  const file = client.resources.memories
+  const file = client.api.memories
     .ref(process.env.A13N_MEMORY_ID)
     .files.ref("context.md");
   const current = await file.get();
@@ -134,12 +129,12 @@ If another writer has changed the file, Service returns HTTP `412`; reread and d
 
 ## Native image and video input
 
-Use the same generated message parts for media: `{type:"url",url}` for a source URL, or `{type:"asset",asset_id}` for uploaded content. `start()`, `send()` and atomic resume `input` preserve the whole payload, including order and duplicates. These are Service input parts, not AG-UI output `ImagePart`/`VideoPart` values.
+Use root public constructors for media: `url(sourceUrl)` for a URL or `asset(assetId)` for uploaded content. Strings, `text(value)` and `json(value)` can share the same ordered input array; a structural native MessagePayload remains supported. `start()`, `send()` and atomic resume `input` preserve the whole payload, including order and duplicates. These are Service input parts, not AG-UI output `ImagePart`/`VideoPart` values.
 
 A Model's `config.characteristics` selects native preparation policy. This fragment conditionally updates an existing Model; `modelId` and `ifMatch` must come from your authorized Model selection and current ETag:
 
 ```js
-await client.resources.models.ref(modelId).update(
+await client.api.models.ref(modelId).update(
   {
     config: {
       model_name: "your-native-model",

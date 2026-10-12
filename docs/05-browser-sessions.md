@@ -18,11 +18,9 @@ export async function askFromBrowser({
     auth: { type: "session", workspaceId },
   });
   try {
-    const login = await client.resources.auth.login({ email, password });
+    const login = await client.api.auth.login({ email, password });
     client.setCsrfToken(login.data.csrf_token);
-    const interaction = await client.agents.ref(agentId).start("Hello", {
-      idempotencyKey: crypto.randomUUID(),
-    });
+    const interaction = await client.agents.ref(agentId).start("Hello");
     const result = await interaction.result();
     if (result.status !== "completed") {
       return {
@@ -31,14 +29,19 @@ export async function askFromBrowser({
         failure: result.failure,
       };
     }
-    const committed = await result.run.items();
-    return { status: result.status, items: committed.data.items };
+    await interaction.close();
+    return {
+      status: result.status,
+      output: result.output,
+      text: result.text,
+      threadId: result.threadId,
+    };
   } finally {
     client.close();
   }
 }
 ```
 
-A signed-in user with permission should see a `completed` status and committed Items, or a distinct `waiting`/failure state to display appropriately. The SDK sends session cookies with same-origin requests and attaches `X-CSRF-Token` to protected mutations after `setCsrfToken`. It attaches `X-Workspace-ID` only to operations declaring workspace scope. A session caller must select a workspace; `client.setWorkspaceId(id)` can change that selection, while a conflicting explicitly supplied workspace header is rejected instead of silently overwritten.
+A signed-in user with permission should see a `completed` status and authoritative output, or a distinct `waiting`/failure state to display appropriately. The SDK sends session cookies with same-origin requests and attaches `X-CSRF-Token` to protected mutations after `setCsrfToken`. It attaches `X-Workspace-ID` only to operations declaring workspace scope. A session caller must select a workspace; `client.setWorkspaceId(id)` can change that selection, while a conflicting explicitly supplied workspace header is rejected instead of silently overwritten.
 
-Do not assume a login makes organization administration available. Public and organization-wide routes are not automatically given a workspace header; grants are still enforced by Service. Node.js session configuration does not create a browser cookie jar, and `client.close()` does not sign the user out of Service—it only closes SDK-local work. If your app needs logout, call the declared `client.resources.auth.logout()` route and handle its session lifecycle intentionally. For HTTP permissions and errors, see [recovery](07-errors-and-recovery.md).
+Do not assume a login makes organization administration available. Public and organization-wide routes are not automatically given a workspace header; grants are still enforced by Service. Node.js session configuration does not create a browser cookie jar, and `client.close()` does not sign the user out of Service—it only closes SDK-local work. If your app needs logout, call the declared `client.api.auth.logout()` route and handle its session lifecycle intentionally. For HTTP permissions and errors, see [recovery](07-errors-and-recovery.md).
