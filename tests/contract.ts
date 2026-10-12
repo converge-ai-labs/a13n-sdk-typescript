@@ -24,8 +24,16 @@ const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test" },
 });
-const workspace = client.resources;
-const organization = client.resources;
+// @ts-expect-error The obsolete native resources entry has no compatibility alias.
+void client.resources;
+const nativeAgent = client.api.agents.ref("agt_one");
+void nativeAgent.get;
+// @ts-expect-error Native Agent references do not own authored workflow methods.
+void nativeAgent.start;
+// @ts-expect-error Authored Agent references do not own native management methods.
+void client.agents.ref("agt_one").get;
+const workspace = client.api;
+const organization = client.api;
 const message: Schema["MessagePayload"] = {
   content: [{ type: "text", text: "hello" }],
 };
@@ -90,7 +98,7 @@ export async function memoryTypes() {
   await mounts.create({ name: "notes", memory_id: "mem_one", access: "read" });
   await mounts.ref("notes").update({ recall: false }, { ifMatch: '"thr:2"' });
   await organization.memoryProviders.ref("prv_one").test();
-  await client.resources.auth.bootstrap({
+  await client.api.auth.bootstrap({
     email: "owner@example.test",
     password: "test-only",
   });
@@ -133,7 +141,7 @@ export async function acceptedServiceTypes() {
   // @ts-expect-error Assets have no PATCH operation.
   await workspace.assets.ref("asset_example").update({}, { ifMatch: '"v1"' });
   // @ts-expect-error Organizations have no collection POST operation.
-  await client.resources.organizations.create({ name: "not-supported" });
+  await client.api.organizations.create({ name: "not-supported" });
   await workspace.threads.list();
   // @ts-expect-error The obsolete scoped workspace business graph is not exported.
   void client.workspace;
@@ -149,7 +157,7 @@ export async function acceptedServiceTypes() {
 }
 
 export async function fullResourceTypes() {
-  const resources = client.resources;
+  const resources = client.api;
   const ws = resources;
   const provider = resources.memoryProviders.ref("provider");
   await provider.test();
@@ -347,14 +355,14 @@ export async function streamCoverageTypes() {
   const hint: string | null | undefined = display.resume_after;
   void hint;
   if (display.baseline && display.position !== null) {
-    const raw = await client.resources.threads.ref("thread_one").stream.get({
+    const raw = await client.api.threads.ref("thread_one").stream.get({
       query: { run: "run_one", position: display.position },
       ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
     });
     await raw.close();
   }
   for await (const event of threadStream(
-    (options) => client.resources.threads.ref("thread_one").stream.get(options),
+    (options) => client.api.threads.ref("thread_one").stream.get(options),
     new AbortController().signal,
     { run: "run_one", position: "1-5", after: "1234-5" },
   )) {
@@ -417,12 +425,12 @@ export async function nativeConfigurationAndProviderTypes() {
       url_input: { video: ["youtube"] },
     },
   };
-  await client.resources.models
+  await client.api.models
     .ref("model_one")
     .update({ config: model }, { ifMatch: '"v1"' });
   // @ts-expect-error Native video URL capability retains the current enum, not arbitrary SDK media types.
   model.characteristics = { url_input: { video: ["direct"] } };
-  const provider = client.resources.modelProviders.ref("provider_one");
+  const provider = client.api.modelProviders.ref("provider_one");
   const status: ResourceResult<Schema["AuthorizationStatus"]> =
     await provider.authorization.get();
   const started: ResourceResult<Schema["AuthorizationStart"]> =
@@ -452,7 +460,7 @@ export async function pagedDisplayTypes() {
   const display = (
     await client.runs.ref("run_one").items({ query: { before: 20, limit: 10 } })
   ).data;
-  await client.resources.runs
+  await client.api.runs
     .ref("run_one")
     .items.get({ query: { after: 0, limit: 500 } });
   // @ts-expect-error Ordinal windows do not accept generic cursor collection paging.

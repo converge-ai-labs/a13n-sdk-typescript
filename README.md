@@ -134,6 +134,12 @@ await request.close();
 
 Top-level submission selectors are camelCase; nested native options stay grouped. Root structural types include `RunOptions`, `RunConfiguration`, `AgentOverride`, `MessageHistory`, mount/header types and pending/status/failure primitives. Every supported uncommon override remains available without a generated-schema import. Output is native structured JSON: validate it in your application rather than asserting an Agent generic type.
 
+## Native Service API
+
+Use `client.api.agents.ref(agentId).get()` to read a stored Agent with its HTTP metadata, and `client.agents.ref(agentId).start(input)` to run it. Both layers share the same client, authentication and lifetime; the complete generated API is available under `client.api`.
+
+**Migration:** replace `client.resources` with `client.api`. The obsolete entry is removed without an alias in this pre-0.1 cutover; authored Agent, Thread and Run workflows are unchanged.
+
 ## Go further
 
 - [Configure conversations and continue across calls](docs/01-setup-and-conversations.md)

@@ -19,8 +19,7 @@ test("gap-only connections exhaust reconnect budget without a cursor advance", a
   });
   try {
     const stream = threadStream(
-      (options) =>
-        client.resources.threads.ref("thread_one").stream.get(options),
+      (options) => client.api.threads.ref("thread_one").stream.get(options),
       new AbortController().signal,
       { after: "1-0" },
     );
@@ -64,8 +63,7 @@ function fixture(fetch) {
   });
   return {
     client,
-    open: (options) =>
-      client.resources.threads.ref("thread_one").stream.get(options),
+    open: (options) => client.api.threads.ref("thread_one").stream.get(options),
   };
 }
 const response = (text) =>

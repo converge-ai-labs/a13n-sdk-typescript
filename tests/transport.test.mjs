@@ -28,26 +28,23 @@ test("session mutations use X-CSRF-Token; public flows need no CSRF; shutdown ab
     },
   });
   await assert.rejects(
-    client.resources.users.me.update({ name: "A" }, { ifMatch: '"version"' }),
+    client.api.users.me.update({ name: "A" }, { ifMatch: '"version"' }),
     /CSRF/,
   );
   client.setCsrfToken("csrf-proof");
-  await client.resources.users.me.update(
-    { name: "A" },
-    { ifMatch: '"version"' },
-  );
+  await client.api.users.me.update({ name: "A" }, { ifMatch: '"version"' });
   assert.equal(requests[0].headers.get("X-CSRF-Token"), "csrf-proof");
   assert.equal(requests[0].headers.get("If-Match"), '"version"');
   assert.equal(requests[0].credentials, "same-origin");
   assert.deepEqual(await requests[0].json(), { name: "A" });
   client.setCsrfToken(undefined);
-  await client.resources.auth.passwordReset.confirm({
+  await client.api.auth.passwordReset.confirm({
     token: "proof",
     password: "updated",
   });
-  await client.resources.auth.emailChange.confirm({ token: "proof" });
-  await client.resources.invitations.ref("inv_test").accept({ token: "proof" });
-  await client.resources.auth.bootstrap({
+  await client.api.auth.emailChange.confirm({ token: "proof" });
+  await client.api.invitations.ref("inv_test").accept({ token: "proof" });
+  await client.api.auth.bootstrap({
     email: "owner@example.test",
     password: "test-only",
   });
@@ -55,7 +52,7 @@ test("session mutations use X-CSRF-Token; public flows need no CSRF; shutdown ab
   for (const request of requests.slice(1))
     assert.equal(request.headers.get("X-CSRF-Token"), null);
   client.close();
-  await assert.rejects(client.resources.users.me.get(), {
+  await assert.rejects(client.api.users.me.get(), {
     name: "AbortError",
   });
 });
@@ -88,11 +85,11 @@ test("safe reads retry; mutations never replay even with idempotency keys", asyn
         ? new Response(null, { status: 503, headers: { "Retry-After": "0" } })
         : json({}),
   });
-  await client.resources.users.me.get();
+  await client.api.users.me.get();
   assert.equal(calls, 2);
   calls = 0;
   await assert.rejects(
-    client.resources.threads.create(
+    client.api.threads.create(
       {
         agent_id: "agent_test",
         payload: { content: [{ type: "text", text: "hi" }] },
@@ -130,11 +127,11 @@ test("raw binary and multipart uploads retain their bytes and content type", asy
       return json({});
     },
   });
-  await client.resources.users.me.avatar.replace(new Blob([bytes]), {
+  await client.api.users.me.avatar.replace(new Blob([bytes]), {
     contentType: "image/png",
     ifMatch: '"v1"',
   });
-  await client.resources.uploads.create(
+  await client.api.uploads.create(
     { file: new Blob([bytes]) },
     { idempotencyKey: "file-1" },
   );
@@ -192,7 +189,7 @@ test("Thread SSE cursor advances after consumption only for delta/boundary; gap 
     },
   });
   const stream = threadStream(
-    (options) => client.resources.threads.ref("th_one").stream.get(options),
+    (options) => client.api.threads.ref("th_one").stream.get(options),
     new AbortController().signal,
     { after: "1-0" },
   );
@@ -224,7 +221,7 @@ test("Thread SSE rejects invalid ID on signals and malformed payload without gue
   });
   await assert.rejects(
     threadStream(
-      (options) => client.resources.threads.ref("th").stream.get(options),
+      (options) => client.api.threads.ref("th").stream.get(options),
       new AbortController().signal,
     ).next(),
     ProtocolError,
@@ -242,8 +239,8 @@ test("typed health probes stay within the configured origin and exact prefix", a
       return json({ status: "ok" });
     },
   });
-  await client.resources.healthz.get();
-  await client.resources.readyz.get();
+  await client.api.healthz.get();
+  await client.api.readyz.get();
   assert.deepEqual(
     requests.map((request) => request.url),
     [`${baseUrl}/prefix/healthz`, `${baseUrl}/prefix/readyz`],

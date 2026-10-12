@@ -80,18 +80,27 @@ assert.equal(history.continuation, null);
 assert.equal(history.complete, true);
 assert.equal(typeof client.agents.ref("agt_example").start, "function");
 assert.equal(typeof client.agents.ref("agt_example").send, "function");
-assert.equal(typeof client.resources.threads.create, "function");
-assert.equal(typeof client.resources.organizations.ref("org_example").get, "function");
-assert.equal(typeof client.resources.healthz.get, "function");
-assert.equal(typeof client.resources.uploads.create, "function");
+assert.equal("resources" in client, false);
+assert.equal(typeof client.api.agents.ref("agt_example").get, "function");
+assert.equal(typeof client.api.threads.create, "function");
+assert.equal(typeof client.api.organizations.ref("org_example").get, "function");
+assert.equal(typeof client.api.healthz.get, "function");
+assert.equal(typeof client.api.uploads.create, "function");
 client.close();
 
 let writes = 0;
+let requests = 0;
 const workflow = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test" },
   fetch: async (request) => {
+    requests++;
+    assert.equal(request.headers.get("Authorization"), "Bearer test");
     const path = new URL(request.url).pathname;
+    if (path === "/api/v1/agents/agent") {
+      assert.equal(request.method, "GET");
+      return Response.json({ id: "agent" }, { headers: { ETag: '"agent-v1"' } });
+    }
     if (request.method === "POST") {
       writes++;
       const body = await request.json();
@@ -109,6 +118,10 @@ const workflow = createClient({
   },
 });
 try {
+  assert.equal("resources" in workflow, false);
+  const native = await workflow.api.agents.ref("agent").get();
+  assert.equal(native.data.id, "agent");
+  assert.equal(native.response.headers.get("ETag"), '"agent-v1"');
   const interaction = await workflow.agents.ref("agent").start(["Hi", json(false), url("https://example.test/a"), asset("asset")]);
   assert.equal(interaction.run, null);
   assert.match(interaction.idempotencyKey, /^[a-f0-9-]{36}$/);
@@ -130,6 +143,10 @@ try {
   assert.deepEqual(failed("failed"), { status: "failed", message: "failed" });
   await successor.close(); await recovered.close(); await interaction.close();
 } finally { workflow.close(); }
+const requestsAtClose = requests;
+await assert.rejects(workflow.api.agents.ref("agent").get(), { name: "AbortError" });
+await assert.rejects(workflow.agents.ref("agent").start("Closed", { idempotencyKey: "closed" }), { name: "AbortError" });
+assert.equal(requests, requestsAtClose);
 `,
   );
   execFileSync(process.execPath, [join(temporaryRoot, "consumer.mjs")], {
@@ -152,15 +169,23 @@ const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test-token" },
 });
-const organization = client.resources.organizations.ref("org_example");
-void client.resources.runs.ref("run_example").get;
-void client.resources.threads.pages({ query: { limit: 10 } });
+// @ts-expect-error No obsolete public resources entry or compatibility alias.
+void client.resources;
+const nativeAgent = client.api.agents.ref("agt_example");
+void nativeAgent.get;
+// @ts-expect-error Native management references do not own authored start.
+void nativeAgent.start;
+// @ts-expect-error Authored Agent workflow references do not own native get.
+void client.agents.ref("agt_example").get;
+const organization = client.api.organizations.ref("org_example");
+void client.api.runs.ref("run_example").get;
+void client.api.threads.pages({ query: { limit: 10 } });
 void organization.get;
-void client.resources.modelProviders.list;
-void client.resources.memories.pages({ query: { label: ["a"] } });
-void client.resources.assets.ref("asset").content.get;
+void client.api.modelProviders.list;
+void client.api.memories.pages({ query: { label: ["a"] } });
+void client.api.assets.ref("asset").content.get;
 // @ts-expect-error Revision selectors retain their numeric contract in the published package.
-client.resources.memories.ref("memory").revisions.ref("1");
+client.api.memories.ref("memory").revisions.ref("1");
 async function example() {
   const agent = client.agents.ref("agt_example");
   const interaction = await agent.start("Hello", { idempotencyKey: "start-1", options: { configuration: { allowed_hosts: null, extensions: { "app.example/sdk": { enabled: false, nested: [null, {}, []] } } }, overrides: { model_settings: { extra_body: {}, extra_headers: {} } } } });
@@ -180,7 +205,7 @@ async function example() {
   void outcome.output;
   const display = (await outcome.run.items({ query: { limit: 1 } })).data;
   await outcome.run.items({ query: { before: 3, limit: 20 } });
-  await client.resources.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
+  await client.api.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
   const continuation: components["schemas"]["DisplayContinuation"] = {
     run_id: "run_example", next_ordinal: 3, position: { attempt: 1, sequence: 2 },
     fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } },
@@ -196,7 +221,7 @@ async function example() {
   const hint: string | null | undefined = display.resume_after;
   void hint;
   if (display.baseline && display.position !== null) {
-    const raw = await client.resources.threads.ref(outcome.threadId).stream.get({
+    const raw = await client.api.threads.ref(outcome.threadId).stream.get({
       query: { run: outcome.run.id, position: display.position },
       ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
     });
@@ -208,7 +233,7 @@ async function example() {
   };
   config.characteristics = { image_input: null, video_input: { max_video_bytes: 1048576 }, url_input: { video: ["youtube"] } };
   void config;
-  const provider = client.resources.modelProviders.ref("provider");
+  const provider = client.api.modelProviders.ref("provider");
   const status: ResourceResult<components["schemas"]["AuthorizationStatus"]> = await provider.authorization.get();
   const started: ResourceResult<components["schemas"]["AuthorizationStart"]> = await provider.authorize({ new_registration: false });
   await provider.authorization.callback({ attempt_id: started.data.attempt_id, callback_url: "https://service.example.test/operator/callback?code=opaque" });

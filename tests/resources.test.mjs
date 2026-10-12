@@ -24,7 +24,7 @@ test("bound resource handles are local; create, replay and queued receipts retai
       return json(submitted, requests.length === 1 ? 201 : 200);
     },
   });
-  const workspace = client.resources;
+  const workspace = client.api;
   assert.equal(requests.length, 0);
   const first = await workspace.threads.create(
     { agent_id: "agent_one", payload: textPayload("Hello") },
@@ -69,7 +69,7 @@ test("bound pagination advances once per page and handles can be closed with for
     },
   });
   const ids = [];
-  for await (const item of client.resources.threads.items({
+  for await (const item of client.api.threads.items({
     query: { limit: 1 },
   }))
     ids.push(item.id);

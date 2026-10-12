@@ -19,7 +19,7 @@ const options = (fetch) => ({
   fetch,
 });
 function bound(client, segments) {
-  let resource = client.resources;
+  let resource = client.api;
   for (const segment of segments)
     resource = segment.startsWith("{")
       ? resource.ref(selection(segment.slice(1, -1)))
@@ -152,7 +152,7 @@ test("generated pagination is lazy, snapshots repeated filters and retains respo
     }),
   );
   const query = { label: ["team:a", "scope:b"] };
-  const pages = client.resources.memories.pages({ query });
+  const pages = client.api.memories.pages({ query });
   query.label.push("changed");
   assert.equal(urls.length, 0);
   const first = await pages.next();
@@ -173,7 +173,7 @@ test("generated pages reject repeated cursors and item iteration closes early", 
       return Response.json({ items: [{ id: "item" }], next_cursor: "same" });
     }),
   );
-  const memories = client.resources.memories;
+  const memories = client.api.memories;
   const pages = memories.pages();
   await pages.next();
   await assert.rejects(pages.next(), ProtocolError);
@@ -201,7 +201,7 @@ test("generated raw SSE retains Last-Event-ID; explicit close cancels its body",
       );
     }),
   );
-  const response = await client.resources.threads
+  const response = await client.api.threads
     .ref("thr")
     .stream.get({ lastEventId: "2-0" });
   await response.close();
@@ -231,12 +231,12 @@ test("generated resources share CSRF, shutdown, errors and non-replayed writes",
   });
   client.setCsrfToken("csrf");
   await assert.rejects(
-    client.resources.memories.create({ key: "notes", name: "Notes" }),
+    client.api.memories.create({ key: "notes", name: "Notes" }),
     ApiError,
   );
   assert.equal(calls, 1);
   client.close();
-  await assert.rejects(client.resources.healthz.get());
+  await assert.rejects(client.api.healthz.get());
   assert.equal(calls, 1);
 });
 

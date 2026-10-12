@@ -84,7 +84,7 @@ test("native imported history passes through both resource and Agent start, neve
     throw new Error(`Unexpected ${request.method} ${path}`);
   });
   try {
-    const raw = await client.resources.threads.create(
+    const raw = await client.api.threads.create(
       { agent_id: "agt_import", message_history: history, payload },
       { idempotencyKey: "raw-history" },
     );
@@ -156,11 +156,9 @@ test("native resume sends complete approvals, call outcomes and attachment input
     input: payload,
   };
   try {
-    const raw = await client.resources.runs
-      .ref("run_waiting")
-      .resume(complete, {
-        idempotencyKey: "raw-resume",
-      });
+    const raw = await client.api.runs.ref("run_waiting").resume(complete, {
+      idempotencyKey: "raw-resume",
+    });
     assert.equal(raw.data.id, "run_successor");
     const successor = await client.runs.ref("run_waiting").resume(
       { ...complete.approvals, ...complete.calls },

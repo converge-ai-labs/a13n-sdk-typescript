@@ -41,7 +41,7 @@ test("ordinary HTTP response headers and omitted/null patch values survive trans
     },
   });
   for (const body of [{}, { name: null }, { name: "New" }]) {
-    const result = await client.resources.agents
+    const result = await client.api.agents
       .ref("agent_example")
       .update(body, { ifMatch: '"v1"' });
     assert.equal(result.response.headers.get("ETag"), '"v2"');
@@ -81,7 +81,7 @@ test("model pricing selectors preserve omission, null and values through resourc
           rules: [rule],
         },
       };
-      const result = await client.resources.models
+      const result = await client.api.models
         .ref("model")
         .update(body, { ifMatch: '"v1"' });
       assert.deepEqual(result.data, body);
@@ -148,7 +148,7 @@ test("ModelConfig settings forward arbitrary native JSON without coercion", asyn
       };
       assert.deepEqual(
         (
-          await client.resources.models
+          await client.api.models
             .ref("model_one")
             .update({ config }, { ifMatch: '"v1"' })
         ).data.config,
@@ -201,16 +201,16 @@ test("upload IDs and passwords are passed to Service rather than locally revalid
   });
   try {
     const upload_id = `upl_${"a".repeat(32)}`;
-    await client.resources.assets.create({ upload_id, name: "native.bin" });
-    await client.resources.assets.create({
+    await client.api.assets.create({ upload_id, name: "native.bin" });
+    await client.api.assets.create({
       upload_id: "service-rejects-this",
       name: "invalid.bin",
     });
-    await client.resources.auth.bootstrap({
+    await client.api.auth.bootstrap({
       email: "owner@example.test",
       password: "12345678",
     });
-    await client.resources.auth.bootstrap({
+    await client.api.auth.bootstrap({
       email: "owner@example.test",
       password: "short",
     });

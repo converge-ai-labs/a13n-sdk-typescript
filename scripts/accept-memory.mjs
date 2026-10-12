@@ -21,7 +21,7 @@ const etag = (result) => {
   return { ifMatch };
 };
 try {
-  const resources = client.resources;
+  const resources = client.api;
   const provider = resources.memoryProviders.ref(
     process.env.A13N_MEMORY_PROVIDER,
   );

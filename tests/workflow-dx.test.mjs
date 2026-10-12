@@ -797,7 +797,7 @@ for (const [name, response] of [
       );
       assert.equal(writes, 1);
       await assert.rejects(
-        client.resources.threads.create(
+        client.api.threads.create(
           { agent_id: "agent", payload: { content: [] } },
           { idempotencyKey: "native" },
         ),
