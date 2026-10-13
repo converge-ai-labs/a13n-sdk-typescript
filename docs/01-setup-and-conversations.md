@@ -93,7 +93,7 @@ try {
 }
 ```
 
-The imported JSON is immutable Thread provenance, readable on the Thread, and not historical Service Runs, Entries, Items or usage. Only completed user text, model text and _closed_ tool-call/JSON-result exchanges are accepted. The Service validates the Pydantic AI message format and the limits (256 messages and 256 KiB of normalized JSON); the SDK does not build a second type hierarchy or independently revalidate it. A tool call must be paired with its return before another prompt. On first execution Service seeds native context and then incorporates the new payload; a subsequent `send()` continues the stored checkpoint rather than importing the history again. Preserve the original history and idempotency key for an uncertain retry. See the [pinned Runs contract](../contract/semantics/runs.md#imported-model-context) for supported parts and ordering.
+The imported JSON is immutable Thread provenance, readable on the Thread, and not historical Service Runs, Entries, Items or usage. Only completed user text, model text and _closed_ tool-call/JSON-result exchanges are accepted. The Service validates the Pydantic AI message format and the limits (256 messages and 256 KiB of normalized JSON); the SDK does not build a second type hierarchy or independently revalidate it. A tool call must be paired with its return before another prompt. On first execution Service seeds native context and then incorporates the new payload; a subsequent `send()` continues the stored checkpoint rather than importing the history again. Preserve the original history, object-key order (including nested tool arguments and results), and idempotency key for an uncertain retry. Native provider adapters can render these objects into model-visible strings; the SDK uses ordinary `JSON.stringify` and preserves received JSON order without sorting keys. See the [pinned Runs contract](../contract/semantics/runs.md#imported-model-context) for supported parts and ordering.
 
 Public root types `RunOptions`, `RunConfiguration`, `AgentOverride`, `MessageHistory`, `MemoryMount`, `EnvironmentMounts` and `McpHeaders` are structural aliases to the full pinned contract. Top-level selectors are `sessionId`, `agentRevisionId`, `messageHistory` and `mcpHeaders`; nested option/mount/history fields retain native wire names. Omitted values remain omitted, and explicit null/empty JSON remains distinct. There are no flattened configuration or override aliases.
 
@@ -135,3 +135,31 @@ console.log(
 Omission or `configuration:null` selects defaults for a new Run and retains an active Run's snapshot when steering. An explicit object is a **complete snapshot**, not a merge with the previous configuration: `{}` selects the empty default value, `allowed_hosts:null` is unrestricted, and `allowed_hosts:[]` denies every destination. Exact host rules and `regex:` patterns are normalized/validated by Service, not by the SDK. Restrictive policy can reject provider transports that cannot enforce it; it is not an SDK network sandbox. Keep namespaced extensions as native JSON, including false, zero, empty strings/arrays/objects and nested nulls.
 
 Use the same `options.configuration` shape in `send()`. While steering an active Run, a different explicit snapshot raises `ApiError` with conflict reason `run_configuration_immutable`; the SDK neither retries it nor silently queues it as a later Run. Choose `delivery:"next_run"` explicitly to request a new snapshot for later execution. Recovery, child execution and `resume()` successors retain their accepted configuration; resume accepts no replacement configuration field. See [streaming](02-streaming-and-readback.md) for separate execution and observation lifetimes.
+
+## Select environment and Skill preparation
+
+Agent configuration defaults to `lazy_environment:true`. Accepted managed mounts can have a durable reserved identity before any native allocation; first dependent use prepares them. To prepare frozen managed instances before agent execution, select `lazy_environment:false` in a Run override. Execution connectors remain first-use in either mode. Explicit `client.api.environments.create(...)` is a separate eager creation operation. A mount's native `working_directory` must exist and be accessible when execution opens it; the SDK forwards it and creates no local directory.
+
+Skill synchronization defaults to shared publication with overwrite enabled and cleanup disabled. An override replaces the **whole policy block**:
+
+```js
+const prepared = await agent.start("Use the selected Skills.", {
+  options: {
+    overrides: {
+      lazy_environment: false,
+      skill_sync: { mode: "shared", overwrite: true, cleanup: false },
+    },
+  },
+});
+await prepared.close();
+const isolated = await agent.start("Use immutable cached Skill packages.", {
+  options: {
+    overrides: {
+      skill_sync: { mode: "isolated", cache_count: 128 },
+    },
+  },
+});
+await isolated.close();
+```
+
+This fragment uses the selected `agent` inside its client lifetime. Shared mode publishes mutable names under `/workspace/.agents/skills/<name>`; `overwrite:false` keeps an existing name, while `cleanup:true` removes unselected entries and requires a primary environment even with an empty selection. Isolated mode uses immutable digest-keyed packages under `/workspace/.agents/skill-cache`; `cache_count:0` disables trimming. Fields from the two modes cannot be mixed. Omission/null of a Run override inherits the Agent revision. Service owns preparation and filesystem publication; these options do not perform SDK-side environment I/O.

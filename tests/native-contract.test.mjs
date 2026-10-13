@@ -319,7 +319,7 @@ test("manual workspace-key authorization forwards returned method and hosted ref
   }
 });
 
-test("pinned native surface exposes 233 operations and preserves media-policy defaults", async () => {
+test("pinned native surface exposes 242 operations and preserves media-policy defaults", async () => {
   const spec = JSON.parse(
     await readFile(new URL("../openapi.json", import.meta.url), "utf8"),
   );
@@ -327,7 +327,7 @@ test("pinned native surface exposes 233 operations and preserves media-policy de
     Object.values(spec.paths).flatMap((item) =>
       Object.values(item).filter((op) => op.operationId),
     ).length,
-    233,
+    242,
   );
   const schemas = spec.components.schemas;
   assert.equal(schemas.RunOptions?.properties?.configuration, undefined); // Input and output remain distinct.

@@ -1,4 +1,5 @@
 import { ApiError, isRecord, ProtocolError } from "../errors.js";
+import type { components } from "../schema.js";
 import { delay } from "../transport.js";
 import type { BinaryResult } from "../resources/base.js";
 import { decodeSse, type SseFrame } from "./sse.js";
@@ -18,6 +19,8 @@ export interface ItemRef {
   ordinal?: number | null;
   response_group?: string | null;
   failure?: Record<string, unknown> | null;
+  /** Provisional automatic delivery evidence; committed Items retain the authoritative list. */
+  memory_sources?: components["schemas"]["MemorySource"][] | null;
 }
 export type ThreadStreamFrame =
   | {

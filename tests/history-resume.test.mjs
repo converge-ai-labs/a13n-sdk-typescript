@@ -18,7 +18,10 @@ const history = [
         part_kind: "tool-call",
         tool_name: "lookup",
         tool_call_id: "call_one",
-        args: { id: "record" },
+        args: {
+          zebra: { second: false, first: null },
+          alpha: [{ later: 0, earlier: "" }],
+        },
       },
     ],
   },
@@ -29,7 +32,10 @@ const history = [
         part_kind: "tool-return",
         tool_name: "lookup",
         tool_call_id: "call_one",
-        content: { found: true },
+        content: {
+          zebra: { second: [false, null], first: {} },
+          alpha: { later: 0, earlier: "" },
+        },
       },
     ],
   },
@@ -65,10 +71,12 @@ test("native imported history passes through both resource and Agent start, neve
   const client = clientWith(async (request) => {
     const path = new URL(request.url).pathname;
     if (request.method === "POST") {
+      const wire = await request.text();
       requests.push({
         path,
         key: request.headers.get("Idempotency-Key"),
-        body: await request.json(),
+        body: JSON.parse(wire),
+        wire,
       });
       return Response.json(submitted, { status: 201 });
     }
@@ -88,16 +96,30 @@ test("native imported history passes through both resource and Agent start, neve
       { agent_id: "agt_import", message_history: history, payload },
       { idempotencyKey: "raw-history" },
     );
-    assert.deepEqual(raw.data.thread.message_history, history);
+    assert.equal(
+      JSON.stringify(raw.data.thread.message_history),
+      JSON.stringify(history),
+      "native readback retains nested argument/result insertion order",
+    );
     const interaction = await client.agents.ref("agt_import").start(payload, {
       idempotencyKey: "semantic-history",
       messageHistory: history,
     });
     assert.equal((await interaction.result()).run.id, "run_imported");
-    assert.deepEqual(
-      (await interaction.thread.get()).data.message_history,
-      history,
-    );
+    const readback = (await interaction.thread.get()).data.message_history;
+    assert.equal(JSON.stringify(readback), JSON.stringify(history));
+    assert.deepEqual(Object.keys(readback[2].parts[0].args), [
+      "zebra",
+      "alpha",
+    ]);
+    assert.deepEqual(Object.keys(readback[2].parts[0].args.zebra), [
+      "second",
+      "first",
+    ]);
+    assert.deepEqual(Object.keys(readback[3].parts[0].content.alpha), [
+      "later",
+      "earlier",
+    ]);
     await client.agents
       .ref("agt_import")
       .send(thread.id, "Only the new message", {
@@ -112,7 +134,15 @@ test("native imported history passes through both resource and Agent start, neve
       ],
     );
     for (const request of requests.slice(0, 2)) {
-      assert.deepEqual(request.body.message_history, history);
+      assert.equal(
+        JSON.stringify(request.body.message_history),
+        JSON.stringify(history),
+      );
+      assert.ok(request.wire.includes(JSON.stringify(history)));
+      assert.deepEqual(
+        Object.keys(request.body.message_history[2].parts[0].args.alpha[0]),
+        ["later", "earlier"],
+      );
       assert.deepEqual(request.body.payload, payload);
     }
     assert.deepEqual(requests[2].body.payload, {

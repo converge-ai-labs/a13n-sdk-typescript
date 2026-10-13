@@ -20,6 +20,119 @@ import {
 import { threadStream } from "../src/streams/thread-stream.js";
 
 type Schema = components["schemas"];
+// @ts-expect-error The account-specific discovery model name is retired.
+type RetiredDiscoveryModel = Schema["ChatGPTModel"];
+void (null as unknown as RetiredDiscoveryModel);
+const sharedSkillSync: Schema["SharedSkillSync"] = { mode: "shared" };
+const isolatedSkillSync: Schema["IsolatedSkillSync"] = {
+  mode: "isolated",
+  cache_count: 0,
+};
+const catchupOverride: AgentOverride = {
+  lazy_environment: false,
+  skill_sync: isolatedSkillSync,
+};
+void catchupOverride;
+void sharedSkillSync;
+const wrongIsolated: Schema["IsolatedSkillSync"] = {
+  mode: "isolated",
+  // @ts-expect-error Isolated caching does not take shared publication fields.
+  overwrite: false,
+};
+const wrongShared: Schema["SharedSkillSync"] = {
+  mode: "shared",
+  // @ts-expect-error Shared publication does not take an isolated cache budget.
+  cache_count: 1,
+};
+// @ts-expect-error Lazy environment mode is a native boolean or null override.
+const wrongLazy: AgentOverride = { lazy_environment: "true" };
+void wrongIsolated;
+void wrongShared;
+void wrongLazy;
+const minimalSource: Schema["MemorySource"] = {
+  kind: "record",
+  memory: "notes",
+  status: "timeout",
+};
+const nullableSource: Schema["MemorySource"] = {
+  kind: "file",
+  memory: "notes",
+  status: "unchanged",
+  cursor: null,
+  memory_id: null,
+};
+void minimalSource;
+void nullableSource;
+const contentReference: Schema["ContentRef"] = {
+  id: "content",
+  size_bytes: 100,
+  media_type: "application/json",
+  preview: "{preview",
+};
+void contentReference;
+const badContent: Schema["RunContent"] = {
+  id: "content",
+  // @ts-expect-error A saved JSON prefix uses text/plain, never an invented media type.
+  media_type: "json-prefix",
+  value: null,
+};
+void badContent;
+async function catchupTypes(client: Client) {
+  const analyst: ResourceResult<Schema["Agent"]> =
+    await client.api.findingAgent();
+  const analyses: ResourceResult<Schema["AnalysisPage"]> =
+    await client.api.findingAnalyses.list();
+  const analysis: ResourceResult<Schema["Analysis"]> =
+    await client.api.findingAnalyses.create(
+      { agent_id: null, presets: ["recovery"], max_traces: 1 },
+      { idempotencyKey: "analysis" },
+    );
+  // @ts-expect-error Analysis submission requires an explicit native key.
+  await client.api.findingAnalyses.create({ presets: ["answer"] });
+  const finding: ResourceResult<Schema["Finding"]> =
+    await client.api.findings.create({
+      agent_id: "agent",
+      agent_revision_id: "revision",
+      title: "Title",
+      category: "context_gap",
+      explanation: "Evidence",
+      suggestion: "Change",
+      source_key: "key",
+      evidence: [{ run_id: "run", trace_id: "1".repeat(32) }],
+    });
+  await client.api.findings
+    .ref(finding.data.id)
+    .update({ closed: false, assessment_note: null }, { ifMatch: "etag" });
+  // @ts-expect-error Finding edits retain their ETag precondition.
+  await client.api.findings.ref(finding.data.id).update({ closed: false });
+  const content: ResourceResult<Schema["RunContent"]> = await client.api.runs
+    .ref("run")
+    .contents.ref(contentReference.id)
+    .get();
+  const authors: ResourceResult<Schema["MessageAuthors"]> =
+    await client.api.sessions
+      .ref("session")
+      .messageAuthors.list({ query: { entry_id: ["entry"] } });
+  const models: ResourceResult<Schema["ProviderModel"][]> =
+    await client.api.modelProviders.ref("provider").models.get();
+  void analyst;
+  void analyses;
+  void analysis;
+  void content;
+  void authors;
+  void models;
+  for await (const event of threadStream(
+    (options) => client.api.threads.ref("thread").stream.get(options),
+    new AbortController().signal,
+  )) {
+    if (event.frame.type === "delta") {
+      const sources: Schema["MemorySource"][] | null | undefined =
+        event.frame.data.item?.memory_sources;
+      void sources;
+    }
+  }
+}
+void catchupTypes;
 const client: Client = createClient({
   baseUrl: "https://service.example.test",
   auth: { type: "bearer", token: "test" },
@@ -445,7 +558,7 @@ export async function nativeConfigurationAndProviderTypes() {
   });
   const disconnected: ResourceResult<Schema["AuthorizationDisconnect"]> =
     await provider.authorization.delete();
-  const models: ResourceResult<Schema["ChatGPTModel"][]> =
+  const models: ResourceResult<Schema["ProviderModel"][]> =
     await provider.models.get();
   void disconnected;
   void models;

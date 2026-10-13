@@ -138,7 +138,9 @@ Top-level submission selectors are camelCase; nested native options stay grouped
 
 Use `client.api.agents.ref(agentId).get()` to read a stored Agent with its HTTP metadata, and `client.agents.ref(agentId).start(input)` to run it. Both layers share the same client, authentication and lifetime; the complete generated API is available under `client.api`.
 
-**Migration:** replace `client.resources` with `client.api`. The obsolete entry is removed without an alias in this pre-0.1 cutover; authored Agent, Thread and Run workflows are unchanged.
+The pinned native graph also includes Findings/analyses, explicit Run content reads, and session message-author lookup. `Item.content_refs` provides bounded previews; load saved values explicitly with `client.api.runs.ref(runId).contents.ref(contentId).get()`. Raw stream memory sources and Memory record provenance retain their native evidence. See [generated resources](docs/06-generated-resources.md#findings-and-analyses).
+
+**Migration:** replace `client.resources` with `client.api`, and use generated `ProviderModel` in place of the retired `ChatGPTModel`. Authored Agent, Thread and Run workflows are unchanged. Omitted Skill policy now uses shared mode; select isolated caching explicitly when that layout is required. See [environment and Skill policy](docs/01-setup-and-conversations.md#select-environment-and-skill-preparation).
 
 ## Go further
 
