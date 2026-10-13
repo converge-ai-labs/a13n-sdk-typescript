@@ -84,3 +84,45 @@ Do not hardcode a callback origin, loopback port, client ID or issuer endpoints 
 Provider types are deployment-selected metadata, not an SDK-owned exhaustive list. Use `client.api.providerTypes.ref("model").list()` to discover supported model APIs and `client.api.connectorProviders.list()` for connection metadata. Model `config.model_api` remains a native string; additions such as Vercel, Cerebras, SambaNova or xAI do not require a new SDK enum or a separate provider client. Follow the returned schemas and available capabilities rather than treating these examples as the complete list.
 
 MCP-backed tools are exposed through native Connections and Service discovery/configuration. The SDK forwards their generated configuration and frozen Thread headers; it does not create its own MCP transport, perform issuer discovery or interpret provider credentials.
+
+## Findings and analyses
+
+Findings retain diagnostic evidence, assessment and closure independently of Run execution. Native operations use the existing generated graph:
+
+```js
+for await (const page of client.api.findings.pages({
+  query: { agent_id: agentId, closed: false },
+})) {
+  console.log(page.data.items);
+}
+const analyst = await client.api.findingAgent();
+const analysis = await client.api.findingAnalyses.create(
+  { agent_id: agentId, presets: ["execution"], max_traces: 10 },
+  { idempotencyKey: analysisKey },
+);
+console.log(analyst.data.preset_kind, analysis.data.run_id);
+const finding = client.api.findings.ref(findingId);
+const current = await finding.get();
+const ifMatch = current.response.headers.get("ETag");
+if (!ifMatch) throw new Error("Finding read did not include an ETag.");
+await finding.update({ assessment: "confirmed", closed: false }, { ifMatch });
+```
+
+This fragment needs a configured client, authorized Agent/Finding IDs and a persisted `analysisKey`; it creates a real analysis Run and changes the Finding. `findingAgent()` has no request body. `findingAnalyses.list()` reads analysis history; creation requires an explicit key and retains 201 creation versus 200 replay. The SDK never retries either mutation. `findings.create(body)` accepts the complete generated diagnostic shape, including trace evidence; Service owns selection, authorization and evidence validation. A Finding's ETag governs assessment updates.
+
+## Read saved Run content and exact message authors
+
+Display `Item.content_refs` contains previews and native content metadata. Read saved content explicitly under the owning Run's authority:
+
+```js
+const saved = await client.api.runs.ref(runId).contents.ref(contentId).get();
+console.log(saved.data.media_type, saved.data.truncated, saved.data.value);
+const authors = await client.api.sessions.ref(sessionId).messageAuthors.list({
+  query: { entry_id: [entryId] },
+});
+console.log(authors.data.items);
+```
+
+Use IDs selected from authorized readback. Content is immutable; `application/json` values remain native JSON and `text/plain` values remain strings. Service retains values larger than the 32 KiB inline limit behind bounded 4 KiB previews, with a 16 MiB saved-value cap. Oversized JSON becomes a truncated `text/plain` prefix, not a complete JSON value. Follow `media_type` and `truncated`, including when explicitly loading a saved value. Neither finite observation nor `textStream()` expands references automatically.
+
+Message-author lookup requires 1–100 Entry IDs as the repeated native `entry_id` query; it is a specialized query, not cursor pagination. Nullable principal details preserve inaccessible/deleted identity evidence. `ProviderModel` replaces the retired `ChatGPTModel`; discovery preserves `slug`, `display_name` and nullable characteristics. Use provider-type `supports_model_discovery` and Tool/Toolset descriptions from deployment metadata; the generated Toolset keys include `traces` and `findings`.

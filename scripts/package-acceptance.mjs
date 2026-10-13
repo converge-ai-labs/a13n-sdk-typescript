@@ -8,24 +8,28 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const temporaryRoot = mkdtempSync(join(tmpdir(), "a13n-sdk-package-"));
 const packedDirectory = join(temporaryRoot, "packed");
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+// An explicit tarball validates a retained candidate without repacking source.
+const suppliedTarball = process.argv[2] ? resolve(process.argv[2]) : undefined;
 
 try {
   mkdirSync(packedDirectory);
-  const packOutput = execFileSync(
-    npm,
-    ["pack", "--json", "--pack-destination", packedDirectory],
-    { cwd: packageRoot, encoding: "utf8" },
-  );
+  const packOutput = suppliedTarball
+    ? JSON.stringify([{ filename: basename(suppliedTarball) }])
+    : execFileSync(
+        npm,
+        ["pack", "--json", "--pack-destination", packedDirectory],
+        { cwd: packageRoot, encoding: "utf8" },
+      );
   const [{ filename }] = JSON.parse(packOutput);
   assert.equal(typeof filename, "string");
-  const tarball = join(packedDirectory, filename);
+  const tarball = suppliedTarball ?? join(packedDirectory, filename);
 
   writeFileSync(
     join(temporaryRoot, "package.json"),
@@ -147,6 +151,74 @@ const requestsAtClose = requests;
 await assert.rejects(workflow.api.agents.ref("agent").get(), { name: "AbortError" });
 await assert.rejects(workflow.agents.ref("agent").start("Closed", { idempotencyKey: "closed" }), { name: "AbortError" });
 assert.equal(requests, requestsAtClose);
+
+const catchupRequests = [];
+const overrides = { lazy_environment: false, skill_sync: { mode: "isolated", cache_count: 0 } };
+const selection = { agent_id: null, presets: ["recovery"], max_traces: 1 };
+const diagnostic = { agent_id: "agent", agent_revision_id: "revision", title: "Recovery", category: "workflow_issue", explanation: "Evidence", suggestion: "Use one boundary", source_key: "installed", evidence: [{ run_id: "run", trace_id: "1".repeat(32) }] };
+let analyses = 0;
+const catchup = createClient({
+  baseUrl: "https://service.example.test",
+  auth: { type: "bearer", token: "test" },
+  fetch: async (request) => {
+    assert.equal(request.headers.get("Authorization"), "Bearer test");
+    const target = new URL(request.url);
+    const path = target.pathname;
+    catchupRequests.push([request.method, path]);
+    if (path === "/api/v1/threads") {
+      assert.deepEqual(await request.json(), { agent_id: "agent", payload: { content: [text("Prepared")] }, options: { overrides } });
+      return Response.json({ thread: { id: "thread" }, entry: { id: "entry", thread_id: "thread" }, run: null }, { status: 201 });
+    }
+    if (path === "/api/v1/finding-agent") { assert.equal(await request.text(), ""); return Response.json({ id: "analyst", preset_kind: "finding" }); }
+    if (path === "/api/v1/finding-analyses") {
+      if (request.method === "GET") return Response.json({ items: [], next_cursor: null });
+      assert.equal(request.headers.get("Idempotency-Key"), "analysis");
+      assert.deepEqual(await request.json(), selection);
+      return Response.json({ id: "analysis", run_id: "analysis-run" }, { status: ++analyses === 1 ? 201 : 200 });
+    }
+    if (path === "/api/v1/findings") {
+      if (request.method === "GET") return Response.json({ items: [{ id: "finding" }], next_cursor: null });
+      assert.deepEqual(await request.json(), diagnostic);
+      return Response.json({ ...diagnostic, id: "finding" }, { status: 201, headers: { ETag: '"finding-v1"' } });
+    }
+    if (path === "/api/v1/findings/finding") {
+      if (request.method === "PATCH") { assert.equal(request.headers.get("If-Match"), '"finding-v1"'); assert.deepEqual(await request.json(), { closed: false }); }
+      return Response.json({ ...diagnostic, id: "finding" });
+    }
+    if (path === "/api/v1/runs/run/contents/content") return Response.json({ id: "content", media_type: "text/plain", value: "{truncated JSON", truncated: true });
+    if (path === "/api/v1/sessions/session/message-authors") {
+      assert.deepEqual(target.searchParams.getAll("entry_id"), ["entry", "other"]);
+      return Response.json({ items: [{ entry_id: "entry", principal_id: "principal", principal: null, submitted_at: "2026-10-13T00:00:00Z" }] });
+    }
+    if (path === "/api/v1/model-providers/provider/models") return Response.json([{ slug: "native", display_name: "Native", characteristics: null }]);
+    if (path === "/api/v1/memories/memory/records") return Response.json({ items: [{ id: "record", text: "Text", score: null, updated_at: null, provenance: { created: null, last_write: { principal_id: "principal", principal_name: null, run_id: null, attempt_id: null, tool_call_id: null, confirmed_at: "2026-10-13T00:00:00Z" }, content_matches: false } }], next_cursor: null });
+    throw new Error("Unexpected installed catch-up request: " + path);
+  },
+});
+try {
+  assert.equal((await catchup.api.findingAgent()).data.preset_kind, "finding");
+  assert.deepEqual((await catchup.api.findingAnalyses.list()).data.items, []);
+  assert.equal((await catchup.api.findingAnalyses.create(selection, { idempotencyKey: "analysis" })).response.status, 201);
+  assert.equal(analyses, 1);
+  assert.equal((await catchup.api.findingAnalyses.create(selection, { idempotencyKey: "analysis" })).response.status, 200);
+  const created = await catchup.api.findings.create(diagnostic);
+  assert.equal((await catchup.api.findings.ref("finding").get()).data.id, created.data.id);
+  await catchup.api.findings.ref("finding").update({ closed: false }, { ifMatch: created.response.headers.get("ETag") });
+  const pages = catchup.api.findings.pages({ query: { closed: false } });
+  assert.equal((await pages.next()).value.data.items[0].id, "finding");
+  assert.equal((await pages.next()).done, true);
+  const saved = (await catchup.api.runs.ref("run").contents.ref("content").get()).data;
+  assert.deepEqual(saved, { id: "content", media_type: "text/plain", value: "{truncated JSON", truncated: true });
+  assert.equal((await catchup.api.sessions.ref("session").messageAuthors.list({ query: { entry_id: ["entry", "other"] } })).data.items[0].principal, null);
+  assert.equal((await catchup.api.modelProviders.ref("provider").models.get()).data[0].characteristics, null);
+  assert.equal((await catchup.api.memories.ref("memory").records.list()).data.items[0].provenance.content_matches, false);
+  const prepared = await catchup.agents.ref("agent").start("Prepared", { options: { overrides } });
+  await prepared.close();
+  assert.equal(catchupRequests.length, 13);
+} finally { catchup.close(); }
+const atShutdown = catchupRequests.length;
+await assert.rejects(catchup.api.findingAgent(), { name: "AbortError" });
+assert.equal(catchupRequests.length, atShutdown);
 `,
   );
   execFileSync(process.execPath, [join(temporaryRoot, "consumer.mjs")], {
@@ -184,6 +256,41 @@ void organization.get;
 void client.api.modelProviders.list;
 void client.api.memories.pages({ query: { label: ["a"] } });
 void client.api.assets.ref("asset").content.get;
+// @ts-expect-error The old account-specific discovery model is retired.
+type RetiredModel = components["schemas"]["ChatGPTModel"];
+void (null as unknown as RetiredModel);
+const source: components["schemas"]["MemorySource"] = { kind: "record", memory: "notes", status: "timeout" };
+const contentRef: components["schemas"]["ContentRef"] = { id: "content", media_type: "application/json", preview: "{}", size_bytes: 2 };
+const shared: components["schemas"]["SharedSkillSync"] = { mode: "shared" };
+const isolated: components["schemas"]["IsolatedSkillSync"] = { mode: "isolated", cache_count: 0 };
+void source; void contentRef; void shared; void isolated;
+// @ts-expect-error Mode-specific fields cannot be mixed.
+const mixed: components["schemas"]["SharedSkillSync"] = { mode: "shared", cache_count: 1 };
+// @ts-expect-error The native lazy-environment override is boolean or null.
+const invalidLazy: AgentOverride = { lazy_environment: "true" };
+void mixed; void invalidLazy;
+async function catchupTypes() {
+  const content: ResourceResult<components["schemas"]["RunContent"]> = await client.api.runs.ref("run").contents.ref("content").get();
+  const authors: ResourceResult<components["schemas"]["MessageAuthors"]> = await client.api.sessions.ref("session").messageAuthors.list({ query: { entry_id: ["entry"] } });
+  const analyst: ResourceResult<components["schemas"]["Agent"]> = await client.api.findingAgent();
+  const analyses: ResourceResult<components["schemas"]["AnalysisPage"]> = await client.api.findingAnalyses.list();
+  await client.api.findingAnalyses.create({ presets: ["recovery"] }, { idempotencyKey: "analysis" });
+  await client.api.findings.ref("finding").update({ closed: false }, { ifMatch: "etag" });
+  // @ts-expect-error Native analysis mutations require an explicit key.
+  await client.api.findingAnalyses.create({ presets: ["recovery"] });
+  // @ts-expect-error Finding edits require an ETag.
+  await client.api.findings.ref("finding").update({ closed: false });
+  // @ts-expect-error Message-author query IDs are required.
+  await client.api.sessions.ref("session").messageAuthors.list();
+  const interaction = await client.agents.ref("agent").start("Hi", { options: { overrides: { lazy_environment: null, skill_sync: isolated } } });
+  for await (const event of interaction) if (event.frame.type === "delta") {
+    const sources: components["schemas"]["MemorySource"][] | null | undefined = event.frame.data.item?.memory_sources;
+    void sources;
+  }
+  await interaction.close();
+  void content; void authors; void analyst; void analyses;
+}
+void catchupTypes;
 // @ts-expect-error Revision selectors retain their numeric contract in the published package.
 client.api.memories.ref("memory").revisions.ref("1");
 async function example() {
@@ -238,7 +345,7 @@ async function example() {
   const started: ResourceResult<components["schemas"]["AuthorizationStart"]> = await provider.authorize({ new_registration: false });
   await provider.authorization.callback({ attempt_id: started.data.attempt_id, callback_url: "https://service.example.test/operator/callback?code=opaque" });
   const disconnected: ResourceResult<components["schemas"]["AuthorizationDisconnect"]> = await provider.authorization.delete();
-  const models: ResourceResult<components["schemas"]["ChatGPTModel"][]> = await provider.models.get();
+  const models: ResourceResult<components["schemas"]["ProviderModel"][]> = await provider.models.get();
   void status; void disconnected; void models;
   // @ts-expect-error Native configuration is nested in Run options, not a new SDK parameter.
   await agent.start("Wrong", { idempotencyKey: "wrong", configuration: {} });

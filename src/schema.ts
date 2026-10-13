@@ -31,7 +31,7 @@ export interface paths {
     /**
      * List Agents
      * @description Agents of the workspace. `q` matches the name or description, ignoring case; `archived` keeps only
-     *     archived agents, or only open ones; `source=builtin` finds the Agent Composer; the skill filters keep those
+     *     archived agents, or only open ones; `source=builtin` finds managed presets; the skill filters keep those
      *     with a revision pinning that skill or that skill revision.
      */
     get: operations["list_agents_api_v1_agents_get"];
@@ -808,6 +808,77 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/v1/finding-agent": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Prepare Finding Agent */
+    post: operations["prepare_finding_agent_api_v1_finding_agent_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/finding-analyses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Analyses */
+    get: operations["list_analyses_api_v1_finding_analyses_get"];
+    put?: never;
+    /** Start Analysis */
+    post: operations["start_analysis_api_v1_finding_analyses_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/findings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Findings */
+    get: operations["list_findings_api_v1_findings_get"];
+    put?: never;
+    /** Create Finding */
+    post: operations["create_finding_api_v1_findings_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/findings/{finding_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Finding */
+    get: operations["get_finding_api_v1_findings__finding_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update Finding */
+    patch: operations["update_finding_api_v1_findings__finding_id__patch"];
     trace?: never;
   };
   "/api/v1/invitations/{invitation_id}/accept": {
@@ -1597,6 +1668,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/runs/{run_id}/contents/{content_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Run Content
+     * @description The complete value behind a committed display reference.
+     */
+    get: operations["run_content_api_v1_runs__run_id__contents__content_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/runs/{run_id}/fork": {
     parameters: {
       query?: never;
@@ -1729,6 +1820,23 @@ export interface paths {
     head?: never;
     /** Update Session */
     patch: operations["update_session_api_v1_sessions__session_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/sessions/{session_id}/message-authors": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Message Authors */
+    get: operations["get_message_authors_api_v1_sessions__session_id__message_authors_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/skills": {
@@ -3005,6 +3113,8 @@ export interface components {
       name: string;
       /** Organization Id */
       organization_id: string;
+      /** Preset Kind */
+      preset_kind?: ("composer" | "finding") | null;
       source: components["schemas"]["AgentSource"];
       /**
        * Updated At
@@ -3037,6 +3147,11 @@ export interface components {
        * @default
        */
       instructions?: string;
+      /**
+       * Lazy Environment
+       * @default true
+       */
+      lazy_environment?: boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
       /**
        * Memory Mounts
@@ -3058,6 +3173,10 @@ export interface components {
       plugins?: components["schemas"]["PluginSelection"][];
       retries?: components["schemas"]["RetryConfig"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
+      /** Skill Sync */
+      skill_sync?:
+        | components["schemas"]["SharedSkillSync"]
+        | components["schemas"]["IsolatedSkillSync"];
       /**
        * Skills
        * @default []
@@ -3102,6 +3221,11 @@ export interface components {
        * @default
        */
       instructions?: string;
+      /**
+       * Lazy Environment
+       * @default true
+       */
+      lazy_environment?: boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
       /**
        * Memory Mounts
@@ -3123,6 +3247,10 @@ export interface components {
       plugins?: components["schemas"]["PluginSelection"][];
       retries?: components["schemas"]["RetryConfig"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
+      /** Skill Sync */
+      skill_sync?:
+        | components["schemas"]["SharedSkillSync"]
+        | components["schemas"]["IsolatedSkillSync"];
       /**
        * Skills
        * @default []
@@ -3214,6 +3342,8 @@ export interface components {
       connection_tools?: components["schemas"]["ConnectionSelection"][] | null;
       /** Instructions */
       instructions?: string | null;
+      /** Lazy Environment */
+      lazy_environment?: boolean | null;
       media_understanding?:
         components["schemas"]["MediaUnderstandingSelection"] | null;
       /** Model */
@@ -3229,6 +3359,13 @@ export interface components {
       plugins?: components["schemas"]["PluginSelection"][] | null;
       retries?: components["schemas"]["RetryOverride"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
+      /** Skill Sync */
+      skill_sync?:
+        | (
+            | components["schemas"]["SharedSkillSync"]
+            | components["schemas"]["IsolatedSkillSync"]
+          )
+        | null;
       /** Skills */
       skills?: components["schemas"]["SkillSelection"][] | null;
       /** Subagents */
@@ -3254,6 +3391,8 @@ export interface components {
       connection_tools?: components["schemas"]["ConnectionSelection"][] | null;
       /** Instructions */
       instructions?: string | null;
+      /** Lazy Environment */
+      lazy_environment?: boolean | null;
       media_understanding?:
         components["schemas"]["MediaUnderstandingSelection"] | null;
       /** Model */
@@ -3269,6 +3408,13 @@ export interface components {
       plugins?: components["schemas"]["PluginSelection"][] | null;
       retries?: components["schemas"]["RetryOverride"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
+      /** Skill Sync */
+      skill_sync?:
+        | (
+            | components["schemas"]["SharedSkillSync"]
+            | components["schemas"]["IsolatedSkillSync"]
+          )
+        | null;
       /** Skills */
       skills?: components["schemas"]["SkillSelection"][] | null;
       /** Subagents */
@@ -3406,6 +3552,62 @@ export interface components {
       agent_id?: string | null;
       config: components["schemas"]["AgentConfig-Input"];
     };
+    /** Analysis */
+    Analysis: {
+      /** Agent Id */
+      agent_id: string | null;
+      /** Cited Trace Count */
+      cited_trace_count: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Finding Count */
+      finding_count: number;
+      /** Id */
+      id: string;
+      /** Read Trace Ids */
+      read_trace_ids: string[];
+      /** Run Id */
+      run_id: string;
+      /** Run Status */
+      run_status: string;
+      /** Selected Traces */
+      selected_traces: components["schemas"]["SelectedTrace"][];
+      selection: components["schemas"]["AnalysisCreate"];
+      /** Selection Truncated */
+      selection_truncated: boolean;
+      /** Session Id */
+      session_id: string;
+      /** Thread Id */
+      thread_id: string;
+    };
+    /** AnalysisCreate */
+    AnalysisCreate: {
+      /** Agent Id */
+      agent_id?: string | null;
+      /**
+       * Max Traces
+       * @default 10
+       */
+      max_traces?: number;
+      /** Presets */
+      presets?: components["schemas"]["Preset"][];
+      /** Started After */
+      started_after?: string | null;
+      /** Started Before */
+      started_before?: string | null;
+      /** Trace Id */
+      trace_id?: string | null;
+    };
+    /** AnalysisPage */
+    AnalysisPage: {
+      /** Items */
+      items: components["schemas"]["Analysis"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
     /** ApiKey */
     ApiKey: {
       /**
@@ -3450,6 +3652,13 @@ export interface components {
        */
       action: "approve";
     };
+    /** @enum {string} */
+    Assessment:
+      | "unreviewed"
+      | "confirmed"
+      | "expected"
+      | "insufficient"
+      | "false_positive";
     /** Asset */
     Asset: {
       /** Content Type */
@@ -3762,14 +3971,18 @@ export interface components {
       provider: string;
     };
     /** @enum {string} */
+    Category:
+      | "unclear_request"
+      | "instruction_issue"
+      | "tool_design"
+      | "tool_usage"
+      | "tool_execution"
+      | "answer_quality"
+      | "context_gap"
+      | "workflow_issue"
+      | "boundary_violation";
+    /** @enum {string} */
     Certainty: "not_dispatched" | "known" | "unknown";
-    /** ChatGPTModel */
-    ChatGPTModel: {
-      /** Display Name */
-      display_name: string;
-      /** Slug */
-      slug: string;
-    };
     /**
      * ChildEnvironmentPolicy
      * @description What a child run mounts: no environment, the parent's, or a new one from `template_id`.
@@ -4022,6 +4235,28 @@ export interface components {
         [key: string]: components["schemas"]["JsonValue"];
       };
     };
+    /**
+     * ContentRef
+     * @description An immutable Host-owned value, loaded through that Host's authorized content API.
+     */
+    ContentRef: {
+      /** Id */
+      id: string;
+      /**
+       * Media Type
+       * @enum {string}
+       */
+      media_type: "text/plain" | "application/json";
+      /** Preview */
+      preview: string;
+      /** Size Bytes */
+      size_bytes: number;
+      /**
+       * Truncated
+       * @default false
+       */
+      truncated?: boolean;
+    };
     /** CreatedSubscription */
     CreatedSubscription: {
       /**
@@ -4121,6 +4356,10 @@ export interface components {
        * @default false
        */
       full_content?: boolean;
+      /** Memory Sources */
+      memory_sources?: {
+        [key: string]: components["schemas"]["MemorySource"][];
+      };
       /** Next Ordinal */
       next_ordinal: number;
       observer?: components["schemas"]["ObserverContinuation"];
@@ -4336,6 +4575,15 @@ export interface components {
     ErrorEnvelope: {
       error: components["schemas"]["ErrorBody"];
     };
+    /** Evidence */
+    Evidence: {
+      /** Run Id */
+      run_id: string;
+      /** Span Ids */
+      span_ids?: string[];
+      /** Trace Id */
+      trace_id: string;
+    };
     /**
      * ExternalTargetCreate
      * @description An envd daemon someone runs, registered by its endpoint and the token it accepts.
@@ -4370,6 +4618,114 @@ export interface components {
       code: string;
       /** Message */
       message: string;
+    };
+    /** FileSource */
+    FileSource: {
+      /** Bytes */
+      bytes: number;
+      /** Path */
+      path: string;
+      /** Sha256 */
+      sha256: string;
+      /**
+       * Truncated
+       * @default false
+       */
+      truncated?: boolean;
+    };
+    /** Finding */
+    Finding: {
+      /** Agent Id */
+      agent_id: string;
+      /** Agent Revision Id */
+      agent_revision_id: string;
+      /** Analysis Id */
+      analysis_id: string | null;
+      assessment: components["schemas"]["Assessment"];
+      /** Assessment Note */
+      assessment_note: string;
+      /** @description One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories. */
+      category: components["schemas"]["Category"];
+      /** Closed */
+      closed: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Created By Id */
+      created_by_id: string;
+      /** Evidence */
+      evidence: components["schemas"]["Evidence"][];
+      /** Explanation */
+      explanation: string;
+      /** Id */
+      id: string;
+      /**
+       * Limitations
+       * @default
+       */
+      limitations?: string;
+      /** @default warning */
+      severity?: components["schemas"]["Severity"];
+      /** Source Key */
+      source_key: string;
+      /** Source Run Id */
+      source_run_id: string | null;
+      /** Suggestion */
+      suggestion: string;
+      /** Title */
+      title: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Version */
+      version: number;
+      /** Workspace Id */
+      workspace_id: string;
+    };
+    /** FindingCreate */
+    FindingCreate: {
+      /** Agent Id */
+      agent_id: string;
+      /** Agent Revision Id */
+      agent_revision_id: string;
+      /** @description One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories. */
+      category: components["schemas"]["Category"];
+      /** Evidence */
+      evidence: components["schemas"]["Evidence"][];
+      /** Explanation */
+      explanation: string;
+      /**
+       * Limitations
+       * @default
+       */
+      limitations?: string;
+      /** @default warning */
+      severity?: components["schemas"]["Severity"];
+      /** Source Key */
+      source_key: string;
+      /** Suggestion */
+      suggestion: string;
+      /** Title */
+      title: string;
+    };
+    /** FindingPage */
+    FindingPage: {
+      /** Items */
+      items: components["schemas"]["Finding"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** FindingUpdate */
+    FindingUpdate: {
+      assessment?: components["schemas"]["Assessment"] | null;
+      /** Assessment Note */
+      assessment_note?: string | null;
+      /** Closed */
+      closed?: boolean | null;
     };
     /** Fork */
     Fork: {
@@ -4686,6 +5042,22 @@ export interface components {
       /** Invitation Url */
       invitation_url: string | null;
     };
+    /**
+     * IsolatedSkillSync
+     * @description Reuse immutable package directories, with a soft count budget.
+     */
+    IsolatedSkillSync: {
+      /**
+       * Cache Count
+       * @default 128
+       */
+      cache_count?: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "isolated";
+    };
     /** IssuedKey */
     IssuedKey: {
       key: components["schemas"]["ApiKey"];
@@ -4697,6 +5069,10 @@ export interface components {
       /** Content */
       content: {
         [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Content Refs */
+      content_refs?: {
+        [key: string]: components["schemas"]["ContentRef"];
       };
       /** Ended At */
       ended_at?: string | null;
@@ -5124,6 +5500,13 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    /** MemoryRecordProvenance */
+    MemoryRecordProvenance: {
+      /** Content Matches */
+      content_matches: boolean;
+      created: components["schemas"]["MemoryRecordSource"] | null;
+      last_write: components["schemas"]["MemoryRecordSource"];
+    };
     /** MemoryRecordSearch */
     MemoryRecordSearch: {
       /**
@@ -5133,6 +5516,27 @@ export interface components {
       limit?: number;
       /** Query */
       query: string;
+    };
+    /**
+     * MemoryRecordSource
+     * @description A platform-confirmed write, not an asserted source message or complete provider history.
+     */
+    MemoryRecordSource: {
+      /** Attempt Id */
+      attempt_id: string | null;
+      /**
+       * Confirmed At
+       * Format: date-time
+       */
+      confirmed_at: string;
+      /** Principal Id */
+      principal_id: string | null;
+      /** Principal Name */
+      principal_name?: string | null;
+      /** Run Id */
+      run_id: string | null;
+      /** Tool Call Id */
+      tool_call_id: string | null;
     };
     /** MemoryRecordText */
     MemoryRecordText: {
@@ -5146,6 +5550,7 @@ export interface components {
     MemoryRecordView: {
       /** Id */
       id: string;
+      provenance?: components["schemas"]["MemoryRecordProvenance"] | null;
       /** Score */
       score?: number | null;
       /** Text */
@@ -5220,6 +5625,51 @@ export interface components {
       next_cursor: string | null;
     };
     /**
+     * MemorySource
+     * @description One automatic delivery in this Run; content remains in the memory or execution archive.
+     */
+    MemorySource: {
+      /** Cursor */
+      cursor?: string | null;
+      /**
+       * Files
+       * @default []
+       */
+      files?: components["schemas"]["FileSource"][];
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "record" | "file";
+      /** Memory */
+      memory: string;
+      /** Memory Id */
+      memory_id?: string | null;
+      /**
+       * Records
+       * @default []
+       */
+      records?: components["schemas"]["RecordSource"][];
+      /**
+       * Sources Truncated
+       * @default false
+       */
+      sources_truncated?: boolean;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status:
+        | "recalled"
+        | "failed"
+        | "timeout"
+        | "full"
+        | "changes"
+        | "unchanged"
+        | "omitted"
+        | "unavailable";
+    };
+    /**
      * MemoryUpdate
      * @description Fields left out stay unchanged; `description: null` clears it and `guide: null` inherits the default.
      */
@@ -5253,6 +5703,24 @@ export interface components {
       kind?: "message";
       options?: components["schemas"]["RunOptions-Input"];
       payload: components["schemas"]["MessagePayload"];
+    };
+    /** MessageAuthor */
+    MessageAuthor: {
+      /** Entry Id */
+      entry_id: string;
+      principal: components["schemas"]["PrincipalSummary"] | null;
+      /** Principal Id */
+      principal_id: string;
+      /**
+       * Submitted At
+       * Format: date-time
+       */
+      submitted_at: string;
+    };
+    /** MessageAuthors */
+    MessageAuthors: {
+      /** Items */
+      items: components["schemas"]["MessageAuthor"][];
     };
     /** @description Pydantic AI ModelMessage JSON objects, validated by the Service. Imports completed user text, model text and closed tool-call/JSON-result exchanges; no instructions, media or suspended execution. At most 256 messages and 256 KiB of normalized JSON. */
     MessageHistory: {
@@ -5771,6 +6239,8 @@ export interface components {
       /** Plugin Key */
       plugin_key: string;
     };
+    /** @enum {string} */
+    Preset: "execution" | "recovery" | "answer";
     /**
      * PriceComponent
      * @description One genai-prices usage dimension and its USD unit price.
@@ -5964,6 +6434,18 @@ export interface components {
       /** Type */
       type: string;
     };
+    /**
+     * ProviderModel
+     * @description An upstream choice; wire names retain the original account-discovery contract.
+     */
+    ProviderModel: {
+      characteristics?:
+        components["schemas"]["HarnessModelCharacteristics-Output"] | null;
+      /** Display Name */
+      display_name: string;
+      /** Slug */
+      slug: string;
+    };
     /** ProviderPage */
     ProviderPage: {
       /** Items */
@@ -6028,6 +6510,11 @@ export interface components {
       setup_url: string | null;
       /** Supports Destroy */
       supports_destroy?: boolean | null;
+      /**
+       * Supports Model Discovery
+       * @default false
+       */
+      supports_model_discovery?: boolean;
       /** Supports Stop */
       supports_stop?: boolean | null;
       /** Supports Test */
@@ -6060,6 +6547,13 @@ export interface components {
       };
       /** Name */
       name?: string | null;
+    };
+    /** RecordSource */
+    RecordSource: {
+      /** Id */
+      id: string;
+      /** Sha256 */
+      sha256: string;
     };
     /**
      * Resume
@@ -6192,6 +6686,25 @@ export interface components {
       extensions?: {
         [key: string]: components["schemas"]["JsonValue"];
       };
+    };
+    /**
+     * RunContent
+     * @description One immutable saved display value, possibly truncated, read under the owning run's authority.
+     */
+    RunContent: {
+      /** Id */
+      id: string;
+      /**
+       * Media Type
+       * @enum {string}
+       */
+      media_type: "text/plain" | "application/json";
+      /**
+       * Truncated
+       * @default false
+       */
+      truncated?: boolean;
+      value: components["schemas"]["JsonValue"];
     };
     /**
      * RunItems
@@ -6341,6 +6854,13 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** SelectedTrace */
+    SelectedTrace: {
+      /** Run Id */
+      run_id: string;
+      /** Trace Id */
+      trace_id: string;
+    };
     /** ServiceAccount */
     ServiceAccount: {
       /**
@@ -6488,6 +7008,29 @@ export interface components {
       version: number;
       /** Workspace Id */
       workspace_id: string;
+    };
+    /** @enum {string} */
+    Severity: "critical" | "warning" | "suggestion";
+    /**
+     * SharedSkillSync
+     * @description Publish mutable conventional names; the last completed publication wins.
+     */
+    SharedSkillSync: {
+      /**
+       * Cleanup
+       * @default false
+       */
+      cleanup?: boolean;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "shared";
+      /**
+       * Overwrite
+       * @default true
+       */
+      overwrite?: boolean;
     };
     /** Skill */
     Skill: {
@@ -7114,6 +7657,11 @@ export interface components {
       default_permission: components["schemas"]["ToolPermissionMode"];
       /** Deployment Supported */
       deployment_supported: boolean;
+      /**
+       * Description
+       * @default
+       */
+      description?: string;
       /** Display Name */
       display_name: string;
       /** Execution Id */
@@ -7213,6 +7761,11 @@ export interface components {
       };
       /** Default Enabled */
       default_enabled: boolean;
+      /**
+       * Description
+       * @default
+       */
+      description?: string;
       /** Display Name */
       display_name: string;
       key: components["schemas"]["ToolsetKey"];
@@ -7221,7 +7774,14 @@ export interface components {
     };
     /** @enum {string} */
     ToolsetKey:
-      "files" | "shell" | "web" | "memory" | "assets" | "configuration";
+      | "files"
+      | "shell"
+      | "web"
+      | "memory"
+      | "assets"
+      | "configuration"
+      | "traces"
+      | "findings";
     /** ToolsetSelection */
     ToolsetSelection: {
       /** Config */
@@ -7319,8 +7879,8 @@ export interface components {
      * UsageLimits
      * @description Limits on model usage.
      *
-     *     The request count is tracked by pydantic_ai, and the request limit is checked before each request to the model.
-     *     Token counts are provided in responses from the model, and the token limits are checked after each response.
+     *     The request count is tracked by Pydantic AI, and the request limit is checked at the start of each step of the
+     *     agent loop. Token counts are provided in responses from the model, and the token limits are checked after each response.
      *
      *     Each of the limits can be set to `None` to disable that limit.
      */
@@ -7352,8 +7912,8 @@ export interface components {
      * UsageLimits
      * @description Limits on model usage.
      *
-     *     The request count is tracked by pydantic_ai, and the request limit is checked before each request to the model.
-     *     Token counts are provided in responses from the model, and the token limits are checked after each response.
+     *     The request count is tracked by Pydantic AI, and the request limit is checked at the start of each step of the
+     *     agent loop. Token counts are provided in responses from the model, and the token limits are checked after each response.
      *
      *     Each of the limits can be set to `None` to disable that limit.
      */
@@ -7638,6 +8198,7 @@ export interface operations {
         q?: string | null;
         archived?: boolean | null;
         source?: components["schemas"]["AgentSource"] | null;
+        preset_kind?: ("composer" | "finding") | null;
         skill_id?: string | null;
         skill_revision_id?: string | null;
         limit?: number;
@@ -9379,6 +9940,211 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  prepare_finding_agent_api_v1_finding_agent_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Agent"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_analyses_api_v1_finding_analyses_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  start_analysis_api_v1_finding_analyses_post: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Analysis"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_findings_api_v1_findings_get: {
+    parameters: {
+      query?: {
+        agent_id?: string | null;
+        category?: components["schemas"]["Category"] | null;
+        severity?: components["schemas"]["Severity"] | null;
+        assessment?: components["schemas"]["Assessment"] | null;
+        closed?: boolean | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FindingPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_finding_api_v1_findings_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FindingCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Finding"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_finding_api_v1_findings__finding_id__get: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        finding_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Finding"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_finding_api_v1_findings__finding_id__patch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        finding_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FindingUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Finding"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   accept_api_v1_invitations__invitation_id__accept_post: {
     parameters: {
       query?: never;
@@ -10510,7 +11276,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ChatGPTModel"][];
+          "application/json": components["schemas"]["ProviderModel"][];
         };
       };
       400: components["responses"]["Error"];
@@ -11297,6 +12063,34 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  run_content_api_v1_runs__run_id__contents__content_id__get: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+        content_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RunContent"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   fork_run_api_v1_runs__run_id__fork_post: {
     parameters: {
       query?: never;
@@ -11587,6 +12381,35 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["SessionView"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_message_authors_api_v1_sessions__session_id__message_authors_get: {
+    parameters: {
+      query: {
+        entry_id: string[];
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        session_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MessageAuthors"];
         };
       };
       400: components["responses"]["Error"];
