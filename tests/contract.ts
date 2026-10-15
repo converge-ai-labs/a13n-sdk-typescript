@@ -2,6 +2,9 @@ import {
   createClient,
   type Client,
   type components,
+  sessionStream,
+  type SessionStreamFrame,
+  type SessionStreamSchemas,
   type ResourceResult,
   textPayload,
   text,
@@ -49,12 +52,12 @@ const wrongLazy: AgentOverride = { lazy_environment: "true" };
 void wrongIsolated;
 void wrongShared;
 void wrongLazy;
-const minimalSource: Schema["MemorySource"] = {
+const minimalSource: SessionStreamSchemas["MemorySource"] = {
   kind: "record",
   memory: "notes",
   status: "timeout",
 };
-const nullableSource: Schema["MemorySource"] = {
+const nullableSource: SessionStreamSchemas["MemorySource"] = {
   kind: "file",
   memory: "notes",
   status: "unchanged",
@@ -126,7 +129,7 @@ async function catchupTypes(client: Client) {
     new AbortController().signal,
   )) {
     if (event.frame.type === "delta") {
-      const sources: Schema["MemorySource"][] | null | undefined =
+      const sources: SessionStreamSchemas["MemorySource"][] | null | undefined =
         event.frame.data.item?.memory_sources;
       void sources;
     }
@@ -342,9 +345,9 @@ export async function importedHistoryAndAtomicResumeTypes() {
     idempotencyKey: "import-once",
     messageHistory: history,
   });
-  const readback: Schema["MessageHistory"] = (await started.thread!.get()).data
-    .message_history;
-  void readback;
+  const readback = (await started.thread!.get()).data;
+  // @ts-expect-error Imported history remains create input, not Thread readback.
+  void readback.message_history;
   await workspace.threads.create(
     { agent_id: "agent", message_history: history, payload: attachment },
     { idempotencyKey: "native-import" },
@@ -410,6 +413,7 @@ export async function semanticTypes() {
   await workspace.memories.ref("memory").revisions.ref(1).restore(match);
   const run = workspace.runs.ref("run");
   const items: ResourceResult<Schema["RunItems"]> = await run.items.get();
+  // @ts-expect-error Items no longer exports stream progress.
   void items.data.position;
   // @ts-expect-error RunItems is a snapshot, not a list or invented paginator.
   run.items.list();
@@ -465,15 +469,15 @@ export async function streamCoverageTypes() {
   // @ts-expect-error Native model settings must be keyed settings, not a scalar.
   config.settings = "high";
   const display = (await client.runs.ref("run_one").items()).data;
-  const hint: string | null | undefined = display.resume_after;
-  void hint;
-  if (display.baseline && display.position !== null) {
-    const raw = await client.api.threads.ref("thread_one").stream.get({
-      query: { run: "run_one", position: display.position },
-      ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
-    });
-    await raw.close();
-  }
+  // @ts-expect-error Items reads cannot seed a Thread stream cursor.
+  void display.resume_after;
+  // @ts-expect-error Items no longer supplies a baseline marker.
+  void display.baseline;
+  const raw = await client.api.threads.ref("thread_one").stream.get({
+    query: { run: "run_one", position: "1-5" },
+    lastEventId: "1234-5",
+  });
+  await raw.close();
   for await (const event of threadStream(
     (options) => client.api.threads.ref("thread_one").stream.get(options),
     new AbortController().signal,
@@ -587,7 +591,7 @@ export async function pagedDisplayTypes() {
   void last;
   // @ts-expect-error Every sealed Run continues history; no successful head remains.
   void thread.head_run_id;
-  const state: Schema["DisplayContinuation"] = {
+  const state: SessionStreamSchemas["DisplayContinuation"] = {
     run_id: "run_one",
     next_ordinal: 20,
     position: { attempt: 2, sequence: 19 },
@@ -622,12 +626,11 @@ export async function pagedDisplayTypes() {
       },
     },
   };
-  const continuation: Schema["DisplayContinuation"] | null | undefined =
-    display.continuation;
-  void continuation;
   void state;
-  const position: string | null | undefined = display.run.display_position;
-  void position;
+  // @ts-expect-error Continuation belongs to Session items frames.
+  void display.continuation;
+  // @ts-expect-error Run readback no longer carries display progress.
+  void display.run.display_position;
   // @ts-expect-error A continuation's semantic cut requires a native StreamPosition.
   state.position = "2-19";
   // @ts-expect-error Item ordinal is required even on a historical page.
@@ -644,11 +647,11 @@ export async function pagedDisplayTypes() {
 }
 
 export function requiredPagedFields(
-  display: Omit<Schema["RunItems"], "baseline">,
+  display: Omit<Schema["RunItems"], "complete">,
 ) {
-  // @ts-expect-error Baseline is required, including on sealed historical windows.
-  const missingBaseline: Schema["RunItems"] = display;
-  void missingBaseline;
+  // @ts-expect-error Sealing remains explicit even on historical windows.
+  const missingComplete: Schema["RunItems"] = display;
+  void missingComplete;
   const ref: import("../src/index.js").ThreadStreamFrame = {
     type: "delta",
     data: {
@@ -766,4 +769,52 @@ export async function publicWorkflowTypes() {
   await agent.start("No", { agent_revision_id: null });
   // @ts-expect-error Grouped options cannot be flattened into an override alias.
   await agent.start("No", { overrides });
+}
+
+export async function sessionFrameTypes() {
+  const native = await client.api.sessions.ref("session_one").stream.get();
+  for await (const frame of sessionStream(native)) {
+    if (frame.type === "thread") {
+      const threadId: string = frame.data.thread.id;
+      void threadId;
+      void frame.data.current_run;
+      void frame.data.entries;
+      // @ts-expect-error Session thread data is not a delta.
+      void frame.data.event;
+    } else if (frame.type === "items") {
+      const continuation: SessionStreamSchemas["DisplayContinuation"] | null =
+        frame.data.continuation;
+      void continuation;
+      void frame.data.first;
+      void frame.data.complete;
+      // @ts-expect-error Session continuation is not a Redis cursor.
+      const cursor: string = frame.data.continuation;
+      void cursor;
+    } else if (frame.type === "delta") {
+      void frame.data.event;
+      void frame.data.thread_id;
+      void frame.data.item;
+      // @ts-expect-error Session deltas have no SSE cursor field.
+      void frame.cursor;
+    } else {
+      const type: "gap" = frame.type;
+      void type;
+      void frame.data.thread_id;
+      // @ts-expect-error Session gap is distinct from Thread gap.
+      void frame.data.position;
+    }
+  }
+  const gap: SessionStreamFrame = {
+    type: "gap",
+    data: { thread_id: "thread", run_id: "run" },
+  };
+  void gap;
+  await client.api.sessions.ref("session_one").stream.get({
+    // @ts-expect-error Session has no Last-Event-ID resume semantics.
+    lastEventId: "1-0",
+  });
+  await client.api.sessions.ref("session_one").stream.get({
+    // @ts-expect-error Session has no run/position query.
+    query: { run: "run", position: "1-0" },
+  });
 }

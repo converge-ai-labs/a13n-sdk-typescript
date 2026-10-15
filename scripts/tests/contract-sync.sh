@@ -28,7 +28,7 @@ sync() { bash "$sdk/scripts/sync-contract.sh" "$upstream" "$1"; }
 mkdir -p "$upstream/proto/a13n-service/fixtures" "$upstream/spec/a13n-service" "$sdk/contract/semantics"
 printf '{"openapi":"3.1.0","paths":{}}\n' > "$upstream/proto/a13n-service/openapi.json"
 printf '{"examples":[]}\n' > "$upstream/proto/a13n-service/fixtures/wire.json"
-for name in notification-client run-stream-event thread-stream; do
+for name in notification-client run-stream-event thread-stream session-stream; do
   printf '{"type":"object"}\n' > "$upstream/proto/a13n-service/$name.schema.json"
 done
 printf '# API conventions\n' > "$upstream/spec/api-conventions.md"
@@ -62,8 +62,7 @@ reject sync main
 reject sync "${initial:0:12}"
 reject sync '$(touch unsafe)'
 reject sync 0000000000000000000000000000000000000000
-sync "$initial"
-diff -r "$sdk/contract" "$work/initial"
+# Same-SHA imports also refresh a changed input selection; exercised below.
 
 rm "$upstream/spec/a13n-service/07-facts-and-delivery.md"
 missing=$(commit_source 'Incomplete authority')
@@ -74,7 +73,7 @@ complete=$(commit_source 'Complete authority')
 # The working tree is deliberately dirty: only committed bytes may be imported.
 printf 'uncommitted and invalid JSON' > "$upstream/proto/a13n-service/openapi.json"
 sync "$complete"
-[[ $(jq '.files | length' "$sdk/contract/source.json") == 6 ]]
+[[ $(jq '.files | length' "$sdk/contract/source.json") == 7 ]]
 for retired in notification-client.schema.json run-stream-event.schema.json fixtures/wire.json \
   semantics/native-streaming-and-notifications.md semantics/queued-submissions.md; do
   [[ ! -e "$sdk/contract/$retired" ]]
@@ -82,11 +81,17 @@ done
 for owned in README.md fixtures/local.txt semantics/local.md; do
   cmp "$sdk/contract/$owned" "$work/initial/$owned"
 done
-[[ -f "$sdk/contract/thread-stream.schema.json" ]]
+[[ -f "$sdk/contract/thread-stream.schema.json" && -f "$sdk/contract/session-stream.schema.json" ]]
 for name in runs facts-and-delivery api; do [[ -f "$sdk/contract/semantics/$name.md" ]]; done
 cmp "$sdk/contract/openapi.json" "$work/initial/openapi.json"
 [[ $(jq -r .commit "$sdk/contract/source.json") == "$complete" ]]
 cp -R "$sdk/contract" "$work/complete"
+# An SDK input-set extension must import even at the same source SHA.
+jq 'del(.files["session-stream.schema.json"])' "$sdk/contract/source.json" > "$work/six.json"
+cp "$work/six.json" "$sdk/contract/source.json"
+rm "$sdk/contract/session-stream.schema.json"
+sync "$complete"
+diff -r "$sdk/contract" "$work/complete"
 reject sync "$initial"
 diff -r "$sdk/contract" "$work/complete"
 git -C "$upstream" restore proto/a13n-service/openapi.json
@@ -101,6 +106,14 @@ printf 'Retired semantics changed\n' > "$upstream/spec/a13n-service/21-native-st
 unchanged=$(commit_source 'Unconsumed source changes')
 sync "$unchanged"
 diff -r "$sdk/contract" "$work/complete"
+# The same extension imports at a newer SHA with byte-identical source inputs.
+cp "$work/six.json" "$sdk/contract/source.json"
+rm "$sdk/contract/session-stream.schema.json"
+sync "$unchanged"
+[[ $(jq -r .commit "$sdk/contract/source.json") == "$unchanged" ]]
+[[ $(jq '.files | length' "$sdk/contract/source.json") == 7 ]]
+cmp "$sdk/contract/session-stream.schema.json" "$upstream/proto/a13n-service/session-stream.schema.json"
+cp "$work/complete/source.json" "$sdk/contract/source.json"
 
 printf '# API conventions changed without changing HTTP schemas\n' > "$upstream/spec/api-conventions.md"
 semantic=$(commit_source 'Semantic-only update')
@@ -128,7 +141,7 @@ diff -r "$sdk/contract" "$work/current"
 # PR operations use only local bare Git and fake gh/make; never a real API/token.
 # Language-specific generated ownership; the remainder of this suite is shared.
 export TEST_GENERATED=src/schema.ts TEST_ADDED=openapi.json TEST_RESOURCES=src/resources/generated.ts TEST_SCOPE=src/workspace-scope.ts TEST_REMOVED=
-export TEST_NEEDS_INSTALL=true
+export TEST_NEEDS_INSTALL=true TEST_SESSION=src/session-stream-schema.ts TEST_VALIDATION=src/session-stream-validation.ts
 mkdir -p "$sdk/$(dirname "$TEST_GENERATED")" "$sdk/$(dirname "$TEST_ADDED")"
 cp "$sdk/contract/openapi.json" "$sdk/$TEST_GENERATED"
 mkdir -p "$sdk/$(dirname "$TEST_RESOURCES")"
@@ -190,6 +203,8 @@ if [[ ${TEST_GENERATE_FAIL:-false} != false ]]; then exit 1; fi
 cp contract/openapi.json "$TEST_GENERATED"
 cp contract/openapi.json "$TEST_RESOURCES"
 cp contract/openapi.json "$TEST_SCOPE"
+cp contract/session-stream.schema.json "$TEST_SESSION"
+cp contract/session-stream.schema.json "$TEST_VALIDATION"
 if [[ $(jq '.paths | length' contract/openapi.json) != 0 ]]; then
   cp contract/openapi.json "$TEST_ADDED"
   if [[ -n "$TEST_REMOVED" ]]; then rm -f "$TEST_REMOVED"; fi
@@ -287,9 +302,34 @@ propose "$runtime"
 # A newly generated scope table must be staged by the rolling proposal.
 git -C "$sdk" show "HEAD:$TEST_SCOPE" > "$work/actual"
 cmp "$work/actual" "$work/initial/openapi.json"
+git -C "$sdk" show "HEAD:$TEST_SESSION" > "$work/actual"
+cmp "$work/actual" "$work/complete/session-stream.schema.json"
+git -C "$sdk" show "HEAD:$TEST_VALIDATION" > "$work/actual"
+cmp "$work/actual" "$work/complete/session-stream.schema.json"
 [[ $(git -C "$sdk" show HEAD:contract/source.json | jq -r .commit) == "$runtime" ]]
 [[ $(git -C "$sdk" show HEAD:handwritten.txt) == handwritten ]]
 ! git -C "$sdk" cat-file -e HEAD:unexpected.txt 2>/dev/null
+first_head=$(head)
+
+# A pending six-input proposal at the same SHA consumes, generates and stages
+# the new schema even when every upstream blob is byte-identical.
+fresh
+git -C "$sdk" switch --detach -q "$first_head"
+jq 'del(.files["session-stream.schema.json"])' "$sdk/contract/source.json" > "$work/six-pending.json"
+cp "$work/six-pending.json" "$sdk/contract/source.json"
+git -C "$sdk" rm -q -- contract/session-stream.schema.json "$TEST_SESSION" "$TEST_VALIDATION"
+git -C "$sdk" add contract/source.json
+git -C "$sdk" commit -qm 'Six-input pending proposal'
+git -C "$sdk" push -q origin "HEAD:refs/heads/$branch"
+selection_head=$(head)
+fresh
+propose "$runtime"
+[[ $(head) != "$selection_head" ]]
+[[ $(git -C "$sdk" show HEAD:contract/source.json | jq '.files | length') == 7 ]]
+git -C "$sdk" show "HEAD:$TEST_SESSION" > "$work/actual"
+cmp "$work/actual" "$work/complete/session-stream.schema.json"
+git -C "$sdk" show "HEAD:$TEST_VALIDATION" > "$work/actual"
+cmp "$work/actual" "$work/complete/session-stream.schema.json"
 first_head=$(head)
 
 # Reverting pending content to the accepted bytes is still a real update.
@@ -349,12 +389,6 @@ printf 'reviewer adaptation\n' > "$sdk/$TEST_GENERATED"
 printf 'reviewer handwritten adaptation\n' > "$sdk/handwritten.txt"
 printf 'updated generator dependency\n' > "$sdk/generator-dependency.txt"
 printf '\nReviewer snapshot note\n' >> "$sdk/contract/semantics/api-conventions.md"
-# Simulate a pending proposal still carrying an old manifest-owned input.
-# A newer update must stage its deletion, not just remove it locally.
-cp "$work/initial/notification-client.schema.json" "$sdk/contract/notification-client.schema.json"
-jq '.files["notification-client.schema.json"] = {source_path:"proto/a13n-service/notification-client.schema.json"}' \
-  "$sdk/contract/source.json" > "$work/old-source.json"
-cp "$work/old-source.json" "$sdk/contract/source.json"
 git -C "$sdk" add -- "$TEST_GENERATED" handwritten.txt generator-dependency.txt contract
 git -C "$sdk" commit -qm 'Reviewer adaptation'
 git -C "$sdk" push -q origin "HEAD:refs/heads/$branch"

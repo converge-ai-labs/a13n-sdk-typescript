@@ -70,9 +70,9 @@ try {
   );
   assert.equal(replay.response.status, 200);
   assert.equal(replay.data.entry.id, interaction.entry.id);
-  assert.deepEqual(
-    (await interaction.thread.get()).data.message_history,
-    message_history,
+  assert.equal(
+    "message_history" in (await interaction.thread.get()).data,
+    false,
   );
   const events = [];
   for await (const event of interaction) events.push(event.frame.type);
@@ -84,7 +84,7 @@ try {
     configuration,
   );
   const recent = (await outcome.run.items({ query: { limit: 1 } })).data;
-  assert.equal(recent.baseline, true);
+  assert.deepEqual(Object.keys(recent).sort(), ["complete", "items", "run"]);
   assert.equal(recent.complete, true);
   assert.ok(recent.items.length >= 1);
   assert.ok(
@@ -97,17 +97,12 @@ try {
   const historical = (
     await outcome.run.items({ query: { after: 0, limit: 1 } })
   ).data;
-  assert.equal(historical.baseline, false);
-  assert.equal(historical.continuation, null);
-  assert.equal(historical.position, null);
-  assert.equal(historical.resume_after, null);
   assert.equal(historical.complete, true);
   assert.equal(historical.items.length, 1);
   assert.equal(historical.items[0].ordinal, 1);
   const older = (
     await outcome.run.items({ query: { before: firstOrdinal, limit: 1 } })
   ).data;
-  assert.equal(older.baseline, false);
   assert.ok(older.items.every((item) => item.ordinal < firstOrdinal));
   for (const query of [
     { before: 0 },
@@ -263,15 +258,16 @@ try {
   assert.equal((await tool.thread.get()).data.current_run_id, null);
   const pendingDisplay = (await pending.run.items({ query: { limit: 1 } }))
     .data;
-  assert.equal(pendingDisplay.baseline, true);
   assert.equal(pendingDisplay.complete, true);
   const pendingHistory = (
     await pending.run.items({ query: { after: 0, limit: 1 } })
   ).data;
-  assert.equal(pendingHistory.baseline, false);
-  assert.equal(pendingHistory.position, null);
-  assert.equal(pendingHistory.continuation, null);
-  assert.equal(pendingHistory.resume_after, null);
+  assert.equal(pendingHistory.complete, true);
+  assert.deepEqual(Object.keys(pendingHistory).sort(), [
+    "complete",
+    "items",
+    "run",
+  ]);
   const calls = pending.pending?.calls ?? [];
   assert.equal(pending.pending?.approvals.length, 0);
   assert.equal(calls.length, 1);

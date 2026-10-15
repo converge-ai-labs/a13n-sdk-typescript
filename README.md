@@ -105,7 +105,7 @@ try {
 
 Only trusted root assistant string content is projected; child/hidden events are excluded. Gaps, missing starts, unsupported root custom fragments and other discontinuities interrupt preview explicitly rather than silently constructing a partial answer. Preview interruption is sticky, but the final result remains available and deliberate sequential raw access is allowed while open. No concurrent raw/text or multiple preview consumers are supported. Preview break leaves a local lifetime to close in `finally`; raw iterator break closes observation. `await close()` joins cleanup even if an iterator is paused. Local close never interrupts remote execution.
 
-For native events use `for await (const event of interaction)`. For full application-owned presentation, generated operations preserve raw AG-UI, HTTP status/ETags, binary ownership and display Items. See [streaming and readback](docs/02-streaming-and-readback.md).
+For native events use `for await (const event of interaction)`. Advanced Session observation uses `sessionStream(await client.api.sessions.ref(sessionId).stream.get())`, a one-connection typed decoder with caller-owned reconnect. Each new connection starts from a fresh snapshot; Session continuation is display state, never a Thread cursor. Items reads carry `{run,items,complete}` and no stream-progress fields. For full application-owned presentation, generated operations preserve raw AG-UI, HTTP status/ETags, binary ownership and display Items. See [streaming and readback](docs/02-streaming-and-readback.md).
 
 ## Public input and options
 

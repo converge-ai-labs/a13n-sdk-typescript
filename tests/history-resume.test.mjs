@@ -47,7 +47,7 @@ const payload = {
     { type: "json", value: { source: "migration" } },
   ],
 };
-const thread = { id: "th_imported", message_history: history };
+const thread = { id: "th_imported" };
 const entry = { id: "ent_imported", thread_id: thread.id, status: "pending" };
 const submitted = { thread, entry, run: null };
 const run = (id, status) => ({
@@ -96,30 +96,17 @@ test("native imported history passes through both resource and Agent start, neve
       { agent_id: "agt_import", message_history: history, payload },
       { idempotencyKey: "raw-history" },
     );
-    assert.equal(
-      JSON.stringify(raw.data.thread.message_history),
-      JSON.stringify(history),
-      "native readback retains nested argument/result insertion order",
-    );
+    assert.equal("message_history" in raw.data.thread, false);
     const interaction = await client.agents.ref("agt_import").start(payload, {
       idempotencyKey: "semantic-history",
       messageHistory: history,
     });
     assert.equal((await interaction.result()).run.id, "run_imported");
-    const readback = (await interaction.thread.get()).data.message_history;
-    assert.equal(JSON.stringify(readback), JSON.stringify(history));
-    assert.deepEqual(Object.keys(readback[2].parts[0].args), [
-      "zebra",
-      "alpha",
-    ]);
-    assert.deepEqual(Object.keys(readback[2].parts[0].args.zebra), [
-      "second",
-      "first",
-    ]);
-    assert.deepEqual(Object.keys(readback[3].parts[0].content.alpha), [
-      "later",
-      "earlier",
-    ]);
+    assert.equal(
+      "message_history" in (await interaction.thread.get()).data,
+      false,
+    );
+    // Ordered nested input JSON is checked on the actual request bytes below.
     await client.agents
       .ref("agt_import")
       .send(thread.id, "Only the new message", {

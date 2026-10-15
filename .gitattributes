@@ -1,3 +1,5 @@
 /src/schema.ts linguist-generated=true
 /contract/**/*.json linguist-generated=true
 /openapi.json linguist-generated=true
+/src/session-stream-schema.ts linguist-generated=true
+/src/session-stream-validation.ts linguist-generated=true

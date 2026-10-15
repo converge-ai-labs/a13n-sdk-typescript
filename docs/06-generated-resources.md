@@ -53,6 +53,14 @@ JSON calls return `{data,response}` for status, headers and request IDs. Binary 
 
 Generated request bodies retain wire names and omission-versus-null behavior. For native `options.configuration`, see the [Run configuration snapshot](01-setup-and-conversations.md#select-a-native-run-configuration-snapshot); it is separate from the [instructions override](01-setup-and-conversations.md#limit-a-configuration-change-to-one-run) and from editing a stored Agent revision. The SDK does not infer provider policy from submitted options. The [pinned OpenAPI](../openapi.json) and [SDK specification](../spec/README.md) describe the remaining specialized routes. The removed Service secret resource is not available, although provider credentials and authentication still exist.
 
+## Keep native provider policy on Service
+
+Model and Agent `settings`/`model_settings` retain authored JSON. Omitted cache settings stay omitted on the wire so Service can apply its defaults; explicit `cache:false` and provider-specific cache policy keys pass through unchanged. Service owns prompt-cache defaults and marker placement, and a successful request does not guarantee a cache hit.
+
+For an E2B environment, native `{desktop:true}` enables the provider's desktop lifecycle; leaving `template` omitted lets Service select its default. Explicit templates remain authored choices. The SDK forwards configuration and calls existing Computer operations without initializing desktops or retrying uncertain native input. EIP device system information belongs to the envd protocol, not a new Service SDK operation or a client-inferred capability.
+
+Agent memory tools track observed file versions and absence on the server. A stale dependency can produce a `read_conflict` tool result requiring reread and reconsideration. Public management file calls keep their existing target ETag preconditions; the SDK adds no observation-dependency tracker or automatic rewrite/retry.
+
 ## Model Provider authorization and account-specific discovery
 
 The native generated provider reference exposes all five authorization/discovery operations:

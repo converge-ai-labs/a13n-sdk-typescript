@@ -20,7 +20,7 @@ process.env.A13N_EXPECTED_CONTENT = expected;
 let submitted;
 let creates = 0;
 const run = { id: "run", thread_id: "thread", status: "completed", output: "Short reply", pending: null, failure: null, options: { overrides: { lazy_environment: false, skill_sync: { mode: "isolated", cache_count: 0 } } } };
-const thread = () => ({ id: "thread", session_id: "session", message_history: submitted.message_history });
+const thread = () => ({ id: "thread", session_id: "session" });
 const receipt = () => ({ thread: thread(), entry: { id: "entry", thread_id: "thread", status: "consumed", assigned_run_id: "run" }, run });
 globalThis.fetch = async (request) => {
   assert.equal(request.headers.get("Authorization"), "Bearer test");
@@ -44,7 +44,7 @@ globalThis.fetch = async (request) => {
     assert.deepEqual(target.searchParams.getAll("entry_id"), ["entry"]);
     return Response.json({ items: [{ entry_id: "entry", principal_id: "principal", principal: null, submitted_at: "2026-10-13T00:00:00Z" }] });
   }
-  if (path === "/api/v1/runs/run/items") return Response.json({ run, items: [{ kind: "text_message", content: { role: "assistant", text: "Short reply" } }, { kind: "text_message", content: { role: "user", text: "preview" }, content_refs: { text: { id: "content", media_type: "text/plain", size_bytes: Buffer.byteLength(expected), preview: "preview", truncated: false } } }], baseline: true, continuation: null, position: "1-1", resume_after: null, complete: true });
+  if (path === "/api/v1/runs/run/items") return Response.json({ run, items: [{ kind: "text_message", content: { role: "assistant", text: "Short reply" } }, { kind: "text_message", content: { role: "user", text: "preview" }, content_refs: { text: { id: "content", media_type: "text/plain", size_bytes: Buffer.byteLength(expected), preview: "preview", truncated: false } } }], complete: true });
   if (path === "/api/v1/runs/run/contents/content") return Response.json({ id: "content", media_type: "text/plain", value: expected, truncated: false });
   throw new Error("Unexpected caller request: " + path);
 };

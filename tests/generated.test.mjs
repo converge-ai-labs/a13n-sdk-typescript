@@ -97,8 +97,14 @@ test("pinned native JSON, coverage, upload ID and password schemas retain Servic
     assert.deepEqual(schemas[name].properties.settings.additionalProperties, {
       $ref: "#/components/schemas/JsonValue",
     });
-  assert.ok(schemas.RunItems.properties.resume_after);
-  assert.equal(schemas.RunItems.required.includes("resume_after"), false);
+  assert.deepEqual(Object.keys(schemas.RunItems.properties).sort(), [
+    "complete",
+    "items",
+    "run",
+  ]);
+  assert.equal("display_position" in schemas.RunView.properties, false);
+  assert.equal("message_history" in schemas.ThreadView.properties, false);
+  assert.ok(schemas.NewThread.properties.message_history);
   for (const name of ["AssetCreate", "UploadSource"])
     assert.equal(
       schemas[name].properties.upload_id.pattern,
@@ -162,8 +168,7 @@ test("ModelConfig settings forward arbitrary native JSON without coercion", asyn
   }
 });
 
-test("RunItems recovery hint preserves omission, null and confirmed Redis ID", async () => {
-  const cases = [{}, { resume_after: null }, { resume_after: "1234-5" }];
+test("RunItems reads committed items without inventing stream coverage", async () => {
   const client = createClient({
     baseUrl: "https://service.example",
     auth: { type: "bearer", token: "key" },
@@ -171,19 +176,12 @@ test("RunItems recovery hint preserves omission, null and confirmed Redis ID", a
       Response.json({
         run: { id: "run_one", thread_id: "thread_one", status: "accepted" },
         items: [],
-        position: "1-7",
-        baseline: true,
-        continuation: null,
         complete: false,
-        ...cases.shift(),
       }),
   });
   try {
-    for (const expected of [undefined, null, "1234-5"])
-      assert.equal(
-        (await client.runs.ref("run_one").items()).data.resume_after,
-        expected,
-      );
+    const display = (await client.runs.ref("run_one").items()).data;
+    assert.deepEqual(Object.keys(display).sort(), ["complete", "items", "run"]);
   } finally {
     client.close();
   }

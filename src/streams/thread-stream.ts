@@ -1,14 +1,14 @@
 import { ApiError, isRecord, ProtocolError } from "../errors.js";
-import type { components } from "../schema.js";
+import type { SessionStreamSchemas } from "../session-stream-schema.js";
 import { delay } from "../transport.js";
 import type { BinaryResult } from "../resources/base.js";
 import { decodeSse, type SseFrame } from "./sse.js";
 
 export interface ThreadStreamOptions {
   signal?: AbortSignal;
-  /** Redis entry ID from the last applied delta/boundary or RunItems.resume_after. */
+  /** Redis entry ID from the last applied delta/boundary. */
   after?: string;
-  /** Exact Run and applied display coverage; both must be supplied together. */
+  /** Exact Run and explicitly tracked stream progress; both must be supplied together. */
   run?: string;
   position?: string;
 }
@@ -20,7 +20,7 @@ export interface ItemRef {
   response_group?: string | null;
   failure?: Record<string, unknown> | null;
   /** Provisional automatic delivery evidence; committed Items retain the authoritative list. */
-  memory_sources?: components["schemas"]["MemorySource"][] | null;
+  memory_sources?: SessionStreamSchemas["MemorySource"][] | null;
 }
 export type ThreadStreamFrame =
   | {

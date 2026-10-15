@@ -81,15 +81,7 @@ try {
     overrides.skill_sync,
   );
   const thread = (await interaction.thread.get()).data;
-  assert.equal(JSON.stringify(thread.message_history), JSON.stringify(history));
-  assert.deepEqual(Object.keys(thread.message_history[0].parts[0].args.zebra), [
-    "second",
-    "first",
-  ]);
-  assert.deepEqual(Object.keys(thread.message_history[1].parts[0].content), [
-    "zebra",
-    "alpha",
-  ]);
+  assert.equal("message_history" in thread, false);
   const authors = await client.api.sessions
     .ref(thread.session_id)
     .messageAuthors.list({

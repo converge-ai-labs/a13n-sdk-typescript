@@ -6,7 +6,14 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   {
     // Generated types still pass tsc, build, and exact generation checks.
-    ignores: ["dist/**", "node_modules/**", "src/schema.ts", "contract/**"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "src/schema.ts",
+      "src/session-stream-schema.ts",
+      "src/session-stream-validation.ts",
+      "contract/**",
+    ],
   },
   {
     files: ["**/*.{js,mjs}"],

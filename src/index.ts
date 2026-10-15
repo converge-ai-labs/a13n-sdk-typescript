@@ -15,6 +15,12 @@ export type {
   ThreadStreamFrame,
   ThreadStreamOptions,
 } from "./streams/thread-stream.js";
+export { sessionStream } from "./streams/session-stream.js";
+export type { SessionStreamOptions } from "./streams/session-stream.js";
+export type {
+  SessionStreamFrame,
+  SessionStreamSchemas,
+} from "./session-stream-schema.js";
 export type { BinaryResult, ResourceResult } from "./resources/base.js";
 export { textPayload } from "./resources/interaction.js";
 export type { WaitOptions } from "./resources/interaction.js";

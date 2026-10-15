@@ -82,18 +82,16 @@ try {
       messageHistory: history,
     });
   const result = await interaction.result();
-  console.log("Thread:", interaction.thread.id, "status:", result.status);
-  console.log(
-    "Imported JSON:",
-    (await interaction.thread.get()).data.message_history,
-  );
+  console.log("Thread:", result.threadId, "status:", result.status);
+  // Retain the original imported JSON; Thread readback contains no seed history.
+  console.log("Imported JSON:", history);
   if (result.status === "completed") console.log(result.text ?? result.output);
 } finally {
   client.close();
 }
 ```
 
-The imported JSON is immutable Thread provenance, readable on the Thread, and not historical Service Runs, Entries, Items or usage. Only completed user text, model text and _closed_ tool-call/JSON-result exchanges are accepted. The Service validates the Pydantic AI message format and the limits (256 messages and 256 KiB of normalized JSON); the SDK does not build a second type hierarchy or independently revalidate it. A tool call must be paired with its return before another prompt. On first execution Service seeds native context and then incorporates the new payload; a subsequent `send()` continues the stored checkpoint rather than importing the history again. Preserve the original history, object-key order (including nested tool arguments and results), and idempotency key for an uncertain retry. Native provider adapters can render these objects into model-visible strings; the SDK uses ordinary `JSON.stringify` and preserves received JSON order without sorting keys. See the [pinned Runs contract](../contract/semantics/runs.md#imported-model-context) for supported parts and ordering.
+The imported JSON is immutable Thread provenance, not historical Service Runs, Entries, Items or usage. Thread readback omits the seed history; retain the original JSON in your application. Only completed user text, model text and _closed_ tool-call/JSON-result exchanges are accepted. The Service validates the Pydantic AI message format and the limits (256 messages and 256 KiB of normalized JSON); the SDK does not build a second type hierarchy or independently revalidate it. A tool call must be paired with its return before another prompt. On first execution Service seeds native context and then incorporates the new payload; a subsequent `send()` continues the stored checkpoint rather than importing the history again. Preserve the original history, object-key order (including nested tool arguments and results), and idempotency key for an uncertain retry. Native provider adapters can render these objects into model-visible strings; the SDK uses ordinary `JSON.stringify` and preserves received JSON order without sorting keys. See the [pinned Runs contract](../contract/semantics/runs.md#imported-model-context) for supported parts and ordering.
 
 Public root types `RunOptions`, `RunConfiguration`, `AgentOverride`, `MessageHistory`, `MemoryMount`, `EnvironmentMounts` and `McpHeaders` are structural aliases to the full pinned contract. Top-level selectors are `sessionId`, `agentRevisionId`, `messageHistory` and `mcpHeaders`; nested option/mount/history fields retain native wire names. Omitted values remain omitted, and explicit null/empty JSON remains distinct. There are no flattened configuration or override aliases.
 
