@@ -126,3 +126,69 @@ console.log(authors.data.items);
 Use IDs selected from authorized readback. Content is immutable; `application/json` values remain native JSON and `text/plain` values remain strings. Service retains values larger than the 32 KiB inline limit behind bounded 4 KiB previews, with a 16 MiB saved-value cap. Oversized JSON becomes a truncated `text/plain` prefix, not a complete JSON value. Follow `media_type` and `truncated`, including when explicitly loading a saved value. Neither finite observation nor `textStream()` expands references automatically.
 
 Message-author lookup requires 1–100 Entry IDs as the repeated native `entry_id` query; it is a specialized query, not cursor pagination. Nullable principal details preserve inaccessible/deleted identity evidence. `ProviderModel` replaces the retired `ChatGPTModel`; discovery preserves `slug`, `display_name` and nullable characteristics. Use provider-type `supports_model_discovery` and Tool/Toolset descriptions from deployment metadata; the generated Toolset keys include `traces` and `findings`.
+
+## Read executed configuration and request metrics
+
+Use the exact Run ID to read the Agent it executes, its attempts and usage:
+
+```js
+const run = client.api.runs.ref(runId);
+const executed = await run.agent.get();
+console.log(executed.data.revision.id, executed.data.config.instructions);
+const attempts = await run.attempts.list();
+if (attempts.data.items.length) {
+  const attempt = await run.attempts.ref(attempts.data.items[0].id).get();
+  console.log(attempt.data.status);
+}
+const listed = await client.api.runs.list({ query: { thread_id: threadId } });
+const usage = await client.api.usage.get({ query: { run_id: runId } });
+console.log(listed.data.items, usage.data.models, usage.data.runs);
+const metrics = await client.api.usage.records.ref(recordId).metrics.get();
+console.log(metrics.data.time_to_first_chunk_seconds);
+```
+
+The fragment requires authorized Run, Thread and model-request record IDs. `RunAgent.revision` is pinned; `config` applies that Run's frozen override to the revision. Read it rather than the editable Agent head. Referenced Models, Connections and templates remain live dependencies. Run `options.configuration` is the separately accepted request configuration, not resolved Harness options. Metrics preserve unavailable values as null and valid zero values as zero; the SDK derives no substitute timings from SSE. Usage includes both model totals and per-Run breakdowns.
+
+Catalog filtering is exact and the Model ID is case-sensitive:
+
+```js
+const catalog = await client.api.modelCatalog.list({
+  query: { provider: "openrouter", model: "Provider/ExactCase" },
+});
+console.log(catalog.data.items, catalog.data.status);
+```
+
+The filters combine with AND; an empty match retains catalog status. This is a specialized collection read, with no cursor pagination. Gateway credential exchange and provider private configuration remain Service-owned.
+
+## Opt into Computer actions and download retained images
+
+Computer use requires the Agent's `computer` toolset, an explicit mount permission ceiling and a capable, ready provider. Omitted ceilings retain ordinary file/execution defaults and grant no Computer actions. An empty operation list grants none; operation names are exact native values. This fragment replaces a mount ceiling for future Runs using the current **Thread** ETag, then explicitly probes its Environment:
+
+```js
+await client.api.threads
+  .ref(threadId)
+  .environments.ref("desk")
+  .update(
+    { permission_ceiling: { operations: ["environment.computer.observe"] } },
+    { ifMatch: threadETag },
+  );
+const check = await client.api.environments.ref(environmentId).computer.check();
+console.log(check.data.status, check.data.operations);
+```
+
+Select authorized IDs and a current Thread ETag. The probe returns native `checked`, `unsupported` or `not_ready` results; it neither starts the Environment nor grants permission. Existing accepted Run mounts keep their frozen ceiling. Environment Provider `references.get()` reports native dependent resources; conditional provider deletion uses that Provider's ETag.
+
+Computer screenshot events carry `a13n.tool_images` references with image ID, media type and size, including child Run attribution and an `unavailable` flag. Download a retained reference explicitly from its owning Run:
+
+```js
+const image = await client.api.runs.ref(runId).images.ref(imageId).get();
+try {
+  console.log(image.response.headers.get("Content-Type"));
+  const bytes = new Uint8Array(await new Response(image.body).arrayBuffer());
+  console.log(bytes.byteLength);
+} finally {
+  await image.close();
+}
+```
+
+This bounded example buffers one image; stream large bodies to a destination instead. The response is an unbuffered `BinaryResult` for PNG or JPEG bytes with native metadata and ordinary `ApiError` failures. Image references are separate from Assets, saved `/contents`, and public URLs. A streamed reference can precede committed display publication and temporarily return 404. Read committed Items for durable references and handle that result explicitly; an image read failure never replays the Computer action. Client close/abort ends local download ownership without affecting remote execution.
