@@ -8,7 +8,7 @@ export interface SseFrame {
 export interface DetailedSseFrame extends SseFrame {
   idPresent: boolean;
 }
-const maxFrameCharacters = 1024 * 1024;
+const defaultMaxFrameCharacters = 1024 * 1024;
 
 /** Decode incremental UTF-8 and LF/CRLF/CR framing, including split delimiters. */
 export async function* decodeSse(
@@ -29,12 +29,12 @@ export async function* decodeSse(
 export async function* decodeSseDetailed(
   body: ReadableStream<Uint8Array>,
   signal?: AbortSignal,
+  maxFrameCharacters = defaultMaxFrameCharacters,
 ): AsyncGenerator<DetailedSseFrame> {
   const reader = body.getReader();
   const abort = () => {
     void reader.cancel(signal?.reason).catch(() => undefined);
   };
-  signal?.throwIfAborted();
   signal?.addEventListener("abort", abort, { once: true });
   const decoder = new TextDecoder("utf-8", { fatal: true });
   let buffer = "",
@@ -44,6 +44,7 @@ export async function* decodeSseDetailed(
     values: string[] = [],
     size = 0;
   try {
+    signal?.throwIfAborted();
     while (true) {
       const chunk = await reader.read();
       signal?.throwIfAborted();

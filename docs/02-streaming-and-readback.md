@@ -62,7 +62,7 @@ try {
   console.log("Replace preview with committed Items:", display.items);
   if (!display.complete)
     console.log("Run is not sealed; refresh this exact Run later.");
-  if (display.items[0]?.ordinal > 1)
+  if ((display.items[0]?.ordinal ?? 0) > 1)
     console.log("Earlier Items exist; page them explicitly by ordinal.");
   if (previewUncertain)
     console.log("Do not reuse the old event preview after reconciliation.");
@@ -75,7 +75,7 @@ Run it with the same three environment variables as [conversation.mjs](01-setup-
 
 ## Reconcile a UI after gaps or truncation
 
-Treat stream deltas as an ephemeral preview. On `gap` or `reset`, invalidate that preview and read `result.run.items()` (or the bound Run's `items()` while it is active); replace, rather than append to, what the UI rendered from deltas. This example suppresses later deltas until final readback. For a continuously updating UI, refresh committed Items during the run and rebuild the view from each snapshot, optionally continuing live preview only after your application has reconciled a trustworthy stream cursor. The returned `complete` flag means the Run is sealed, including waiting/failed/cancelled as well as completed: when false, refresh the **same Run** later instead of claiming its Items are final. The default result is a recent baseline window, not all display history. Earlier Items remain available through explicit ordinal paging; content itself can still be truncated. Do not interpret a seal or a short recent window as proof of a full transcript. Only a baseline's committed position covering the missing range can repair a gap; historical windows cannot.
+Treat stream deltas as an ephemeral preview. On `gap` or `reset`, invalidate that preview and read the exact Run's Items; replace the displayed preview rather than appending to it. This example suppresses later deltas until final readback. `complete` means the Run is sealed, including waiting/failed/cancelled as well as completed. When false, refresh the **same Run** later. An Items read carries no stream position or cursor and cannot prove that a missing stream range is covered. The default result is a recent window, not all history; earlier Items remain available through ordinal paging and content can still be truncated. Use the native Session stream below for an application-owned snapshot-to-live display.
 
 The iterator yields frames attributed to this submitted input's incorporating Run and stops on completed/failed/cancelled/waiting even if the SSE socket is idle. Retained events can sometimes replay on attachment, but trimming, filtering and gaps prevent a lossless-history promise. Raw Thread-wide SSE is available through `client.api.threads.ref(threadId).stream.get({query:{run,position},lastEventId,signal})`; its caller owns the binary body, framing and cursor reconciliation. The default finite iterator does not silently fetch/apply Items or suppress output using an invented display baseline.
 
@@ -86,43 +86,56 @@ Use the same native query shape on the Run handle and generated resource. `befor
 ```js
 const { data: recent } = await result.run.items({ query: { limit: 20 } });
 const first = recent.items[0]?.ordinal;
-if (first > 1) {
+if (first !== undefined && first > 1) {
   const { data: older } = await result.run.items({
     query: { before: first, limit: 20 },
   });
   console.log("Historical page only:", older.items);
-  // older.baseline is false; its continuation, position and resume_after are null.
-  // Do not replace a live baseline, advance coverage or heal a gap with this page.
+  // A historical page does not establish live stream coverage.
 }
 ```
 
-An unwindowed read (including a custom `limit` without `before`/`after`) has `baseline:true` and includes the newest limit **plus the whole mutable tail**, so it may exceed the requested limit. Preserve its schema-defined recursive `continuation` if your application normalizes later raw events. It is presentation parsing state, not resumable agent execution state. An explicit `after:0` is still a historical window, not a baseline. `complete:true` means the Run is sealed, not that all history was fetched. The SDK does not automatically load unlimited pages.
+An unwindowed read (including a custom `limit` without `before`/`after`) includes the newest limit **plus the whole mutable tail**, so it may exceed the requested limit. Explicit `after:0` is an ordinal window. `complete:true` means the Run is sealed, not that all history was fetched. The SDK does not automatically load unlimited pages.
 
-## Open raw SSE from an applied snapshot
+## Track a Thread stream explicitly
 
-For an application that already applies committed Items, the native stream operation supports an explicit coverage baseline. This fragment belongs inside the client `try` block above, after you have obtained `result`; replace the `console.log` with your application's snapshot replacement before opening the stream:
+Raw Thread SSE remains available through `client.api.threads.ref(threadId).stream.get({signal})`. If your application already tracks applied stream progress, it may explicitly pass `{query:{run,position},lastEventId,signal}`. `run` and `position` belong together. The canonical `attempt-sequence` position differs from the Redis `Last-Event-ID`; neither comes from an Items read. Starting from Items, leave both query parameters out and inspect retained output, `boundary` and `gap`, or use Session snapshots.
+
+Typed finite `gap` events preserve an optional nullable target `event.frame.data.position`. A later Items read does not prove coverage of that target. On `reset`, discard superseded provisional output and read the exact Run; previous-attempt progress cannot seed the next attempt. The finite Interaction retains its exact-Run termination and does not silently recover display state.
+
+## Consume one native Session connection
+
+Save this complete program as `session-stream.mjs`. Set `A13N_SESSION_ID` to an existing Session alongside the Service URL and API token. It prints native typed frames and exits after the first snapshot; replace that break with application-owned processing when following live output.
 
 ```js
-const { data: snapshot } = await result.run.items();
-console.log("Apply committed snapshot first:", snapshot.items);
-if (snapshot.baseline && snapshot.position !== null) {
-  const raw = await client.api.threads.ref(interaction.thread.id).stream.get({
-    query: { run: result.run.id, position: snapshot.position },
-    ...(snapshot.resume_after ? { lastEventId: snapshot.resume_after } : {}),
-    signal: AbortSignal.timeout(5000),
-  });
+import { createClient, sessionStream } from "@converge.ai/a13n";
+
+const client = createClient({
+  baseUrl: process.env.A13N_SERVICE_URL,
+  auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
+});
+try {
+  const signal = AbortSignal.timeout(5000);
+  const response = await client.api.sessions
+    .ref(process.env.A13N_SESSION_ID)
+    .stream.get({ signal });
   try {
-    console.log("Owned raw SSE:", raw.response.headers.get("Content-Type"));
-    // Parse raw.body with your application's SSE reader, or pass it to a renderer.
+    console.log("Request:", response.response.headers.get("X-Request-Id"));
+    for await (const frame of sessionStream(response, { signal })) {
+      console.log(frame.type, frame.data);
+      break; // Early return releases this response, not remote execution.
+    }
   } finally {
-    await raw.close();
+    await response.close();
   }
+} finally {
+  client.close();
 }
 ```
 
-`run` and `position` must be supplied together. `position` is canonical `attempt-sequence` display coverage, not the Redis `Last-Event-ID`; `resume_after` is an optional confirmed Redis ID covered by that snapshot. Missing/expired/incompatible hints fall back to retained replay filtered by coverage and do not by themselves imply loss. Covered deltas are skipped by Service before decoding; boundaries remain visible. Without a coverage baseline, leave both query parameters out; do not manufacture a position from a cursor. Before the first checkpoint, Items may have `position: null` and no useful hint.
+`SessionStreamFrame` is a discriminated union generated from the pinned Session schema; `SessionStreamSchemas` exposes its nested models, including recursive display continuation. A `thread` replaces Thread state, current/last Runs and ordered inbox entries. `items` replaces that Run's Items from ordinal `first` onward, leaving earlier Items final; `complete` marks the final display. `delta` preserves native AG-UI and ItemRef data with Thread/Run identity. `gap` marks lost output: Service holds that Run's deltas until a covering `items` frame. The SDK validates known frames against the complete pinned JSON Schema without applying or assembling their contents. Validators are generated ahead of time and need no runtime compiler or evaluation. Session snapshots may exceed the Thread parser's 1 MiB frame cap; Session has no default SDK cap. An application may opt into a positive `maxFrameCharacters` limit (UTF-16 code units), with an oversized frame ending local observation. Unknown event names are ignored; known malformed envelopes, invalid UTF-8, truncated frames and explicit SSE IDs raise `ProtocolError` and close the response.
 
-Typed finite `gap` events preserve `event.frame.data.position` when provided. A non-null value identifies the position a replacement snapshot must cover; omission/null means the target is unknown, not that no output was lost. Do not advance complete application coverage across the hole using subsequent deltas. On `reset`, discard superseded provisional output and read a new snapshot; coverage from the previous attempt cannot seed the next attempt. Applying that snapshot and rebuilding a raw reader are application-owned operations, not an SDK recovery facade. Even a sealed baseline can be a recent window with truncated content; a historical window must never seal a live consumer or heal a gap.
+The decoder owns **one connection** and performs no reconnect. Every new Session connection starts from a fresh snapshot, with no SSE ID, Last-Event-ID or position query. A caller implementing reconnect discards unfinished displays and replaces them with the new snapshot; a Run sealed while disconnected is read through Items. `items.continuation` is native display parsing state, never a Thread cursor or agent-resume token. Follow the pinned reconnect policy: stop on invalid frames or 4xx other than 429; otherwise wait `Retry-After` for 429/503, or full jitter below `min(30s,0.5s*2^n)` for consecutive failures, resetting the failure count after 30 seconds open. Closing/aborting only ends local observation. The finite Interaction remains the ordinary one-input/exact-Run API; Session consumption adds no automatic successor-follow or UI reducer.
 
 An early **raw** loop break or `await interaction.close()` cancels local observation, including a pending `result()`; do not expect another `result()` call to restart it. For final-only output, skip iteration and call `result()` directly—this opens no SSE. Neither closing nor aborting a local stream interrupts the remote Run; `result.run.interrupt()` is a separate, explicit mutation. Continue with [waiting tools](03-waiting-and-tools.md) or [timeout recovery](07-errors-and-recovery.md).
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { ApiError, createClient } from "../dist/index.js";
+import { ApiError, createClient, sessionStream } from "../dist/index.js";
 
 // Opt-in acceptance against a disposable Service. All calls below use the
 // generated resource tree except the existing semantic Run-wait convenience.
@@ -249,100 +249,22 @@ try {
   assert.ok(Array.isArray(display.items));
   assert.equal(display.run.id, submitted.data.run.id);
   assert.equal(display.complete, true);
-  assert.match(display.position, /^(0|[1-9]\d{0,19})-(0|[1-9]\d{0,19})$/);
-  if (display.resume_after != null)
-    assert.match(display.resume_after, /^\d{1,20}-\d{1,20}$/);
-  // This sealed display is the explicit baseline. The Thread may no longer
-  // have a current Run: a healthy response can remain idle, including with a
-  // retained hint. Observe a bounded window, not an assumed boundary replay.
-  for (const lastEventId of new Set([
-    undefined,
-    display.resume_after ?? undefined,
-    "0-0",
-  ])) {
-    const hint =
-      lastEventId === undefined
-        ? "absent"
-        : lastEventId === "0-0"
-          ? "expired"
-          : "confirmed";
-    stage(`coverage (${hint} hint): opening`);
-    const observation = new AbortController();
-    const covered = await thread.stream.get({
-      query: { run: display.run.id, position: display.position },
-      ...(lastEventId ? { lastEventId } : {}),
-      signal: AbortSignal.any([
-        AbortSignal.timeout(20_000),
-        observation.signal,
-      ]),
-    });
-    stage(`coverage (${hint} hint): opened; observing bounded window`);
-    const timer = setTimeout(() => observation.abort(), 1000);
-    const reader = covered.body.getReader();
-    try {
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        let chunk;
-        try {
-          chunk = await reader.read();
-        } catch (error) {
-          if (!observation.signal.aborted) throw error;
-          break;
-        }
-        assert.equal(chunk.done, false, "coverage stream ended unexpectedly");
-        buffer += decoder.decode(chunk.value, { stream: true });
-        let delimiter;
-        while ((delimiter = buffer.indexOf("\n\n")) >= 0) {
-          const envelope = buffer.slice(0, delimiter);
-          buffer = buffer.slice(delimiter + 2);
-          const event = envelope
-            .split("\n")
-            .find((line) => line.startsWith("event: "))
-            ?.slice(7);
-          if (!event || event === "changed") continue;
-          assert.notEqual(
-            event,
-            "gap",
-            "missing replay hint alone must not report loss",
-          );
-          assert.notEqual(
-            event,
-            "reset",
-            "same-attempt snapshot must not reset",
-          );
-          assert.notEqual(
-            event,
-            "delta",
-            "sealed display already covers these deltas",
-          );
-          if (event === "boundary") {
-            const data = JSON.parse(
-              envelope
-                .split("\n")
-                .find((line) => line.startsWith("data: "))
-                .slice(6),
-            );
-            assert.equal(data.run_id, display.run.id);
-          }
-        }
-      }
-    } finally {
-      clearTimeout(timer);
-      try {
-        stage(`coverage (${hint} hint): cancelling reader`);
-        await reader.cancel().catch((error) => {
-          if (!observation.signal.aborted) throw error;
-        });
-      } finally {
-        reader.releaseLock();
-        stage(`coverage (${hint} hint): closing response`);
-        await covered.close();
-      }
-      assert.equal(covered.closed, true);
-      stage(`coverage (${hint} hint): closed`);
+  assert.deepEqual(Object.keys(display).sort(), ["complete", "items", "run"]);
+  // Items no longer supplies Thread progress. A fresh Session connection owns
+  // its snapshot; a sealed offline Run is read through Items above.
+  const snapshot = await resources.sessions
+    .ref(submitted.data.thread.session_id)
+    .stream.get({ signal: AbortSignal.timeout(20_000) });
+  try {
+    for await (const frame of sessionStream(snapshot)) {
+      assert.equal(frame.type, "thread");
+      assert.equal(frame.data.thread.id, submitted.data.thread.id);
+      break;
     }
+  } finally {
+    await snapshot.close();
   }
+  assert.equal(snapshot.closed, true);
   stage("memory cleanup: start");
   await thread.memories.ref("notes").delete(etag(await thread.get()));
   await memory.delete(etag(await memory.get()));
@@ -358,7 +280,7 @@ try {
       cas_numeric_restore: true,
       idempotent_replay: true,
       raw_sse_close: true,
-      snapshot_coverage_and_expired_hint: true,
+      session_snapshot_close_and_items_without_coverage: true,
     }),
   );
 } finally {

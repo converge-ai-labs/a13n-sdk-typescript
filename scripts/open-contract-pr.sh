@@ -23,7 +23,9 @@ main() {
   branch=sync/service-contract
   remote_git fetch origin '+refs/heads/main:refs/remotes/origin/main'
   previous=$(git show origin/main:contract/source.json | jq -er .commit)
-  if git -C "$upstream" merge-base --is-ancestor "$commit" "$previous"; then
+  accepted_selection=$(git show origin/main:contract/source.json | jq -c '.files | map_values(.source_path)')
+  if git -C "$upstream" merge-base --is-ancestor "$commit" "$previous" &&
+    { [[ "$commit" != "$previous" ]] || jq -e --argjson files "$files" '. == $files' <<< "$accepted_selection" >/dev/null; }; then
     echo 'Source is already accepted or older than the accepted pin'
     return
   fi
@@ -68,10 +70,10 @@ main() {
     return
   fi
   git -C "$upstream" merge-base --is-ancestor "$current" "$commit" || fail 'source diverges from the pending pin'
-  if [[ "$commit" != "$current" ]]; then
+  if [[ "$commit" != "$current" ]] || ! contract_selection_matches; then
     # A newer source revision alone must not churn a reviewed proposal or SDK CI.
     # Compare upstream inputs, not reviewer edits or source.json provenance.
-    if ! contract_inputs_changed "$upstream" "$current" "$commit"; then
+    if contract_selection_matches && ! contract_inputs_changed "$upstream" "$current" "$commit"; then
       echo "Contract inputs unchanged; keeping source pin $current"
       return
     fi
@@ -82,7 +84,7 @@ main() {
     # Install the selected proposal's lockfile, including reviewer adaptations.
     env -u GH_TOKEN make install
     env -u GH_TOKEN make generate
-    git add -A -- contract src/schema.ts src/resources/generated.ts src/workspace-scope.ts openapi.json
+    git add -A -- contract src/schema.ts src/session-stream-schema.ts src/session-stream-validation.ts src/resources/generated.ts src/workspace-scope.ts openapi.json
     bot_git commit -m "chore(contract): update Service snapshot to $commit"
     if [[ "$state" == OPEN ]]; then
       live_pr=$(gh pr view "$number" --repo "$GITHUB_REPOSITORY" --json state,isDraft)
@@ -119,7 +121,7 @@ Pinned Service source: https://github.com/converge-ai-labs/agent-foundation/comm
 
 Changes since the accepted SDK pin: https://github.com/converge-ai-labs/agent-foundation/compare/$previous...$commit
 
-This rolling draft imports committed OpenAPI and thread-stream definitions, API conventions,
+This rolling draft imports committed OpenAPI, thread-stream and session-stream definitions, API conventions,
 and the Runs, Facts and Delivery, and API semantics, with source paths,
 and includes SDK-local HTTP type generation. Full SDK CI runs while this PR is still a draft.
 Only changed contract inputs trigger this update; the source compare also provides implementation context.

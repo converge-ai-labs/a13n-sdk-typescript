@@ -6,7 +6,6 @@ const run = {
   id: "run_paged",
   thread_id: "thread_one",
   status: "running",
-  display_position: "2-19",
 };
 const item = (ordinal) => ({
   id: `item_${ordinal}`,
@@ -18,49 +17,6 @@ const item = (ordinal) => ({
   last_stream_id: `2-${ordinal}`,
   started_at: "2026-10-06T00:00:00Z",
 });
-const continuation = {
-  run_id: run.id,
-  next_ordinal: 20,
-  position: { attempt: 2, sequence: 19 },
-  full_content: false,
-  response_groups: { root: "response_one", child: "response_child" },
-  arguments: {
-    at: "2026-10-06T00:00:00Z",
-    event: { nested: [null, false, {}] },
-    key: "tool",
-    sequence: 18,
-    size: 4,
-    stream: { native: [0, null] },
-  },
-  fragments: {
-    gap: false,
-    max_bytes: 1024,
-    max_pending: 8,
-    pending: { fragment: { count: 2, parts: ['{"x":'], size: 5 } },
-  },
-  observer: {
-    run_id: "native_root",
-    thread_id: "native_thread",
-    state: {
-      request_index: 2,
-      parts: {
-        part: {
-          kind: "tool_call",
-          part_id: "call",
-          tool_name: null,
-          emitted_content: false,
-        },
-      },
-      children: {
-        child: {
-          children: {
-            grandchild: { request_index: 1, threads: { native: "thread" } },
-          },
-        },
-      },
-    },
-  },
-};
 function fixture(fetch) {
   return createClient({
     baseUrl: "https://service.example.test",
@@ -69,25 +25,17 @@ function fixture(fetch) {
   });
 }
 
-test("native Items forwards ordinal queries and preserves whole mutable tail and recursive continuation", async () => {
+test("native Items forwards ordinal queries and preserves whole mutable tail without stream coverage", async () => {
   const calls = [];
-  // The Service owns window selection. This baseline has three mutable Items even with limit=1.
+  // The Service owns window selection. This recent read has three mutable Items even with limit=1.
   const baseline = {
     run,
     items: [item(17), item(18), item(19)],
-    baseline: true,
-    continuation,
-    position: "2-19",
-    resume_after: "900-2",
     complete: false,
   };
   const history = {
     run: { ...run, status: "completed" },
     items: [{ ...item(16), state: "completed" }],
-    baseline: false,
-    continuation: null,
-    position: null,
-    resume_after: null,
     complete: true,
   };
   const client = fixture(async (request) => {
@@ -112,17 +60,21 @@ test("native Items forwards ordinal queries and preserves whole mutable tail and
     assert.deepEqual(live.data, baseline);
     assert.equal(live.response.headers.get("X-Request-Id"), "paged-read");
     assert.equal(live.data.items.length, 3);
-    assert.deepEqual(
-      JSON.parse(JSON.stringify(live.data.continuation)),
-      continuation,
-    );
+    assert.deepEqual(Object.keys(live.data).sort(), [
+      "complete",
+      "items",
+      "run",
+    ]);
     const older = await client.runs
       .ref(run.id)
       .items({ query: { before: 17, limit: 1 } });
     assert.deepEqual(older.data, history);
     assert.equal(older.data.complete, true); // Sealed, but ordinal 16 is not all history.
-    assert.equal(older.data.baseline, false);
-    assert.equal(older.data.position, null);
+    assert.deepEqual(Object.keys(older.data).sort(), [
+      "complete",
+      "items",
+      "run",
+    ]);
     const newer = await client.api.runs
       .ref(run.id)
       .items.get({ query: { after: 0, limit: 500 } });

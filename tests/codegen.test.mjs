@@ -24,6 +24,20 @@ test("changed HTTP contract regenerates types and published snapshot", async () 
         },
       },
     };
+    await writeFile(
+      new URL("contract/session-stream.schema.json", root),
+      JSON.stringify({
+        title: "Session fixture",
+        $defs: {
+          Gap: {
+            type: "object",
+            properties: { run_id: { type: "string" } },
+            required: ["run_id"],
+          },
+        },
+        frames: { gap: { $ref: "#/$defs/Gap" } },
+      }),
+    );
     const source = new URL("contract/openapi.json", root);
     await writeFile(source, JSON.stringify(document));
     await generate({ root });
@@ -54,6 +68,59 @@ test("changed HTTP contract regenerates types and published snapshot", async () 
     assert.deepEqual(
       JSON.parse(await readFile(new URL("openapi.json", root), "utf8")),
       document,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("all pinned generated outputs, including Session types, are byte-exact and deterministic", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "a13n-pinned-generation-"));
+  const root = pathToFileURL(`${directory}/`);
+  const outputs = [
+    "src/schema.ts",
+    "src/session-stream-schema.ts",
+    "src/session-stream-validation.ts",
+    "src/resources/generated.ts",
+    "src/workspace-scope.ts",
+    "openapi.json",
+  ];
+  try {
+    await mkdir(new URL("contract/", root));
+    for (const name of ["openapi.json", "session-stream.schema.json"])
+      await writeFile(
+        new URL(`contract/${name}`, root),
+        await readFile(new URL(`../contract/${name}`, import.meta.url)),
+      );
+    await generate({ root });
+    for (const name of outputs)
+      assert.equal(
+        await readFile(new URL(name, root), "utf8"),
+        await readFile(new URL(`../${name}`, import.meta.url), "utf8"),
+        `${name} drifted`,
+      );
+    const before = await Promise.all(
+      outputs.map((name) => readFile(new URL(name, root), "utf8")),
+    );
+    await generate({ root });
+    assert.deepEqual(
+      await Promise.all(
+        outputs.map((name) => readFile(new URL(name, root), "utf8")),
+      ),
+      before,
+    );
+    const sessionPath = new URL("contract/session-stream.schema.json", root);
+    const session = JSON.parse(await readFile(sessionPath, "utf8"));
+    session.$defs.Gap.properties.native_probe = { type: "boolean" };
+    await writeFile(sessionPath, JSON.stringify(session));
+    await generate({ root });
+    assert.match(
+      await readFile(new URL("src/session-stream-schema.ts", root), "utf8"),
+      /native_probe\?: boolean/,
+    );
+    assert.equal(
+      await readFile(new URL("src/schema.ts", root), "utf8"),
+      before[0],
     );
   } finally {
     await rm(directory, { recursive: true, force: true });

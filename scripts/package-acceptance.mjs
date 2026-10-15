@@ -47,11 +47,30 @@ try {
     ],
     { cwd: temporaryRoot, stdio: "inherit" },
   );
+  const notices = readFileSync(
+    join(
+      temporaryRoot,
+      "node_modules/@converge.ai/a13n/THIRD_PARTY_NOTICES.txt",
+    ),
+    "utf8",
+  );
+  for (const notice of [
+    "ajv",
+    "ajv-formats",
+    "fast-deep-equal",
+    "Copyright (c) 2015-2021 Evgeny Poberezkin",
+    "Copyright (c) 2020 Evgeny Poberezkin",
+    "Copyright (c) 2017 Evgeny Poberezkin",
+  ])
+    assert.ok(
+      notices.includes(notice),
+      `Missing bundled runtime notice: ${notice}`,
+    );
 
   writeFileSync(
     join(temporaryRoot, "consumer.mjs"),
     `import assert from "node:assert/strict";
-import { ApiError, createClient, text, json, url, asset, approve, deny, returned, failed, PreviewInterruptedError, SubmissionUnknownError } from "@converge.ai/a13n";
+import { ApiError, createClient, text, json, url, asset, approve, deny, returned, failed, PreviewInterruptedError, SubmissionUnknownError, sessionStream } from "@converge.ai/a13n";
 
 assert.equal(typeof createClient, "function");
 assert.equal(typeof ApiError, "function");
@@ -65,22 +84,17 @@ const client = createClient({
     const historical = url.searchParams.has("before");
     if (historical) assert.equal(url.searchParams.get("before"), "3");
     return Response.json({
-      run: { id: "run_example", status: "completed", display_position: null },
+      run: { id: "run_example", status: "completed" },
       items: historical ? [{ ordinal: 2 }] : [{ ordinal: 3 }, { ordinal: 4 }],
-      baseline: !historical,
-      continuation: historical ? null : { run_id: "run_example", next_ordinal: 5, position: { attempt: 1, sequence: 4 }, fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } }, observer: { state: { children: { child: { children: { grandchild: { request_index: 3 } } } } } } },
-      position: historical ? null : "1-4", resume_after: null, complete: true,
+      complete: true,
     });
   },
 });
 const baseline = (await client.runs.ref("run_example").items({ query: { limit: 1 } })).data;
-assert.equal(baseline.baseline, true);
+assert.deepEqual(Object.keys(baseline).sort(), ["complete", "items", "run"]);
 assert.equal(baseline.items.length, 2);
-assert.equal(baseline.continuation.observer.state.children.child.children.grandchild.request_index, 3);
 const history = (await client.runs.ref("run_example").items({ query: { before: 3, limit: 1 } })).data;
-assert.equal(history.baseline, false);
-assert.equal(history.position, null);
-assert.equal(history.continuation, null);
+assert.deepEqual(Object.keys(history).sort(), ["complete", "items", "run"]);
 assert.equal(history.complete, true);
 assert.equal(typeof client.agents.ref("agt_example").start, "function");
 assert.equal(typeof client.agents.ref("agt_example").send, "function");
@@ -228,7 +242,8 @@ assert.equal(catchupRequests.length, atShutdown);
 
   writeFileSync(
     join(temporaryRoot, "consumer.ts"),
-    `import {
+    `import { sessionStream } from "@converge.ai/a13n";
+import {
   createClient,
   type Client,
   type ResourceResult,
@@ -259,7 +274,7 @@ void client.api.assets.ref("asset").content.get;
 // @ts-expect-error The old account-specific discovery model is retired.
 type RetiredModel = components["schemas"]["ChatGPTModel"];
 void (null as unknown as RetiredModel);
-const source: components["schemas"]["MemorySource"] = { kind: "record", memory: "notes", status: "timeout" };
+const source: import("@converge.ai/a13n").SessionStreamSchemas["MemorySource"] = { kind: "record", memory: "notes", status: "timeout" };
 const contentRef: components["schemas"]["ContentRef"] = { id: "content", media_type: "application/json", preview: "{}", size_bytes: 2 };
 const shared: components["schemas"]["SharedSkillSync"] = { mode: "shared" };
 const isolated: components["schemas"]["IsolatedSkillSync"] = { mode: "isolated", cache_count: 0 };
@@ -284,7 +299,7 @@ async function catchupTypes() {
   await client.api.sessions.ref("session").messageAuthors.list();
   const interaction = await client.agents.ref("agent").start("Hi", { options: { overrides: { lazy_environment: null, skill_sync: isolated } } });
   for await (const event of interaction) if (event.frame.type === "delta") {
-    const sources: components["schemas"]["MemorySource"][] | null | undefined = event.frame.data.item?.memory_sources;
+    const sources: import("@converge.ai/a13n").SessionStreamSchemas["MemorySource"][] | null | undefined = event.frame.data.item?.memory_sources;
     void sources;
   }
   await interaction.close();
@@ -313,7 +328,7 @@ async function example() {
   const display = (await outcome.run.items({ query: { limit: 1 } })).data;
   await outcome.run.items({ query: { before: 3, limit: 20 } });
   await client.api.runs.ref(outcome.run.id).items.get({ query: { after: 0, limit: 500 } });
-  const continuation: components["schemas"]["DisplayContinuation"] = {
+  const continuation: import("@converge.ai/a13n").SessionStreamSchemas["DisplayContinuation"] = {
     run_id: "run_example", next_ordinal: 3, position: { attempt: 1, sequence: 2 },
     fragments: { pending: { fragment: { count: 2, parts: ["partial"] } } },
     observer: { state: { children: { child: { children: { grandchild: { parts: { part: { kind: "text", part_id: "message" } } } } } } } },
@@ -325,15 +340,27 @@ async function example() {
   void display.dropped;
   // @ts-expect-error The Thread has a last seal, not an earlier successful head.
   void (await client.threads.ref(outcome.threadId).get()).data.head_run_id;
-  const hint: string | null | undefined = display.resume_after;
-  void hint;
-  if (display.baseline && display.position !== null) {
-    const raw = await client.api.threads.ref(outcome.threadId).stream.get({
-      query: { run: outcome.run.id, position: display.position },
-      ...(display.resume_after ? { lastEventId: display.resume_after } : {}),
-    });
-    await raw.close();
+  // @ts-expect-error Items reads no longer supply Thread stream replay hints.
+  void display.resume_after;
+  // @ts-expect-error Items has no baseline marker.
+  void display.baseline;
+  // @ts-expect-error RunView has no display position.
+  void display.run.display_position;
+  // @ts-expect-error ThreadView has no imported message history readback.
+  void (await client.threads.ref(outcome.threadId).get()).data.message_history;
+  const response = await client.api.sessions.ref("session").stream.get();
+  for await (const frame of sessionStream(response)) {
+    if (frame.type === "thread") { void frame.data.thread; void frame.data.entries; }
+    if (frame.type === "items") { void frame.data.continuation; void frame.data.first; }
+    if (frame.type === "delta") { void frame.data.event; void frame.data.item; }
+    if (frame.type === "gap") {
+      void frame.data.thread_id;
+      // @ts-expect-error Session gaps have no Thread coverage field.
+      void frame.data.position;
+    }
   }
+  // @ts-expect-error Session stream cannot resume from a Thread cursor.
+  await client.api.sessions.ref("session").stream.get({ lastEventId: "1-0" });
   const config: components["schemas"]["ModelConfig-Input"] = {
     model_name: "native", model_api: "openai.responses",
     settings: { reasoning_effort: "high", native: { values: [1, null, false] } },
@@ -419,6 +446,33 @@ client.close();
       "--test",
       join(temporaryRoot, "service-refresh.test.mjs"),
       join(temporaryRoot, "refresh-caller.test.mjs"),
+    ],
+    { cwd: temporaryRoot, stdio: "inherit" },
+  );
+  // Consume the new Session API only through the installed public package.
+  for (const [source, target] of [
+    ["tests/session-stream.test.mjs", "session-stream.test.mjs"],
+    ["tests/session-fixtures.mjs", "session-fixtures.mjs"],
+    ["tests/session-caller.test.mjs", "session-caller.test.mjs"],
+    ["scripts/accept-session.mjs", "accept-session.mjs"],
+  ]) {
+    writeFileSync(
+      join(temporaryRoot, target),
+      readFileSync(join(packageRoot, source), "utf8")
+        .replace('from "../dist/index.js"', 'from "@converge.ai/a13n"')
+        .replace(
+          'from "../scripts/accept-session.mjs"',
+          'from "./accept-session.mjs"',
+        ),
+    );
+  }
+  execFileSync(
+    process.execPath,
+    [
+      "--disallow-code-generation-from-strings",
+      "--test",
+      "session-stream.test.mjs",
+      "session-caller.test.mjs",
     ],
     { cwd: temporaryRoot, stdio: "inherit" },
   );
