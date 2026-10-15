@@ -915,7 +915,10 @@ type Operation109Options = {
   >["X-Workspace-ID"];
 };
 type Operation110 = operations["get_model_catalog_api_v1_model_catalog_get"];
-type Operation110Options = { signal?: AbortSignal };
+type Operation110Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation110["parameters"]["query"]>;
+};
 type Operation111 = operations["list_providers_api_v1_model_providers_get"];
 type Operation111Options = {
   signal?: AbortSignal;
@@ -5178,6 +5181,7 @@ export class ModelCatalogResource {
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
       signal: options.signal,
+      query: options.query,
     });
   }
 }
