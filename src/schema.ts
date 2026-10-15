@@ -1247,6 +1247,95 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/memory-spaces": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Spaces */
+    get: operations["list_spaces_api_v1_memory_spaces_get"];
+    put?: never;
+    /** Create Space */
+    post: operations["create_space_api_v1_memory_spaces_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-spaces/{space_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Space */
+    get: operations["get_space_api_v1_memory_spaces__space_id__get"];
+    put?: never;
+    post?: never;
+    /** Delete Space */
+    delete: operations["delete_space_api_v1_memory_spaces__space_id__delete"];
+    options?: never;
+    head?: never;
+    /** Update Space */
+    patch: operations["update_space_api_v1_memory_spaces__space_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/memory-spaces/{space_id}/organization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Space Organization */
+    get: operations["get_space_organization_api_v1_memory_spaces__space_id__organization_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-spaces/{space_id}/organizations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Space Organizations */
+    get: operations["list_space_organizations_api_v1_memory_spaces__space_id__organizations_get"];
+    put?: never;
+    /** Organize Space */
+    post: operations["organize_space_api_v1_memory_spaces__space_id__organizations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-spaces/{space_id}/sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Space Sessions */
+    get: operations["list_space_sessions_api_v1_memory_spaces__space_id__sessions_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/model-catalog": {
     parameters: {
       query?: never;
@@ -3226,8 +3315,7 @@ export interface components {
       name: string;
       /** Organization Id */
       organization_id: string;
-      /** Preset Kind */
-      preset_kind?: ("composer" | "finding") | null;
+      preset_kind?: components["schemas"]["PresetKind"] | null;
       source: components["schemas"]["AgentSource"];
       /**
        * Updated At
@@ -3271,6 +3359,7 @@ export interface components {
        */
       lazy_environment?: boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
+      memory?: components["schemas"]["SessionMemorySettings"];
       /**
        * Memory Mounts
        * @default []
@@ -3351,6 +3440,7 @@ export interface components {
        */
       lazy_environment?: boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
+      memory?: components["schemas"]["SessionMemorySettings"];
       /**
        * Memory Mounts
        * @default []
@@ -5048,6 +5138,29 @@ export interface components {
       };
     };
     /**
+     * FrozenMemoryMount
+     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     */
+    FrozenMemoryMount: {
+      access: components["schemas"]["MemoryAccess"];
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Recall
+       * @default true
+       */
+      recall?: boolean;
+      /**
+       * Roots
+       * @default []
+       */
+      roots?: string[];
+      /** Space Id */
+      space_id?: string | null;
+    };
+    /**
      * GitHubSource
      * @description A directory of a public GitHub repository.
      *
@@ -5935,6 +6048,105 @@ export interface components {
         | "omitted"
         | "unavailable";
     };
+    /** MemorySpace */
+    MemorySpace: {
+      /** Always Load */
+      always_load: string[];
+      /** Content Bytes */
+      content_bytes: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Created By Id */
+      created_by_id: string;
+      /** Description */
+      description: string | null;
+      /** Enabled */
+      enabled: boolean;
+      /** File Count */
+      file_count: number;
+      /** Guide */
+      guide: string | null;
+      /** History Bytes */
+      history_bytes: number;
+      /** Id */
+      id: string;
+      /** Labels */
+      labels: {
+        [key: string]: string;
+      };
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      organization: components["schemas"]["OrganizationPolicy"];
+      /** Organization Id */
+      organization_id: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Updated By Id */
+      updated_by_id: string;
+      /** Version */
+      version: number;
+      /** Workspace Id */
+      workspace_id: string;
+    };
+    /** MemorySpaceCreate */
+    MemorySpaceCreate: {
+      /**
+       * Always Load
+       * @default [
+       *       "global/MEMORY.md"
+       *     ]
+       */
+      always_load?: string[];
+      /** Description */
+      description?: string | null;
+      /**
+       * Enabled
+       * @default true
+       */
+      enabled?: boolean;
+      /** Guide */
+      guide?: string | null;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      };
+      /** Name */
+      name: string;
+      organization?: components["schemas"]["OrganizationPolicy"];
+    };
+    /** MemorySpacePage */
+    MemorySpacePage: {
+      /** Items */
+      items: components["schemas"]["MemorySpace"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** MemorySpaceUpdate */
+    MemorySpaceUpdate: {
+      /** Always Load */
+      always_load?: string[] | null;
+      /** Description */
+      description?: string | null;
+      /** Enabled */
+      enabled?: boolean | null;
+      /** Guide */
+      guide?: string | null;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      } | null;
+      /** Name */
+      name?: string | null;
+      organization?: components["schemas"]["OrganizationPolicy"] | null;
+    };
     /**
      * MemoryUpdate
      * @description Fields left out stay unchanged; `description: null` clears it and `guide: null` inherits the default.
@@ -6469,6 +6681,16 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    /** OrganizationPolicy */
+    OrganizationPolicy: {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+      /** Model */
+      model?: string | null;
+    };
     /** OrganizationUpdate */
     OrganizationUpdate: {
       /** Name */
@@ -6623,6 +6845,8 @@ export interface components {
     };
     /** @enum {string} */
     Preset: "execution" | "recovery" | "answer";
+    /** @enum {string} */
+    PresetKind: "composer" | "finding" | "memory_organizer";
     /**
      * PriceComponent
      * @description One genai-prices usage dimension and its USD unit price.
@@ -7220,7 +7444,10 @@ export interface components {
       /** Max Attempts */
       max_attempts: number;
       /** Memory Mounts */
-      memory_mounts: components["schemas"]["MemoryMount"][];
+      memory_mounts: (
+        | components["schemas"]["MemoryMount"]
+        | components["schemas"]["FrozenMemoryMount"]
+      )[];
       options: components["schemas"]["RunOptions-Output"];
       output: components["schemas"]["JsonValue"] | null;
       /** Parent Run Id */
@@ -7341,6 +7568,23 @@ export interface components {
       labels?: {
         [key: string]: string;
       };
+      memory?: components["schemas"]["SessionMemorySettings"] | null;
+    };
+    /**
+     * SessionMemorySettings
+     * @description Participation and complete Space selection; policy belongs to each Space.
+     */
+    SessionMemorySettings: {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+      /**
+       * Spaces
+       * @default []
+       */
+      spaces?: components["schemas"]["SpaceBinding"][];
     };
     /** SessionPage */
     SessionPage: {
@@ -7381,9 +7625,10 @@ export interface components {
     /** SessionUpdate */
     SessionUpdate: {
       /** Labels */
-      labels: {
+      labels?: {
         [key: string]: string;
-      };
+      } | null;
+      memory?: components["schemas"]["SessionMemorySettings"] | null;
     };
     /** SessionView */
     SessionView: {
@@ -7402,7 +7647,14 @@ export interface components {
       };
       /** Last Run Id */
       last_run_id: string | null;
+      memory?: components["schemas"]["SessionMemorySettings"];
       preview?: components["schemas"]["SessionPreview"] | null;
+      /**
+       * Purpose
+       * @default conversation
+       * @enum {string}
+       */
+      purpose?: "conversation" | "memory_organization";
       /**
        * Run Count
        * @default 0
@@ -7626,6 +7878,45 @@ export interface components {
       source:
         | components["schemas"]["UploadSource"]
         | components["schemas"]["GitHubSource"];
+    };
+    /**
+     * SpaceBinding
+     * @description A named Space selected by the App or inherited from Agent defaults.
+     */
+    SpaceBinding: {
+      /** @default write */
+      access?: components["schemas"]["MemoryAccess"];
+      /** Name */
+      name: string;
+      /** Space Id */
+      space_id: string;
+    };
+    /** SpaceOrganizationStatus */
+    SpaceOrganizationStatus: {
+      /** Active Run Id */
+      active_run_id?: string | null;
+      /** Due At */
+      due_at?: string | null;
+      failure?: components["schemas"]["Failure"] | null;
+      /**
+       * History Gap
+       * @default false
+       */
+      history_gap?: boolean;
+      /** Last Run Id */
+      last_run_id?: string | null;
+      /**
+       * Pending
+       * @default false
+       */
+      pending?: boolean;
+      /**
+       * Processed Seq
+       * @default 0
+       */
+      processed_seq?: number;
+      /** Session Id */
+      session_id?: string | null;
     };
     /**
      * Span
@@ -8040,6 +8331,12 @@ export interface components {
       origin_thread_id: string | null;
       /** Origin Tool Call Id */
       origin_tool_call_id: string | null;
+      /**
+       * Purpose
+       * @default conversation
+       * @enum {string}
+       */
+      purpose?: "conversation" | "memory_organization";
       /** Session Id */
       session_id: string;
       /** Subagent */
@@ -8610,7 +8907,7 @@ export interface operations {
         q?: string | null;
         archived?: boolean | null;
         source?: components["schemas"]["AgentSource"] | null;
-        preset_kind?: ("composer" | "finding") | null;
+        preset_kind?: components["schemas"]["PresetKind"] | null;
         skill_id?: string | null;
         skill_revision_id?: string | null;
         limit?: number;
@@ -11489,6 +11786,266 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProviderTest"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_spaces_api_v1_memory_spaces_get: {
+    parameters: {
+      query?: {
+        label?: string[] | null;
+        enabled?: boolean | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemorySpacePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_space_api_v1_memory_spaces_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MemorySpaceCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemorySpace"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_space_api_v1_memory_spaces__space_id__get: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemorySpace"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  delete_space_api_v1_memory_spaces__space_id__delete: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_space_api_v1_memory_spaces__space_id__patch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MemorySpaceUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemorySpace"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_space_organization_api_v1_memory_spaces__space_id__organization_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SpaceOrganizationStatus"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_space_organizations_api_v1_memory_spaces__space_id__organizations_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RunPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  organize_space_api_v1_memory_spaces__space_id__organizations_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SpaceOrganizationStatus"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_space_sessions_api_v1_memory_spaces__space_id__sessions_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        space_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionPage"];
         };
       };
       400: components["responses"]["Error"];
