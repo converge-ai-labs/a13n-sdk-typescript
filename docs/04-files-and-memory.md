@@ -127,6 +127,51 @@ try {
 
 If another writer has changed the file, Service returns HTTP `412`; reread and decide whether your intended edit still applies instead of overwriting it blindly. A repeat execution adds the note again unless you adapt this example for your actual edit. File Memory revisions use integer sequence selectors, and restoring a creation can remove the file (`file: null`). Provider-backed Memory records instead support search/create/replace/delete, not these file-path operations. See [resource management and CAS](06-generated-resources.md).
 
+## Share Memory through a Session Space binding
+
+A Memory Space owns a managed PostgreSQL file Memory. Select it through `Session.memory`, then start the business Thread in that Session. This fragment creates persistent resources using the configured client and Agent:
+
+```js
+const space = await client.api.memorySpaces.create({
+  name: "Team notes",
+  organization: { enabled: false },
+});
+const session = await client.api.sessions.create({
+  memory: {
+    enabled: true,
+    spaces: [{ name: "team", space_id: space.data.id, access: "read" }],
+  },
+});
+const interaction = await agent.start("Use the team notes when relevant.", {
+  sessionId: session.data.id,
+});
+try {
+  const result = await interaction.result();
+  console.log(result.snapshot.data.memory_mounts);
+} finally {
+  await interaction.close();
+}
+```
+
+The first accepted business Run settles omitted Agent Memory defaults on the Session; later Agent changes and child/fork execution keep that selection. An explicit `{enabled:false,spaces:[]}` disables it. Session edits require the Session ETag. For an enabled Space, Service freezes `global/` and `sessions/{sessionId}/` roots in `RunView.memory_mounts`; the typed union retains optional `roots` and `space_id`. These are host-resolved readback fields, not request `MemoryMount` fields. Subsequent Space or Session edits do not change the accepted Run's mounts. Managed backing memories are accessed through their Space and existing file/revision APIs; select the Space rather than mounting its backing Memory directly. Space deletion requires no Session bindings and no unsealed Run retaining its mount.
+
+Organization has its own status and execution lifecycle:
+
+```js
+const space = client.api.memorySpaces.ref(spaceId);
+const current = await space.organization.get();
+console.log(current.data.pending, current.data.active_run_id);
+// Explicitly request organization after configuring an authorized Model key.
+const requested = await space.organizations.create();
+console.log(requested.response.status, requested.data.pending); // HTTP 202
+for await (const page of space.organizations.pages()) {
+  console.log(page.data.items);
+  break;
+}
+```
+
+Use an authorized `spaceId` whose organization policy has a Model configured. HTTP 202 accepts/coalesces a request; a Run might not exist yet. Read `organization.get()` for progress and observe an exact Run only when `active_run_id` or `last_run_id` names one. Organization executes in a separate `memory_organization` Session using the built-in `memory_organizer` Agent. Its status changes independently of the Space configuration ETag. Automatic `check_interval_seconds` (minimum 10) and `cooldown_seconds` (minimum 0) are minimum delays, and `change_count` counts external saved mutations, excluding no-ops and organizer writes. Manual requests bypass these timing/threshold checks and still require current authority. Service owns scheduling, completion and progress; the SDK sends the native action once.
+
 ## Native image and video input
 
 Use root public constructors for media: `url(sourceUrl)` for a URL or `asset(assetId)` for uploaded content. Strings, `text(value)` and `json(value)` can share the same ordered input array; a structural native MessagePayload remains supported. `start()`, `send()` and atomic resume `input` preserve the whole payload, including order and duplicates. These are Service input parts, not AG-UI output `ImagePart`/`VideoPart` values.

@@ -396,7 +396,7 @@ test("target native schema additions retain open provider metadata and retired m
     await readFile(new URL("../openapi.json", import.meta.url), "utf8"),
   );
   const schemas = document.components.schemas;
-  assert.equal(Object.keys(schemas).length, 340);
+  assert.equal(Object.keys(schemas).length, 364);
   assert.equal(schemas.ChatGPTModel, undefined);
   assert.ok(schemas.ProviderModel.properties.characteristics);
   assert.deepEqual(

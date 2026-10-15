@@ -163,3 +163,28 @@ await isolated.close();
 ```
 
 This fragment uses the selected `agent` inside its client lifetime. Shared mode publishes mutable names under `/workspace/.agents/skills/<name>`; `overwrite:false` keeps an existing name, while `cleanup:true` removes unselected entries and requires a primary environment even with an empty selection. Isolated mode uses immutable digest-keyed packages under `/workspace/.agents/skill-cache`; `cache_count:0` disables trimming. Fields from the two modes cannot be mixed. Omission/null of a Run override inherits the Agent revision. Service owns preparation and filesystem publication; these options do not perform SDK-side environment I/O.
+
+## Select platform tools and built-in Skills
+
+Agent configuration and Run overrides expose independent native `platform_tools` and `builtin_skills` selections:
+
+```js
+const interaction = await agent.start(
+  "Inspect the authorized execution state.",
+  {
+    options: {
+      overrides: {
+        platform_tools: {
+          groups: ["execution", "models"],
+          read_permission: "allow",
+          write_permission: "ask",
+        },
+        builtin_skills: ["platform-operations"],
+      },
+    },
+  },
+);
+await interaction.close();
+```
+
+This fragment uses an authorized `agent`. Groups are `agents`, `models`, `connections`, `skills`, `environment_templates`, `providers` and `execution`; permission choices retain their native approval semantics. An explicit platform block replaces the inherited block; an empty group list selects none, and nullable overrides inherit the Agent revision. Built-in Skills are selected separately from uploaded Skills and tool groups. Service owns tool admission, authorization and Skill initialization before first inference; the SDK performs no filesystem publication or provider credential exchange. Closing the Interaction only stops local observation.

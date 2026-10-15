@@ -385,6 +385,52 @@ void result;
 client.close();
 `,
   );
+  const refreshRuntime = readFileSync(
+    join(packageRoot, "tests/service-refresh.test.mjs"),
+    "utf8",
+  );
+  assert.ok(refreshRuntime.includes('from "../dist/index.js"'));
+  writeFileSync(
+    join(temporaryRoot, "service-refresh.test.mjs"),
+    refreshRuntime.replace(
+      'from "../dist/index.js"',
+      'from "@converge.ai/a13n"',
+    ),
+  );
+  for (const [source, target] of [
+    ["scripts/accept-refresh.mjs", "accept-refresh.mjs"],
+    ["tests/refresh-caller.test.mjs", "refresh-caller.test.mjs"],
+  ]) {
+    const content = readFileSync(join(packageRoot, source), "utf8");
+    assert.ok(content.includes('from "../dist/index.js"'));
+    writeFileSync(
+      join(temporaryRoot, target),
+      content
+        .replace('from "../dist/index.js"', 'from "@converge.ai/a13n"')
+        .replace(
+          'from "../scripts/accept-refresh.mjs"',
+          'from "./accept-refresh.mjs"',
+        ),
+    );
+  }
+  execFileSync(
+    process.execPath,
+    [
+      "--test",
+      join(temporaryRoot, "service-refresh.test.mjs"),
+      join(temporaryRoot, "refresh-caller.test.mjs"),
+    ],
+    { cwd: temporaryRoot, stdio: "inherit" },
+  );
+  const refreshTypes = readFileSync(
+    join(packageRoot, "tests/service-refresh.ts"),
+    "utf8",
+  );
+  assert.ok(refreshTypes.includes('from "../src/index.js"'));
+  writeFileSync(
+    join(temporaryRoot, "service-refresh.ts"),
+    refreshTypes.replace('from "../src/index.js"', 'from "@converge.ai/a13n"'),
+  );
   writeFileSync(
     join(temporaryRoot, "tsconfig.json"),
     JSON.stringify({
@@ -397,7 +443,7 @@ client.close();
         strict: true,
         target: "ES2023",
       },
-      include: ["consumer.ts"],
+      include: ["consumer.ts", "service-refresh.ts"],
     }),
   );
   const typescriptPackage = JSON.parse(
