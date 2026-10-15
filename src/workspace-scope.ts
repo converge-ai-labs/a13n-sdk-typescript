@@ -187,6 +187,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["POST", new RegExp("^/api/v1/uploads$")],
   ["GET", new RegExp("^/api/v1/usage$")],
   ["GET", new RegExp("^/api/v1/usage/agents$")],
+  ["GET", new RegExp("^/api/v1/usage/context$")],
   ["GET", new RegExp("^/api/v1/usage/models$")],
   ["GET", new RegExp("^/api/v1/usage/overview$")],
   ["GET", new RegExp("^/api/v1/usage/records/[^/]+/metrics$")],
