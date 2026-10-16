@@ -880,6 +880,11 @@ export interface components {
       approvals: components["schemas"]["PendingCall"][];
       /** Calls */
       calls: components["schemas"]["PendingCall"][];
+      /**
+       * Desktop Control Id
+       * @default null
+       */
+      desktop_control_id?: string | null;
     };
     /** PendingCall */
     PendingCall: {
@@ -1405,7 +1410,7 @@ export interface components {
       total_tokens_limit?: number | null;
     };
     /** @enum {string} */
-    WaitReason: "approval" | "call" | "multiple";
+    WaitReason: "approval" | "call" | "multiple" | "desktop_control";
     /**
      * _Arguments
      * @description A tool-call part's streamed arguments so far and the one observation item that holds them.
