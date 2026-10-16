@@ -16896,7 +16896,11 @@ function validate189(
       } else {
         const _errs1 = errors;
         for (const key0 in data) {
-          if (!(key0 === "approvals" || key0 === "calls")) {
+          if (!(
+            key0 === "approvals" ||
+            key0 === "calls" ||
+            key0 === "desktop_control_id"
+          )) {
             validate189.errors = [
               {
                 instancePath,
@@ -17003,6 +17007,79 @@ function validate189(
               var valid0 = _errs5 === errors;
             } else {
               var valid0 = true;
+            }
+            if (valid0) {
+              if (data.desktop_control_id !== void 0) {
+                let data4 = data.desktop_control_id;
+                const _errs8 = errors;
+                const _errs9 = errors;
+                let valid3 = false;
+                const _errs10 = errors;
+                if (typeof data4 !== "string") {
+                  const err0 = {
+                    instancePath: instancePath + "/desktop_control_id",
+                    schemaPath: "#/properties/desktop_control_id/anyOf/0/type",
+                    keyword: "type",
+                    params: { type: "string" },
+                    message: "must be string",
+                  };
+                  if (vErrors === null) {
+                    vErrors = [err0];
+                  } else {
+                    vErrors.push(err0);
+                  }
+                  errors++;
+                }
+                var _valid0 = _errs10 === errors;
+                valid3 = valid3 || _valid0;
+                const _errs12 = errors;
+                if (data4 !== null) {
+                  const err1 = {
+                    instancePath: instancePath + "/desktop_control_id",
+                    schemaPath: "#/properties/desktop_control_id/anyOf/1/type",
+                    keyword: "type",
+                    params: { type: "null" },
+                    message: "must be null",
+                  };
+                  if (vErrors === null) {
+                    vErrors = [err1];
+                  } else {
+                    vErrors.push(err1);
+                  }
+                  errors++;
+                }
+                var _valid0 = _errs12 === errors;
+                valid3 = valid3 || _valid0;
+                if (!valid3) {
+                  const err2 = {
+                    instancePath: instancePath + "/desktop_control_id",
+                    schemaPath: "#/properties/desktop_control_id/anyOf",
+                    keyword: "anyOf",
+                    params: {},
+                    message: "must match a schema in anyOf",
+                  };
+                  if (vErrors === null) {
+                    vErrors = [err2];
+                  } else {
+                    vErrors.push(err2);
+                  }
+                  errors++;
+                  validate189.errors = vErrors;
+                  return false;
+                } else {
+                  errors = _errs9;
+                  if (vErrors !== null) {
+                    if (_errs9) {
+                      vErrors.length = _errs9;
+                    } else {
+                      vErrors = null;
+                    }
+                  }
+                }
+                var valid0 = _errs8 === errors;
+              } else {
+                var valid0 = true;
+              }
             }
           }
         }
@@ -19187,7 +19264,10 @@ function validate230(
   return errors === 0;
 }
 validate230.evaluated = { dynamicProps: false, dynamicItems: false };
-var schema97 = { enum: ["approval", "call", "multiple"], type: "string" };
+var schema97 = {
+  enum: ["approval", "call", "multiple", "desktop_control"],
+  type: "string",
+};
 function validate233(
   data,
   {
@@ -19219,7 +19299,12 @@ function validate233(
     ];
     return false;
   }
-  if (!(data === "approval" || data === "call" || data === "multiple")) {
+  if (!(
+    data === "approval" ||
+    data === "call" ||
+    data === "multiple" ||
+    data === "desktop_control"
+  )) {
     validate233.errors = [
       {
         instancePath,
