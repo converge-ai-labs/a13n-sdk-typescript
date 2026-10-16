@@ -18448,7 +18448,11 @@
         ],
         "summary": "Test connector provider",
         "tags": ["providers"],
-        "x-a13n-mcp": true
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "providers"
+        }
       }
     },
     "/api/v1/environment-providers": {
@@ -18971,7 +18975,11 @@
         ],
         "summary": "Test environment provider",
         "tags": ["providers"],
-        "x-a13n-mcp": true
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "providers"
+        }
       }
     },
     "/api/v1/environment-templates": {
@@ -24435,7 +24443,11 @@
         ],
         "summary": "Test model provider",
         "tags": ["providers"],
-        "x-a13n-mcp": true
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "providers"
+        }
       }
     },
     "/api/v1/models": {
@@ -33822,7 +33834,11 @@
         ],
         "summary": "Test web provider",
         "tags": ["providers"],
-        "x-a13n-mcp": true
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "providers"
+        }
       }
     },
     "/api/v1/workspaces": {
