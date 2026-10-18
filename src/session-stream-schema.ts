@@ -110,7 +110,7 @@ export interface components {
         [key: string]: components["schemas"]["SubagentOverride"] | null;
       } | null;
       /** @default null */
-      tool_proxy?: components["schemas"]["ToolProxy"] | null;
+      tool_search?: components["schemas"]["ToolSearch"] | null;
       /**
        * Toolsets
        * @default null
@@ -797,6 +797,22 @@ export interface components {
       content: components["schemas"]["Part"][];
     };
     /**
+     * NativeToolSearchConfig
+     * @description Provider-native discovery; omitted strategy uses the provider default.
+     */
+    NativeToolSearchConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "native";
+      /**
+       * Strategy
+       * @default null
+       */
+      strategy?: ("bm25" | "regex") | null;
+    };
+    /**
      * ObserverContinuation
      * @description Native conversion cursors required to resume mid-part, without raw history.
      */
@@ -951,6 +967,37 @@ export interface components {
       instance_name: string;
       /** Plugin Key */
       plugin_key: string;
+    };
+    /**
+     * ProxyToolSearchConfig
+     * @description Names and bounded discovery settings for one Agent's proxy surface.
+     */
+    ProxyToolSearchConfig: {
+      /**
+       * Call Name
+       * @default call_proxy_tool
+       */
+      call_name?: string;
+      /**
+       * Max Results
+       * @default 10
+       */
+      max_results?: number;
+      /**
+       * Max Search Bytes
+       * @default 32768
+       */
+      max_search_bytes?: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "proxy";
+      /**
+       * Search Name
+       * @default search_proxy_tools
+       */
+      search_name?: string;
     };
     /** RecordSource */
     RecordSource: {
@@ -1286,49 +1333,39 @@ export interface components {
     ToolPermissionSetting:
       components["schemas"]["ToolPermissionMode"] | "inherit";
     /**
-     * ToolProxy
-     * @description Presentation of already-selected sources, composed by Harness once per agent.
+     * ToolReviewRule
+     * @description A matching rule overrides the supplied fields of the global policy.
      */
-    ToolProxy: {
-      config?: components["schemas"]["ToolProxyConfig"];
-      /** Groups */
-      groups?: {
-        [key: string]: components["schemas"]["ToolProxyGroup"];
-      };
+    ToolReviewRule: {
       /**
-       * Native Search
-       * @default false
+       * On Flagged
+       * @default null
        */
-      native_search?: boolean;
+      on_flagged?: ("deny" | "approval_required") | null;
+      /** @default null */
+      risk_threshold?: components["schemas"]["ToolRiskLevel"] | null;
     };
     /**
-     * ToolProxyConfig
-     * @description Names and bounded discovery settings for one Agent's proxy surface.
+     * ToolRiskLevel
+     * @enum {string}
      */
-    ToolProxyConfig: {
-      /**
-       * Call Name
-       * @default call_proxy_tool
-       */
-      call_name?: string;
-      /**
-       * Max Results
-       * @default 10
-       */
-      max_results?: number;
-      /**
-       * Max Search Bytes
-       * @default 32768
-       */
-      max_search_bytes?: number;
-      /**
-       * Search Name
-       * @default search_proxy_tools
-       */
-      search_name?: string;
+    ToolRiskLevel: "low" | "medium" | "high" | "extra_high";
+    /**
+     * ToolSearch
+     * @description Presentation of already-selected sources, composed by Harness once per agent.
+     */
+    ToolSearch: {
+      config?: components["schemas"]["ToolSearchConfig"];
+      /** Groups */
+      groups?: {
+        [key: string]: components["schemas"]["ToolSearchGroup"];
+      };
     };
-    /** ToolProxyGroup */
-    ToolProxyGroup: {
+    ToolSearchConfig:
+      | components["schemas"]["ProxyToolSearchConfig"]
+      | components["schemas"]["NativeToolSearchConfig"];
+    /** ToolSearchGroup */
+    ToolSearchGroup: {
       /**
        * Connections
        * @default []
@@ -1347,24 +1384,6 @@ export interface components {
        */
       plugins?: string[];
     };
-    /**
-     * ToolReviewRule
-     * @description A matching rule overrides the supplied fields of the global policy.
-     */
-    ToolReviewRule: {
-      /**
-       * On Flagged
-       * @default null
-       */
-      on_flagged?: ("deny" | "approval_required") | null;
-      /** @default null */
-      risk_threshold?: components["schemas"]["ToolRiskLevel"] | null;
-    };
-    /**
-     * ToolRiskLevel
-     * @enum {string}
-     */
-    ToolRiskLevel: "low" | "medium" | "high" | "extra_high";
     /** ToolSelection */
     ToolSelection: {
       /** Config */
