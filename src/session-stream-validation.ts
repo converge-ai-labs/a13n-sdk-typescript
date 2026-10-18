@@ -5240,6 +5240,7 @@ var schema44 = {
     "environment.state.restore",
     "environment.computer.describe",
     "environment.computer.observe",
+    "environment.computer.zoom",
     "environment.computer.click",
     "environment.computer.move",
     "environment.computer.drag",
@@ -5315,6 +5316,7 @@ function validate99(
     data === "environment.state.restore" ||
     data === "environment.computer.describe" ||
     data === "environment.computer.observe" ||
+    data === "environment.computer.zoom" ||
     data === "environment.computer.click" ||
     data === "environment.computer.move" ||
     data === "environment.computer.drag" ||
