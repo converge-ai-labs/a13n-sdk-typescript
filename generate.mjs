@@ -9,11 +9,60 @@ import ts from "typescript";
 import prettier from "prettier";
 import { generateResources } from "./resources.mjs";
 
+/** Closed discriminated alternatives exclude sibling-only fields, including on variables. */
+function closedUnionTransform(schemas = {}) {
+  const excluded = new Map();
+  for (const schema of Object.values(schemas)) {
+    if (!schema.discriminator || !schema.oneOf) continue;
+    const variants = schema.oneOf.map((variant) => ({
+      ref: variant.$ref,
+      schema: schemas[variant.$ref?.split("/").at(-1)],
+    }));
+    if (
+      !variants.every(
+        (variant) => variant.schema?.additionalProperties === false,
+      )
+    )
+      continue;
+    const fields = new Set(
+      variants.flatMap((variant) =>
+        Object.keys(variant.schema.properties ?? {}),
+      ),
+    );
+    for (const variant of variants) {
+      const missing = [...fields].filter(
+        (field) => !(field in (variant.schema.properties ?? {})),
+      );
+      excluded.set(variant.ref, [
+        ...new Set([...(excluded.get(variant.ref) ?? []), ...missing]),
+      ]);
+    }
+  }
+  return (node, options) => {
+    const fields = excluded.get(options.path);
+    if (!fields?.length || !ts.isTypeLiteralNode(node)) return;
+    return ts.factory.updateTypeLiteralNode(node, [
+      ...node.members,
+      ...fields.map((name) =>
+        ts.factory.createPropertySignature(
+          undefined,
+          ts.factory.createStringLiteral(name),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
+        ),
+      ),
+    ]);
+  };
+}
+
 /** Generate only from this repository's pinned input; never execute Service. */
 export async function generate({ root = new URL("./", import.meta.url) } = {}) {
   const source = new URL("contract/openapi.json", root);
-  const ast = await openapiTS(source, {
+  const upstream = await fs.readFile(source, "utf8");
+  const document = JSON.parse(upstream);
+  const ast = await openapiTS(document, {
     defaultNonNullable: false,
+    postTransform: closedUnionTransform(document.components?.schemas),
     transform(schema) {
       if (schema.format === "binary")
         return ts.factory.createTypeReferenceNode("Binary");
@@ -26,10 +75,7 @@ export async function generate({ root = new URL("./", import.meta.url) } = {}) {
       "\nexport type Binary = Blob | ReadableStream<Uint8Array>;\n",
     { parser: "typescript" },
   );
-  const snapshot = await prettier.format(await fs.readFile(source, "utf8"), {
-    parser: "json",
-  });
-  const document = JSON.parse(snapshot);
+  const snapshot = await prettier.format(upstream, { parser: "json" });
   // Session frames own continuation types independently of the HTTP schemas.
   const session = JSON.parse(
     await fs.readFile(
@@ -50,7 +96,10 @@ export async function generate({ root = new URL("./", import.meta.url) } = {}) {
       paths: {},
       components: { schemas: definitions },
     },
-    { defaultNonNullable: false },
+    {
+      defaultNonNullable: false,
+      postTransform: closedUnionTransform(definitions),
+    },
   );
   const sessionUnion = Object.entries(session.frames)
     .map(([name, schema]) => {

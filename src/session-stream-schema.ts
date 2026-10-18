@@ -109,6 +109,8 @@ export interface components {
       subagents?: {
         [key: string]: components["schemas"]["SubagentOverride"] | null;
       } | null;
+      /** @default null */
+      tool_search?: components["schemas"]["ToolSearch"] | null;
       /**
        * Toolsets
        * @default null
@@ -174,6 +176,7 @@ export interface components {
        * @enum {string}
        */
       action: "approve";
+      reason?: never;
     };
     /** AssetPart */
     AssetPart: {
@@ -184,6 +187,9 @@ export interface components {
        * @enum {string}
        */
       type: "asset";
+      text?: never;
+      url?: never;
+      value?: never;
     };
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
@@ -445,6 +451,7 @@ export interface components {
       | "environment.state.restore"
       | "environment.computer.describe"
       | "environment.computer.observe"
+      | "environment.computer.zoom"
       | "environment.computer.click"
       | "environment.computer.move"
       | "environment.computer.drag"
@@ -518,6 +525,7 @@ export interface components {
        * @enum {string}
        */
       status: "failed";
+      value?: never;
     };
     /** Failure */
     Failure: {
@@ -693,6 +701,9 @@ export interface components {
        */
       type: "json";
       value: components["schemas"]["JsonValue"];
+      text?: never;
+      asset_id?: never;
+      url?: never;
     };
     JsonValue: unknown;
     /** @enum {string} */
@@ -794,6 +805,26 @@ export interface components {
       content: components["schemas"]["Part"][];
     };
     /**
+     * NativeToolSearchConfig
+     * @description Provider-native discovery; omitted strategy uses the provider default.
+     */
+    NativeToolSearchConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "native";
+      /**
+       * Strategy
+       * @default null
+       */
+      strategy?: ("bm25" | "regex") | null;
+      call_name?: never;
+      max_results?: never;
+      max_search_bytes?: never;
+      search_name?: never;
+    };
+    /**
      * ObserverContinuation
      * @description Native conversion cursors required to resume mid-part, without raw history.
      */
@@ -880,6 +911,11 @@ export interface components {
       approvals: components["schemas"]["PendingCall"][];
       /** Calls */
       calls: components["schemas"]["PendingCall"][];
+      /**
+       * Desktop Control Id
+       * @default null
+       */
+      desktop_control_id?: string | null;
     };
     /** PendingCall */
     PendingCall: {
@@ -944,6 +980,38 @@ export interface components {
       /** Plugin Key */
       plugin_key: string;
     };
+    /**
+     * ProxyToolSearchConfig
+     * @description Names and bounded discovery settings for one Agent's proxy surface.
+     */
+    ProxyToolSearchConfig: {
+      /**
+       * Call Name
+       * @default call_proxy_tool
+       */
+      call_name?: string;
+      /**
+       * Max Results
+       * @default 10
+       */
+      max_results?: number;
+      /**
+       * Max Search Bytes
+       * @default 32768
+       */
+      max_search_bytes?: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "proxy";
+      /**
+       * Search Name
+       * @default search_proxy_tools
+       */
+      search_name?: string;
+      strategy?: never;
+    };
     /** RecordSource */
     RecordSource: {
       /** Id */
@@ -991,6 +1059,7 @@ export interface components {
        */
       status: "returned";
       value: components["schemas"]["JsonValue"];
+      message?: never;
     };
     /**
      * RunConfiguration
@@ -1204,6 +1273,9 @@ export interface components {
        * @enum {string}
        */
       type: "text";
+      asset_id?: never;
+      url?: never;
+      value?: never;
     };
     /**
      * ThreadState
@@ -1295,6 +1367,40 @@ export interface components {
      * @enum {string}
      */
     ToolRiskLevel: "low" | "medium" | "high" | "extra_high";
+    /**
+     * ToolSearch
+     * @description Presentation of already-selected sources, composed by Harness once per agent.
+     */
+    ToolSearch: {
+      config?: components["schemas"]["ToolSearchConfig"];
+      /** Groups */
+      groups?: {
+        [key: string]: components["schemas"]["ToolSearchGroup"];
+      };
+    };
+    ToolSearchConfig:
+      | components["schemas"]["ProxyToolSearchConfig"]
+      | components["schemas"]["NativeToolSearchConfig"];
+    /** ToolSearchGroup */
+    ToolSearchGroup: {
+      /**
+       * Connections
+       * @default []
+       */
+      connections?: string[];
+      /** Description */
+      description: string;
+      /**
+       * Platform
+       * @default false
+       */
+      platform?: boolean;
+      /**
+       * Plugins
+       * @default []
+       */
+      plugins?: string[];
+    };
     /** ToolSelection */
     ToolSelection: {
       /** Config */
@@ -1347,6 +1453,9 @@ export interface components {
       type: "url";
       /** Url */
       url: string;
+      text?: never;
+      asset_id?: never;
+      value?: never;
     };
     /** UsageLimit */
     UsageLimit: {
@@ -1405,7 +1514,7 @@ export interface components {
       total_tokens_limit?: number | null;
     };
     /** @enum {string} */
-    WaitReason: "approval" | "call" | "multiple";
+    WaitReason: "approval" | "call" | "multiple" | "desktop_control";
     /**
      * _Arguments
      * @description A tool-call part's streamed arguments so far and the one observation item that holds them.

@@ -126,3 +126,89 @@ test("all pinned generated outputs, including Session types, are byte-exact and 
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("closed discriminated unions exclude sibling fields in HTTP and Session without closing open variants", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "a13n-closed-union-"));
+  const root = pathToFileURL(`${directory}/`);
+  const branch = (mode, field, closed) => ({
+    type: "object",
+    ...(closed ? { additionalProperties: false } : {}),
+    required: ["mode"],
+    properties: {
+      mode: { const: mode, type: "string" },
+      [field]: { type: "string" },
+    },
+  });
+  const schemas = {
+    Left: branch("left", "left_only", true),
+    Right: branch("right", "right_only", true),
+    OpenLeft: branch("left", "open_left", false),
+    OpenRight: branch("right", "open_right", true),
+    Closed: {
+      discriminator: {
+        propertyName: "mode",
+        mapping: {
+          left: "#/components/schemas/Left",
+          right: "#/components/schemas/Right",
+        },
+      },
+      oneOf: [
+        { $ref: "#/components/schemas/Right" },
+        { $ref: "#/components/schemas/Left" },
+      ],
+    },
+    Open: {
+      discriminator: {
+        propertyName: "mode",
+        mapping: {
+          left: "#/components/schemas/OpenLeft",
+          right: "#/components/schemas/OpenRight",
+        },
+      },
+      oneOf: [
+        { $ref: "#/components/schemas/OpenLeft" },
+        { $ref: "#/components/schemas/OpenRight" },
+      ],
+    },
+  };
+  try {
+    await mkdir(new URL("contract/", root));
+    await writeFile(
+      new URL("contract/openapi.json", root),
+      JSON.stringify({
+        openapi: "3.1.0",
+        info: { title: "Closed fixture", version: "1" },
+        paths: {},
+        components: { schemas },
+      }),
+    );
+    await writeFile(
+      new URL("contract/session-stream.schema.json", root),
+      JSON.stringify({
+        title: "Closed Session fixture",
+        $defs: JSON.parse(
+          JSON.stringify(schemas).replaceAll(
+            "#/components/schemas/",
+            "#/$defs/",
+          ),
+        ),
+        frames: { probe: { $ref: "#/$defs/Closed" } },
+      }),
+    );
+    await generate({ root });
+    for (const name of ["src/schema.ts", "src/session-stream-schema.ts"]) {
+      const source = await readFile(new URL(name, root), "utf8");
+      assert.match(
+        source,
+        /Left: \{[\s\S]*?left_only\?: string;\s+right_only\?: never;/,
+      );
+      assert.match(
+        source,
+        /Right: \{[\s\S]*?right_only\?: string;\s+left_only\?: never;/,
+      );
+      assert.doesNotMatch(source, /open_(left|right)\?: never/);
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

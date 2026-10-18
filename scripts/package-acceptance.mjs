@@ -434,6 +434,7 @@ client.close();
       join(temporaryRoot, target),
       content
         .replace('from "../dist/index.js"', 'from "@converge.ai/a13n"')
+        .replace('from "../src/index.js"', 'from "@converge.ai/a13n"')
         .replace(
           'from "../scripts/accept-refresh.mjs"',
           'from "./accept-refresh.mjs"',
@@ -452,17 +453,26 @@ client.close();
   // Consume the new Session API only through the installed public package.
   for (const [source, target] of [
     ["tests/session-stream.test.mjs", "session-stream.test.mjs"],
+    ["tests/desktop-context.test.mjs", "desktop-context.test.mjs"],
+    ["tests/desktop-context.ts", "desktop-context.ts"],
     ["tests/session-fixtures.mjs", "session-fixtures.mjs"],
     ["tests/session-caller.test.mjs", "session-caller.test.mjs"],
     ["scripts/accept-session.mjs", "accept-session.mjs"],
+    ["tests/followup-caller.test.mjs", "followup-caller.test.mjs"],
+    ["scripts/accept-followup.mjs", "accept-followup.mjs"],
   ]) {
     writeFileSync(
       join(temporaryRoot, target),
       readFileSync(join(packageRoot, source), "utf8")
         .replace('from "../dist/index.js"', 'from "@converge.ai/a13n"')
+        .replace('from "../src/index.js"', 'from "@converge.ai/a13n"')
         .replace(
           'from "../scripts/accept-session.mjs"',
           'from "./accept-session.mjs"',
+        )
+        .replace(
+          'from "../scripts/accept-followup.mjs"',
+          'from "./accept-followup.mjs"',
         ),
     );
   }
@@ -473,6 +483,8 @@ client.close();
       "--test",
       "session-stream.test.mjs",
       "session-caller.test.mjs",
+      "desktop-context.test.mjs",
+      "followup-caller.test.mjs",
     ],
     { cwd: temporaryRoot, stdio: "inherit" },
   );
@@ -497,7 +509,7 @@ client.close();
         strict: true,
         target: "ES2023",
       },
-      include: ["consumer.ts", "service-refresh.ts"],
+      include: ["consumer.ts", "service-refresh.ts", "desktop-context.ts"],
     }),
   );
   const typescriptPackage = JSON.parse(
