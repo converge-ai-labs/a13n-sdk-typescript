@@ -176,6 +176,7 @@ export interface components {
        * @enum {string}
        */
       action: "approve";
+      reason?: never;
     };
     /** AssetPart */
     AssetPart: {
@@ -186,6 +187,9 @@ export interface components {
        * @enum {string}
        */
       type: "asset";
+      text?: never;
+      url?: never;
+      value?: never;
     };
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
@@ -521,6 +525,7 @@ export interface components {
        * @enum {string}
        */
       status: "failed";
+      value?: never;
     };
     /** Failure */
     Failure: {
@@ -696,6 +701,9 @@ export interface components {
        */
       type: "json";
       value: components["schemas"]["JsonValue"];
+      text?: never;
+      asset_id?: never;
+      url?: never;
     };
     JsonValue: unknown;
     /** @enum {string} */
@@ -811,6 +819,10 @@ export interface components {
        * @default null
        */
       strategy?: ("bm25" | "regex") | null;
+      call_name?: never;
+      max_results?: never;
+      max_search_bytes?: never;
+      search_name?: never;
     };
     /**
      * ObserverContinuation
@@ -998,6 +1010,7 @@ export interface components {
        * @default search_proxy_tools
        */
       search_name?: string;
+      strategy?: never;
     };
     /** RecordSource */
     RecordSource: {
@@ -1046,6 +1059,7 @@ export interface components {
        */
       status: "returned";
       value: components["schemas"]["JsonValue"];
+      message?: never;
     };
     /**
      * RunConfiguration
@@ -1259,6 +1273,9 @@ export interface components {
        * @enum {string}
        */
       type: "text";
+      asset_id?: never;
+      url?: never;
+      value?: never;
     };
     /**
      * ThreadState
@@ -1436,6 +1453,9 @@ export interface components {
       type: "url";
       /** Url */
       url: string;
+      text?: never;
+      asset_id?: never;
+      value?: never;
     };
     /** UsageLimit */
     UsageLimit: {

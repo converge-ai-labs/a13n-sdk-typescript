@@ -200,3 +200,65 @@ try {
 ```
 
 This bounded example buffers one image; stream large bodies to a destination instead. The response is an unbuffered `BinaryResult` for PNG or JPEG bytes with native metadata and ordinary `ApiError` failures. Image references are separate from Assets, saved `/contents`, and public URLs. A streamed reference can precede committed display publication and temporarily return 404. Read committed Items for durable references and handle that result explicitly; an image read failure never replays the Computer action. Client close/abort ends local download ownership without affecting remote execution.
+
+## Configure tool discovery on an Agent revision
+
+`tool_search` controls how selected tools are presented. Use the native tagged configuration rather than a JSON string. This program creates a disposable Agent with native discovery; run it with `A13N_MODEL_KEY` and ordinary Service credentials:
+
+```js
+import { createClient } from "@converge.ai/a13n";
+
+const client = createClient({
+  baseUrl: process.env.A13N_SERVICE_URL,
+  auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
+});
+try {
+  const created = await client.api.agents.create({
+    name: "Native discovery example",
+    config: {
+      model: process.env.A13N_MODEL_KEY,
+      tool_search: { config: { mode: "native", strategy: null }, groups: {} },
+    },
+  });
+  console.log("Agent ID:", created.data.id);
+} finally {
+  client.close();
+}
+```
+
+Native strategy may be omitted, null, `bm25` or `regex`; Service checks Model support before execution. For proxy discovery, replace the entire block with `{config:{mode:"proxy",search_name:"search_proxy_tools",call_name:"call_proxy_tool",max_results:10,max_search_bytes:32768},groups:{}}`. Proxy fields cannot accompany native mode, and native `strategy` cannot accompany proxy mode. Explicit `config:null` or `config:{}` is invalid; omitting `config` selects Service's default proxy configuration. Names and numeric bounds remain Service-validated.
+
+`groups:{}` disables grouping. A named group such as `{policies:{description:"Search approved policy tools",connections:[connectionId]}}` groups tools from an already selected Connection; optional `plugins` and `platform` select their native sources. Grouping grants no source authority. Each group requires a nonblank description, and Service checks duplicate/unknown sources. `tool_search:{}` selects the native defaults; an omitted/null Run override inherits the revision, while a non-null override **replaces the whole block**, including groups. The SDK implements no tool search engine, source selection fallback or provider execution.
+
+## Read the latest completed context contribution
+
+Save this read-only program as `context-usage.mjs` and supply an authorized `A13N_RUN_ID`:
+
+```js
+import { createClient } from "@converge.ai/a13n";
+
+const client = createClient({
+  baseUrl: process.env.A13N_SERVICE_URL,
+  auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
+});
+try {
+  const usage = await client.api.usage.context.get({
+    query: { run_id: process.env.A13N_RUN_ID },
+  });
+  if (usage.data === null) {
+    console.log("No completed main-Agent contribution for this Run.");
+  } else {
+    console.log({
+      run_id: usage.data.run_id,
+      record_id: usage.data.record_id,
+      input_tokens: usage.data.input_tokens,
+      output_tokens: usage.data.output_tokens,
+      context_window_tokens: usage.data.context_window_tokens,
+    });
+  }
+} finally {
+  client.close();
+}
+```
+
+Use exactly one of `thread_id`, `run_id` or `record_id`; omit unused query keys. Service returns 400 for invalid selector combinations and 404 for a missing selected resource. Existing Thread/Run resources without an eligible completed main-Agent contribution return HTTP 200 JSON null. A Thread selector can retain an older completed contribution while a newer Run is pending. This is neither a pending-prompt estimate nor aggregate billing usage. An explicit record selects that contribution, including failed/child contributions. Every non-null response includes all three token/window fields, each nullable; unknown capacity stays null and valid zero stays zero. Capacity uses the current Model configuration. Preserve the response rather than computing a fabricated utilization ratio or subtracting cache usage.

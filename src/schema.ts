@@ -4079,6 +4079,7 @@ export interface components {
        * @enum {string}
        */
       action: "approve";
+      reason?: never;
     };
     /** @enum {string} */
     Assessment:
@@ -4145,6 +4146,9 @@ export interface components {
        * @enum {string}
        */
       type: "asset";
+      text?: never;
+      url?: never;
+      value?: never;
     };
     /** AttemptView */
     AttemptView: {
@@ -5199,6 +5203,7 @@ export interface components {
        * @enum {string}
        */
       status: "failed";
+      value?: never;
     };
     /** Failure */
     Failure: {
@@ -5677,6 +5682,9 @@ export interface components {
        */
       type: "json";
       value: components["schemas"]["JsonValue"];
+      text?: never;
+      asset_id?: never;
+      url?: never;
     };
     JsonValue: unknown;
     /** KeyCreate */
@@ -6761,6 +6769,10 @@ export interface components {
       mode: "native";
       /** Strategy */
       strategy?: ("bm25" | "regex") | null;
+      call_name?: never;
+      max_results?: never;
+      max_search_bytes?: never;
+      search_name?: never;
     };
     /** NewThread */
     NewThread: {
@@ -7371,6 +7383,7 @@ export interface components {
        * @default search_proxy_tools
        */
       search_name?: string;
+      strategy?: never;
     };
     /** Request */
     Request: {
@@ -7425,6 +7438,7 @@ export interface components {
        */
       status: "returned";
       value: components["schemas"]["JsonValue"];
+      message?: never;
     };
     /** RevokedConnection */
     RevokedConnection: {
@@ -8471,6 +8485,9 @@ export interface components {
        * @enum {string}
        */
       type: "text";
+      asset_id?: never;
+      url?: never;
+      value?: never;
     };
     /** ThreadPage */
     ThreadPage: {
@@ -8802,6 +8819,9 @@ export interface components {
       type: "url";
       /** Url */
       url: string;
+      text?: never;
+      asset_id?: never;
+      value?: never;
     };
     /** UsageLimit */
     UsageLimit: {
