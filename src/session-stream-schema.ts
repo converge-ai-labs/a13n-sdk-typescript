@@ -457,7 +457,9 @@ export interface components {
       | "environment.computer.drag"
       | "environment.computer.scroll"
       | "environment.computer.type_text"
-      | "environment.computer.press_keys";
+      | "environment.computer.press_keys"
+      | "environment.computer.read_clipboard"
+      | "environment.computer.write_clipboard";
     /** EnvironmentMount */
     EnvironmentMount: {
       /** Environment Id */

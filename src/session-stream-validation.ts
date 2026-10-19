@@ -5247,6 +5247,8 @@ var schema44 = {
     "environment.computer.scroll",
     "environment.computer.type_text",
     "environment.computer.press_keys",
+    "environment.computer.read_clipboard",
+    "environment.computer.write_clipboard",
   ],
   title: "EnvironmentAction",
   type: "string",
@@ -5322,7 +5324,9 @@ function validate99(
     data === "environment.computer.drag" ||
     data === "environment.computer.scroll" ||
     data === "environment.computer.type_text" ||
-    data === "environment.computer.press_keys"
+    data === "environment.computer.press_keys" ||
+    data === "environment.computer.read_clipboard" ||
+    data === "environment.computer.write_clipboard"
   )) {
     validate99.errors = [
       {
