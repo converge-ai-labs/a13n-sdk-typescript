@@ -14,22 +14,21 @@ import {
   type ResourceResult,
   type BinaryResult,
 } from "./base.js";
-type Operation0 = operations["prepare_composer_api_v1_agent_composer_post"];
+type Operation0 = operations["prepare_composer"];
 type Operation0Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation0["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation75 =
-  operations["prepare_finding_agent_api_v1_finding_agent_post"];
+type Operation75 = operations["prepare_finding_agent"];
 type Operation75Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation75["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation1 = operations["list_agents_api_v1_agents_get"];
+type Operation1 = operations["list_agents"];
 type Operation1Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation1["parameters"]["query"]>;
@@ -37,28 +36,28 @@ type Operation1Options = {
     Operation1["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation2 = operations["create_agent_api_v1_agents_post"];
+type Operation2 = operations["create_agent"];
 type Operation2Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation2["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation3 = operations["validate_revision_api_v1_agents_validate_post"];
+type Operation3 = operations["validate_agent"];
 type Operation3Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation3["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation4 = operations["get_agent_api_v1_agents__agent_id__get"];
+type Operation4 = operations["get_agent"];
 type Operation4Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation4["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation5 = operations["update_agent_api_v1_agents__agent_id__patch"];
+type Operation5 = operations["update_agent"];
 type Operation5Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -68,8 +67,7 @@ type Operation5Options = {
     Operation5["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation6 =
-  operations["archive_agent_api_v1_agents__agent_id__archive_post"];
+type Operation6 = operations["archive_agent"];
 type Operation6Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -79,16 +77,14 @@ type Operation6Options = {
     Operation6["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation10 =
-  operations["duplicate_agent_api_v1_agents__agent_id__duplicate_post"];
+type Operation10 = operations["duplicate_agent"];
 type Operation10Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation10["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation16 =
-  operations["unarchive_agent_api_v1_agents__agent_id__unarchive_post"];
+type Operation16 = operations["unarchive_agent"];
 type Operation16Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -98,8 +94,7 @@ type Operation16Options = {
     Operation16["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation7 =
-  operations["delete_avatar_api_v1_agents__agent_id__avatar_delete"];
+type Operation7 = operations["delete_agent_avatar"];
 type Operation7Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -109,14 +104,14 @@ type Operation7Options = {
     Operation7["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation8 = operations["get_avatar_api_v1_agents__agent_id__avatar_get"];
+type Operation8 = operations["get_agent_avatar"];
 type Operation8Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation8["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation9 = operations["put_avatar_api_v1_agents__agent_id__avatar_put"];
+type Operation9 = operations["put_agent_avatar"];
 type Operation9Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -127,8 +122,7 @@ type Operation9Options = {
   >["X-Workspace-ID"];
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation11 =
-  operations["list_revisions_api_v1_agents__agent_id__revisions_get"];
+type Operation11 = operations["list_agent_revisions"];
 type Operation11Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation11["parameters"]["query"]>;
@@ -136,8 +130,7 @@ type Operation11Options = {
     Operation11["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation12 =
-  operations["create_revision_api_v1_agents__agent_id__revisions_post"];
+type Operation12 = operations["create_agent_revision"];
 type Operation12Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -147,8 +140,7 @@ type Operation12Options = {
     Operation12["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation13 =
-  operations["get_revision_api_v1_agents__agent_id__revisions__revision_id__get"];
+type Operation13 = operations["get_agent_revision"];
 type Operation13Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation13["parameters"]["query"]>;
@@ -156,8 +148,7 @@ type Operation13Options = {
     Operation13["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation15 =
-  operations["set_default_api_v1_agents__agent_id__revisions__revision_id__set_default_post"];
+type Operation15 = operations["set_default_agent_revision"];
 type Operation15Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -167,8 +158,7 @@ type Operation15Options = {
     Operation15["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation14 =
-  operations["compare_revisions_api_v1_agents__agent_id__revisions__revision_id__compare_get"];
+type Operation14 = operations["compare_agent_revisions"];
 type Operation14Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation14["parameters"]["query"]>;
@@ -176,7 +166,7 @@ type Operation14Options = {
     Operation14["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation17 = operations["list_assets_api_v1_assets_get"];
+type Operation17 = operations["list_assets"];
 type Operation17Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation17["parameters"]["query"]>;
@@ -184,14 +174,14 @@ type Operation17Options = {
     Operation17["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation18 = operations["create_asset_api_v1_assets_post"];
+type Operation18 = operations["create_asset"];
 type Operation18Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation18["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation19 = operations["retire_asset_api_v1_assets__asset_id__delete"];
+type Operation19 = operations["retire_asset"];
 type Operation19Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -201,42 +191,36 @@ type Operation19Options = {
     Operation19["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation20 = operations["get_asset_api_v1_assets__asset_id__get"];
+type Operation20 = operations["get_asset"];
 type Operation20Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation20["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation21 =
-  operations["read_asset_content_api_v1_assets__asset_id__content_get"];
+type Operation21 = operations["read_asset_content"];
 type Operation21Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation21["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation22 =
-  operations["bootstrap_administrator_api_v1_auth_bootstrap_post"];
+type Operation22 = operations["bootstrap_administrator"];
 type Operation22Options = { signal?: AbortSignal };
-type Operation25 = operations["password_login_api_v1_auth_login_post"];
+type Operation25 = operations["password_login"];
 type Operation25Options = { signal?: AbortSignal };
 type Operation26Options = { signal?: AbortSignal };
-type Operation23 =
-  operations["auth_configuration_api_v1_auth_configuration_get"];
+type Operation23 = operations["auth_configuration"];
 type Operation23Options = { signal?: AbortSignal };
-type Operation24 =
-  operations["confirm_email_change_api_v1_auth_email_change_confirm_post"];
+type Operation24 = operations["confirm_email_change"];
 type Operation24Options = { signal?: AbortSignal };
-type Operation27 =
-  operations["request_password_reset_api_v1_auth_password_reset_post"];
+type Operation27 = operations["request_password_reset"];
 type Operation27Options = { signal?: AbortSignal };
-type Operation28 =
-  operations["confirm_password_reset_api_v1_auth_password_reset_confirm_post"];
+type Operation28 = operations["confirm_password_reset"];
 type Operation28Options = { signal?: AbortSignal };
-type Operation29 = operations["session_profile_api_v1_auth_session_get"];
+type Operation29 = operations["session_profile"];
 type Operation29Options = { signal?: AbortSignal };
-type Operation30 = operations["list_connections_api_v1_connections_get"];
+type Operation30 = operations["list_connections"];
 type Operation30Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation30["parameters"]["query"]>;
@@ -244,32 +228,28 @@ type Operation30Options = {
     Operation30["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation31 = operations["create_connection_api_v1_connections_post"];
+type Operation31 = operations["create_connection"];
 type Operation31Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation31["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation32 =
-  operations["complete_authorization_api_v1_connections_callback_get"];
+type Operation32 = operations["complete_authorization"];
 type Operation32Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation32["parameters"]["query"]>;
 };
-type Operation33 =
-  operations["get_redirect_uri_api_v1_connections_redirect_uri_get"];
+type Operation33 = operations["get_redirect_uri"];
 type Operation33Options = { signal?: AbortSignal };
-type Operation34 =
-  operations["get_connection_api_v1_connections__connection_id__get"];
+type Operation34 = operations["get_connection"];
 type Operation34Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation34["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation35 =
-  operations["update_connection_api_v1_connections__connection_id__patch"];
+type Operation35 = operations["update_connection"];
 type Operation35Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -279,8 +259,7 @@ type Operation35Options = {
     Operation35["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation36 =
-  operations["authorize_connection_api_v1_connections__connection_id__authorize_post"];
+type Operation36 = operations["authorize_connection"];
 type Operation36Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -290,8 +269,7 @@ type Operation36Options = {
     Operation36["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation37 =
-  operations["revoke_connection_api_v1_connections__connection_id__revoke_post"];
+type Operation37 = operations["revoke_connection"];
 type Operation37Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -301,24 +279,21 @@ type Operation37Options = {
     Operation37["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation38 =
-  operations["test_connection_api_v1_connections__connection_id__test_post"];
+type Operation38 = operations["test_connection"];
 type Operation38Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation38["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation39 =
-  operations["list_tools_api_v1_connections__connection_id__tools_get"];
+type Operation39 = operations["list_connection_tools"];
 type Operation39Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation39["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation40 =
-  operations["define_connection_tools_api_v1_connections__connection_id__tools_definitions_get"];
+type Operation40 = operations["define_connection_tools"];
 type Operation40Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation40["parameters"]["query"]>;
@@ -326,8 +301,7 @@ type Operation40Options = {
     Operation40["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation41 =
-  operations["index_connection_tools_api_v1_connections__connection_id__tools_index_get"];
+type Operation41 = operations["index_connection_tools"];
 type Operation41Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation41["parameters"]["query"]>;
@@ -335,7 +309,7 @@ type Operation41Options = {
     Operation41["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation42 = operations["list_providers_api_v1_connector_providers_get"];
+type Operation42 = operations["list_connector_providers"];
 type Operation42Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation42["parameters"]["query"]>;
@@ -343,24 +317,21 @@ type Operation42Options = {
     Operation42["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation43 =
-  operations["create_provider_api_v1_connector_providers_post"];
+type Operation43 = operations["create_connector_provider"];
 type Operation43Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation43["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation44 =
-  operations["get_provider_api_v1_connector_providers__provider_id__get"];
+type Operation44 = operations["get_connector_provider"];
 type Operation44Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation44["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation45 =
-  operations["update_provider_api_v1_connector_providers__provider_id__patch"];
+type Operation45 = operations["update_connector_provider"];
 type Operation45Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -370,16 +341,14 @@ type Operation45Options = {
     Operation45["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation51 =
-  operations["test_provider_api_v1_connector_providers__provider_id__test_post"];
+type Operation51 = operations["test_connector_provider"];
 type Operation51Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation51["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation46 =
-  operations["list_apps_api_v1_connector_providers__provider_id__apps_get"];
+type Operation46 = operations["list_connector_apps"];
 type Operation46Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation46["parameters"]["query"]>;
@@ -387,24 +356,21 @@ type Operation46Options = {
     Operation46["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation47 =
-  operations["get_app_api_v1_connector_providers__provider_id__apps__app__get"];
+type Operation47 = operations["get_connector_app"];
 type Operation47Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation47["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation48 =
-  operations["list_actions_api_v1_connector_providers__provider_id__apps__app__actions_get"];
+type Operation48 = operations["list_connector_actions"];
 type Operation48Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation48["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation49 =
-  operations["define_connector_actions_api_v1_connector_providers__provider_id__apps__app__actions_definitions_get"];
+type Operation49 = operations["define_connector_actions"];
 type Operation49Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation49["parameters"]["query"]>;
@@ -412,8 +378,7 @@ type Operation49Options = {
     Operation49["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation50 =
-  operations["index_connector_actions_api_v1_connector_providers__provider_id__apps__app__actions_index_get"];
+type Operation50 = operations["index_connector_actions"];
 type Operation50Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation50["parameters"]["query"]>;
@@ -421,16 +386,14 @@ type Operation50Options = {
     Operation50["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation52 =
-  operations["complete_assistance_api_v1_desktop_assistance__assistance_id__complete_post"];
+type Operation52 = operations["complete_assistance"];
 type Operation52Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation52["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation53 =
-  operations["control_desktop_api_v1_desktop_assistance__assistance_id__control_post"];
+type Operation53 = operations["control_desktop"];
 type Operation53Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation53["parameters"]["query"]>;
@@ -438,24 +401,21 @@ type Operation53Options = {
     Operation53["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation54 =
-  operations["disconnect_desktop_api_v1_desktop_assistance__assistance_id__disconnect_post"];
+type Operation54 = operations["disconnect_desktop"];
 type Operation54Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation54["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation55 =
-  operations["request_control_api_v1_desktop_assistance__assistance_id__request_control_post"];
+type Operation55 = operations["request_control"];
 type Operation55Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation55["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation56 =
-  operations["view_desktop_api_v1_desktop_assistance__assistance_id__view_post"];
+type Operation56 = operations["view_desktop"];
 type Operation56Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation56["parameters"]["query"]>;
@@ -463,8 +423,7 @@ type Operation56Options = {
     Operation56["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation57 =
-  operations["list_providers_api_v1_environment_providers_get"];
+type Operation57 = operations["list_environment_providers"];
 type Operation57Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation57["parameters"]["query"]>;
@@ -472,16 +431,14 @@ type Operation57Options = {
     Operation57["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation58 =
-  operations["create_provider_api_v1_environment_providers_post"];
+type Operation58 = operations["create_environment_provider"];
 type Operation58Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation58["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation59 =
-  operations["delete_environment_provider_api_v1_environment_providers__provider_id__delete"];
+type Operation59 = operations["delete_environment_provider"];
 type Operation59Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -491,16 +448,14 @@ type Operation59Options = {
     Operation59["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation60 =
-  operations["get_provider_api_v1_environment_providers__provider_id__get"];
+type Operation60 = operations["get_environment_provider"];
 type Operation60Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation60["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation61 =
-  operations["update_provider_api_v1_environment_providers__provider_id__patch"];
+type Operation61 = operations["update_environment_provider"];
 type Operation61Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -510,24 +465,21 @@ type Operation61Options = {
     Operation61["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation63 =
-  operations["test_provider_api_v1_environment_providers__provider_id__test_post"];
+type Operation63 = operations["test_environment_provider"];
 type Operation63Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation63["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation62 =
-  operations["environment_provider_references_api_v1_environment_providers__provider_id__references_get"];
+type Operation62 = operations["environment_provider_references"];
 type Operation62Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation62["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation64 =
-  operations["list_templates_api_v1_environment_templates_get"];
+type Operation64 = operations["list_environment_templates"];
 type Operation64Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation64["parameters"]["query"]>;
@@ -535,24 +487,21 @@ type Operation64Options = {
     Operation64["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation65 =
-  operations["create_template_api_v1_environment_templates_post"];
+type Operation65 = operations["create_environment_template"];
 type Operation65Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation65["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation66 =
-  operations["get_template_api_v1_environment_templates__template_id__get"];
+type Operation66 = operations["get_environment_template"];
 type Operation66Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation66["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation67 =
-  operations["update_template_api_v1_environment_templates__template_id__patch"];
+type Operation67 = operations["update_environment_template"];
 type Operation67Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -562,7 +511,7 @@ type Operation67Options = {
     Operation67["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation68 = operations["list_environments_api_v1_environments_get"];
+type Operation68 = operations["list_environments"];
 type Operation68Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation68["parameters"]["query"]>;
@@ -570,15 +519,14 @@ type Operation68Options = {
     Operation68["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation69 = operations["create_environment_api_v1_environments_post"];
+type Operation69 = operations["create_environment"];
 type Operation69Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation69["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation70 =
-  operations["delete_environment_api_v1_environments__environment_id__delete"];
+type Operation70 = operations["delete_environment"];
 type Operation70Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -588,16 +536,14 @@ type Operation70Options = {
     Operation70["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation71 =
-  operations["get_environment_api_v1_environments__environment_id__get"];
+type Operation71 = operations["get_environment"];
 type Operation71Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation71["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation72 =
-  operations["update_environment_api_v1_environments__environment_id__patch"];
+type Operation72 = operations["update_environment"];
 type Operation72Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -607,8 +553,7 @@ type Operation72Options = {
     Operation72["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation74 =
-  operations["stop_environment_api_v1_environments__environment_id__stop_post"];
+type Operation74 = operations["stop_environment"];
 type Operation74Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -618,15 +563,14 @@ type Operation74Options = {
     Operation74["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation73 =
-  operations["check_computer_api_v1_environments__environment_id__computer_check_post"];
+type Operation73 = operations["check_computer"];
 type Operation73Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation73["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation76 = operations["list_analyses_api_v1_finding_analyses_get"];
+type Operation76 = operations["list_finding_analyses"];
 type Operation76Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation76["parameters"]["query"]>;
@@ -634,7 +578,7 @@ type Operation76Options = {
     Operation76["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation77 = operations["start_analysis_api_v1_finding_analyses_post"];
+type Operation77 = operations["start_analysis"];
 type Operation77Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -644,7 +588,7 @@ type Operation77Options = {
     Operation77["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation78 = operations["list_findings_api_v1_findings_get"];
+type Operation78 = operations["list_findings"];
 type Operation78Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation78["parameters"]["query"]>;
@@ -652,22 +596,21 @@ type Operation78Options = {
     Operation78["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation79 = operations["create_finding_api_v1_findings_post"];
+type Operation79 = operations["create_finding"];
 type Operation79Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation79["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation80 = operations["get_finding_api_v1_findings__finding_id__get"];
+type Operation80 = operations["get_finding"];
 type Operation80Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation80["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation81 =
-  operations["update_finding_api_v1_findings__finding_id__patch"];
+type Operation81 = operations["update_finding"];
 type Operation81Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -677,24 +620,21 @@ type Operation81Options = {
     Operation81["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation82 =
-  operations["accept_api_v1_invitations__invitation_id__accept_post"];
+type Operation82 = operations["accept"];
 type Operation82Options = { signal?: AbortSignal };
-type Operation83 = operations["list_mcp_servers_api_v1_mcp_servers_get"];
+type Operation83 = operations["list_mcp_servers"];
 type Operation83Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation83["parameters"]["query"]>;
 };
-type Operation84 =
-  operations["get_media_defaults_api_v1_media_understanding_defaults_get"];
+type Operation84 = operations["get_media_defaults"];
 type Operation84Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation84["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation85 =
-  operations["replace_media_defaults_api_v1_media_understanding_defaults_put"];
+type Operation85 = operations["replace_media_defaults"];
 type Operation85Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -704,7 +644,7 @@ type Operation85Options = {
     Operation85["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation86 = operations["list_memories_api_v1_memories_get"];
+type Operation86 = operations["list_memories"];
 type Operation86Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation86["parameters"]["query"]>;
@@ -712,15 +652,14 @@ type Operation86Options = {
     Operation86["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation87 = operations["create_memory_api_v1_memories_post"];
+type Operation87 = operations["create_memory"];
 type Operation87Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation87["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation88 =
-  operations["delete_memory_api_v1_memories__memory_id__delete"];
+type Operation88 = operations["delete_memory"];
 type Operation88Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -730,15 +669,14 @@ type Operation88Options = {
     Operation88["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation89 = operations["get_memory_api_v1_memories__memory_id__get"];
+type Operation89 = operations["get_memory"];
 type Operation89Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation89["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation90 =
-  operations["update_memory_api_v1_memories__memory_id__patch"];
+type Operation90 = operations["update_memory"];
 type Operation90Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -748,8 +686,7 @@ type Operation90Options = {
     Operation90["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation91 =
-  operations["list_files_api_v1_memories__memory_id__files_get"];
+type Operation91 = operations["list_files"];
 type Operation91Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation91["parameters"]["query"]>;
@@ -757,16 +694,14 @@ type Operation91Options = {
     Operation91["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation92 =
-  operations["create_file_api_v1_memories__memory_id__files_post"];
+type Operation92 = operations["create_file"];
 type Operation92Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation92["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation93 =
-  operations["move_file_api_v1_memories__memory_id__files_move_post"];
+type Operation93 = operations["move_file"];
 type Operation93Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -776,8 +711,7 @@ type Operation93Options = {
     Operation93["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation94 =
-  operations["delete_file_api_v1_memories__memory_id__files__path__delete"];
+type Operation94 = operations["delete_file"];
 type Operation94Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -787,16 +721,14 @@ type Operation94Options = {
     Operation94["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation95 =
-  operations["read_file_api_v1_memories__memory_id__files__path__get"];
+type Operation95 = operations["read_file"];
 type Operation95Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation95["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation96 =
-  operations["replace_file_api_v1_memories__memory_id__files__path__put"];
+type Operation96 = operations["replace_file"];
 type Operation96Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -806,8 +738,7 @@ type Operation96Options = {
     Operation96["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation97 =
-  operations["list_records_api_v1_memories__memory_id__records_get"];
+type Operation97 = operations["list_records"];
 type Operation97Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation97["parameters"]["query"]>;
@@ -815,40 +746,35 @@ type Operation97Options = {
     Operation97["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation98 =
-  operations["add_record_api_v1_memories__memory_id__records_post"];
+type Operation98 = operations["add_record"];
 type Operation98Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation98["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation99 =
-  operations["search_records_api_v1_memories__memory_id__records_search_post"];
+type Operation99 = operations["search_records"];
 type Operation99Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation99["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation100 =
-  operations["delete_record_api_v1_memories__memory_id__records__record_id__delete"];
+type Operation100 = operations["delete_record"];
 type Operation100Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation100["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation101 =
-  operations["update_record_api_v1_memories__memory_id__records__record_id__put"];
+type Operation101 = operations["update_record"];
 type Operation101Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation101["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation102 =
-  operations["purge_history_api_v1_memories__memory_id__revisions_delete"];
+type Operation102 = operations["purge_history"];
 type Operation102Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation102["parameters"]["query"]>;
@@ -856,8 +782,7 @@ type Operation102Options = {
     Operation102["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation103 =
-  operations["list_revisions_api_v1_memories__memory_id__revisions_get"];
+type Operation103 = operations["list_memory_revisions"];
 type Operation103Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation103["parameters"]["query"]>;
@@ -865,16 +790,14 @@ type Operation103Options = {
     Operation103["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation104 =
-  operations["get_revision_api_v1_memories__memory_id__revisions__seq__get"];
+type Operation104 = operations["get_memory_revision"];
 type Operation104Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation104["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation105 =
-  operations["restore_revision_api_v1_memories__memory_id__revisions__seq__restore_post"];
+type Operation105 = operations["restore_memory_revision"];
 type Operation105Options = {
   signal?: AbortSignal;
   ifMatch?: NonNullable<Operation105["parameters"]["header"]>["If-Match"];
@@ -882,7 +805,7 @@ type Operation105Options = {
     Operation105["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation106 = operations["list_providers_api_v1_memory_providers_get"];
+type Operation106 = operations["list_memory_providers"];
 type Operation106Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation106["parameters"]["query"]>;
@@ -890,23 +813,21 @@ type Operation106Options = {
     Operation106["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation107 = operations["create_provider_api_v1_memory_providers_post"];
+type Operation107 = operations["create_memory_provider"];
 type Operation107Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation107["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation108 =
-  operations["get_provider_api_v1_memory_providers__provider_id__get"];
+type Operation108 = operations["get_memory_provider"];
 type Operation108Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation108["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation109 =
-  operations["update_provider_api_v1_memory_providers__provider_id__patch"];
+type Operation109 = operations["update_memory_provider"];
 type Operation109Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -916,15 +837,14 @@ type Operation109Options = {
     Operation109["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation110 =
-  operations["test_provider_api_v1_memory_providers__provider_id__test_post"];
+type Operation110 = operations["test_memory_provider"];
 type Operation110Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation110["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation111 = operations["list_spaces_api_v1_memory_spaces_get"];
+type Operation111 = operations["list_spaces"];
 type Operation111Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation111["parameters"]["query"]>;
@@ -932,15 +852,14 @@ type Operation111Options = {
     Operation111["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation112 = operations["create_space_api_v1_memory_spaces_post"];
+type Operation112 = operations["create_space"];
 type Operation112Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation112["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation113 =
-  operations["delete_space_api_v1_memory_spaces__space_id__delete"];
+type Operation113 = operations["delete_space"];
 type Operation113Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -950,15 +869,14 @@ type Operation113Options = {
     Operation113["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation114 = operations["get_space_api_v1_memory_spaces__space_id__get"];
+type Operation114 = operations["get_space"];
 type Operation114Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation114["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation115 =
-  operations["update_space_api_v1_memory_spaces__space_id__patch"];
+type Operation115 = operations["update_space"];
 type Operation115Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -968,16 +886,14 @@ type Operation115Options = {
     Operation115["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation116 =
-  operations["get_space_organization_api_v1_memory_spaces__space_id__organization_get"];
+type Operation116 = operations["get_space_organization"];
 type Operation116Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation116["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation117 =
-  operations["list_space_organizations_api_v1_memory_spaces__space_id__organizations_get"];
+type Operation117 = operations["list_space_organizations"];
 type Operation117Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation117["parameters"]["query"]>;
@@ -985,16 +901,14 @@ type Operation117Options = {
     Operation117["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation118 =
-  operations["organize_space_api_v1_memory_spaces__space_id__organizations_post"];
+type Operation118 = operations["organize_space"];
 type Operation118Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation118["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation119 =
-  operations["list_space_sessions_api_v1_memory_spaces__space_id__sessions_get"];
+type Operation119 = operations["list_space_sessions"];
 type Operation119Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation119["parameters"]["query"]>;
@@ -1002,12 +916,12 @@ type Operation119Options = {
     Operation119["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation120 = operations["get_model_catalog_api_v1_model_catalog_get"];
+type Operation120 = operations["get_model_catalog"];
 type Operation120Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation120["parameters"]["query"]>;
 };
-type Operation121 = operations["list_providers_api_v1_model_providers_get"];
+type Operation121 = operations["list_model_providers"];
 type Operation121Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation121["parameters"]["query"]>;
@@ -1015,23 +929,21 @@ type Operation121Options = {
     Operation121["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation122 = operations["create_provider_api_v1_model_providers_post"];
+type Operation122 = operations["create_model_provider"];
 type Operation122Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation122["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation123 =
-  operations["get_provider_api_v1_model_providers__provider_id__get"];
+type Operation123 = operations["get_model_provider"];
 type Operation123Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation123["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation124 =
-  operations["update_provider_api_v1_model_providers__provider_id__patch"];
+type Operation124 = operations["update_model_provider"];
 type Operation124Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1041,55 +953,49 @@ type Operation124Options = {
     Operation124["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation128 =
-  operations["authorize_model_api_v1_model_providers__provider_id__authorize_post"];
+type Operation128 = operations["authorize_model"];
 type Operation128Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation128["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation130 =
-  operations["test_provider_api_v1_model_providers__provider_id__test_post"];
+type Operation130 = operations["test_model_provider"];
 type Operation130Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation130["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation125 =
-  operations["disconnect_model_authorization_api_v1_model_providers__provider_id__authorization_delete"];
+type Operation125 = operations["disconnect_model_authorization"];
 type Operation125Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation125["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation126 =
-  operations["model_authorization_api_v1_model_providers__provider_id__authorization_get"];
+type Operation126 = operations["model_authorization"];
 type Operation126Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation126["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation127 =
-  operations["complete_model_authorization_api_v1_model_providers__provider_id__authorization_callback_post"];
+type Operation127 = operations["complete_model_authorization"];
 type Operation127Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation127["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation129 =
-  operations["discover_model_provider_models_api_v1_model_providers__provider_id__models_get"];
+type Operation129 = operations["discover_model_provider_models"];
 type Operation129Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation129["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation131 = operations["list_models_api_v1_models_get"];
+type Operation131 = operations["list_models"];
 type Operation131Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation131["parameters"]["query"]>;
@@ -1097,21 +1003,21 @@ type Operation131Options = {
     Operation131["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation132 = operations["create_model_api_v1_models_post"];
+type Operation132 = operations["create_model"];
 type Operation132Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation132["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation133 = operations["get_model_api_v1_models__key__get"];
+type Operation133 = operations["get_model"];
 type Operation133Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation133["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation134 = operations["update_model_api_v1_models__key__patch"];
+type Operation134 = operations["update_model"];
 type Operation134Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1121,43 +1027,36 @@ type Operation134Options = {
     Operation134["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation135 = operations["list_organizations_api_v1_organizations_get"];
+type Operation135 = operations["list_organizations"];
 type Operation135Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation135["parameters"]["query"]>;
 };
-type Operation136 =
-  operations["get_organization_api_v1_organizations__organization_id__get"];
+type Operation136 = operations["get_organization"];
 type Operation136Options = { signal?: AbortSignal };
-type Operation137 =
-  operations["update_organization_api_v1_organizations__organization_id__patch"];
+type Operation137 = operations["update_organization"];
 type Operation137Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation137["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation138 =
-  operations["list_organization_audit_events_api_v1_organizations__organization_id__audit_events_get"];
+type Operation138 = operations["list_organization_audit_events"];
 type Operation138Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation138["parameters"]["query"]>;
 };
-type Operation139 =
-  operations["list_organization_grants_api_v1_organizations__organization_id__grants_get"];
+type Operation139 = operations["list_organization_grants"];
 type Operation139Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation139["parameters"]["query"]>;
 };
-type Operation140 =
-  operations["create_organization_grant_api_v1_organizations__organization_id__grants_post"];
+type Operation140 = operations["create_organization_grant"];
 type Operation140Options = { signal?: AbortSignal };
 type Operation141Options = { signal?: AbortSignal };
-type Operation142 =
-  operations["change_organization_grant_api_v1_organizations__organization_id__grants__grant_id__patch"];
+type Operation142 = operations["change_organization_grant"];
 type Operation142Options = { signal?: AbortSignal };
-type Operation143 =
-  operations["delete_organization_icon_api_v1_organizations__organization_id__icon_delete"];
+type Operation143 = operations["delete_organization_icon"];
 type Operation143Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1165,8 +1064,7 @@ type Operation143Options = {
   >;
 };
 type Operation144Options = { signal?: AbortSignal };
-type Operation145 =
-  operations["put_organization_icon_api_v1_organizations__organization_id__icon_put"];
+type Operation145 = operations["put_organization_icon"];
 type Operation145Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1174,50 +1072,42 @@ type Operation145Options = {
   >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation146 =
-  operations["list_organization_invitations_api_v1_organizations__organization_id__invitations_get"];
+type Operation146 = operations["list_organization_invitations"];
 type Operation146Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation146["parameters"]["query"]>;
 };
-type Operation147 =
-  operations["create_organization_invitation_api_v1_organizations__organization_id__invitations_post"];
+type Operation147 = operations["create_organization_invitation"];
 type Operation147Options = { signal?: AbortSignal };
-type Operation148 =
-  operations["resend_organization_invitation_api_v1_organizations__organization_id__invitations__invitation_id__resend_post"];
+type Operation148 = operations["resend_organization_invitation"];
 type Operation148Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation148["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation149 =
-  operations["revoke_organization_invitation_api_v1_organizations__organization_id__invitations__invitation_id__revoke_post"];
+type Operation149 = operations["revoke_organization_invitation"];
 type Operation149Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation149["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation150 =
-  operations["list_members_api_v1_organizations__organization_id__members_get"];
+type Operation150 = operations["list_members"];
 type Operation150Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation150["parameters"]["query"]>;
 };
-type Operation151 =
-  operations["list_organization_workspaces_api_v1_organizations__organization_id__workspaces_get"];
+type Operation151 = operations["list_organization_workspaces"];
 type Operation151Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation151["parameters"]["query"]>;
 };
-type Operation152 =
-  operations["create_workspace_api_v1_organizations__organization_id__workspaces_post"];
+type Operation152 = operations["create_workspace"];
 type Operation152Options = { signal?: AbortSignal };
-type Operation153 =
-  operations["list_provider_types_api_v1_provider_types__kind__get"];
+type Operation153 = operations["list_provider_types"];
 type Operation153Options = { signal?: AbortSignal };
-type Operation154 = operations["list_runs_api_v1_runs_get"];
+type Operation154 = operations["list_runs"];
 type Operation154Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation154["parameters"]["query"]>;
@@ -1225,7 +1115,7 @@ type Operation154Options = {
     Operation154["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation155 = operations["get_run_api_v1_runs__run_id__get"];
+type Operation155 = operations["get_run"];
 type Operation155Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation155["parameters"]["query"]>;
@@ -1233,7 +1123,7 @@ type Operation155Options = {
     Operation155["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation156 = operations["update_run_api_v1_runs__run_id__patch"];
+type Operation156 = operations["update_run"];
 type Operation156Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1243,7 +1133,7 @@ type Operation156Options = {
     Operation156["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation165 = operations["fork_run_api_v1_runs__run_id__fork_post"];
+type Operation165 = operations["fork_run"];
 type Operation165Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -1253,15 +1143,14 @@ type Operation165Options = {
     Operation165["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation167 =
-  operations["interrupt_run_api_v1_runs__run_id__interrupt_post"];
+type Operation167 = operations["interrupt_run"];
 type Operation167Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation167["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation171 = operations["resume_run_api_v1_runs__run_id__resume_post"];
+type Operation171 = operations["resume_run"];
 type Operation171Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -1271,7 +1160,7 @@ type Operation171Options = {
     Operation171["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation157 = operations["run_agent_api_v1_runs__run_id__agent_get"];
+type Operation157 = operations["get_run_agent"];
 type Operation157Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation157["parameters"]["query"]>;
@@ -1279,24 +1168,21 @@ type Operation157Options = {
     Operation157["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation158 =
-  operations["run_attempts_api_v1_runs__run_id__attempts_get"];
+type Operation158 = operations["list_run_attempts"];
 type Operation158Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation158["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation159 =
-  operations["get_attempt_api_v1_runs__run_id__attempts__attempt_id__get"];
+type Operation159 = operations["get_run_attempt"];
 type Operation159Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation159["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation160 =
-  operations["list_attempt_spans_api_v1_runs__run_id__attempts__attempt_id__trace_get"];
+type Operation160 = operations["list_attempt_spans"];
 type Operation160Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation160["parameters"]["query"]>;
@@ -1304,8 +1190,7 @@ type Operation160Options = {
     Operation160["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation161 =
-  operations["run_content_api_v1_runs__run_id__contents__content_id__get"];
+type Operation161 = operations["get_run_content"];
 type Operation161Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation161["parameters"]["query"]>;
@@ -1313,39 +1198,35 @@ type Operation161Options = {
     Operation161["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation162 =
-  operations["get_assistance_api_v1_runs__run_id__desktop_assistance__call_id__get"];
+type Operation162 = operations["get_assistance"];
 type Operation162Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation162["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation163 =
-  operations["get_control_api_v1_runs__run_id__desktop_control_get"];
+type Operation163 = operations["get_control"];
 type Operation163Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation163["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation164 =
-  operations["open_control_api_v1_runs__run_id__desktop_control_post"];
+type Operation164 = operations["open_control"];
 type Operation164Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation164["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation166 =
-  operations["run_image_api_v1_runs__run_id__images__image_id__get"];
+type Operation166 = operations["run_image"];
 type Operation166Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation166["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation168 = operations["run_items_api_v1_runs__run_id__items_get"];
+type Operation168 = operations["list_run_items"];
 type Operation168Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation168["parameters"]["query"]>;
@@ -1353,8 +1234,7 @@ type Operation168Options = {
     Operation168["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation169 =
-  operations["read_item_content_api_v1_runs__run_id__items__item_id__content_get"];
+type Operation169 = operations["read_run_item_content"];
 type Operation169Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation169["parameters"]["query"]>;
@@ -1362,7 +1242,7 @@ type Operation169Options = {
     Operation169["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation170 = operations["run_lineage_api_v1_runs__run_id__lineage_get"];
+type Operation170 = operations["get_run_lineage"];
 type Operation170Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation170["parameters"]["query"]>;
@@ -1370,7 +1250,7 @@ type Operation170Options = {
     Operation170["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation172 = operations["list_sessions_api_v1_sessions_get"];
+type Operation172 = operations["list_sessions"];
 type Operation172Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation172["parameters"]["query"]>;
@@ -1378,22 +1258,21 @@ type Operation172Options = {
     Operation172["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation173 = operations["create_session_api_v1_sessions_post"];
+type Operation173 = operations["create_session"];
 type Operation173Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation173["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation174 = operations["get_session_api_v1_sessions__session_id__get"];
+type Operation174 = operations["get_session"];
 type Operation174Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation174["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation175 =
-  operations["update_session_api_v1_sessions__session_id__patch"];
+type Operation175 = operations["update_session"];
 type Operation175Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1403,8 +1282,7 @@ type Operation175Options = {
     Operation175["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation176 =
-  operations["get_message_authors_api_v1_sessions__session_id__message_authors_get"];
+type Operation176 = operations["get_message_authors"];
 type Operation176Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation176["parameters"]["query"]>;
@@ -1412,15 +1290,14 @@ type Operation176Options = {
     Operation176["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation177 =
-  operations["session_stream_api_v1_sessions__session_id__stream_get"];
+type Operation177 = operations["session_stream"];
 type Operation177Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation177["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation178 = operations["list_skills_api_v1_skills_get"];
+type Operation178 = operations["list_skills"];
 type Operation178Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation178["parameters"]["query"]>;
@@ -1428,28 +1305,28 @@ type Operation178Options = {
     Operation178["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation179 = operations["create_skill_api_v1_skills_post"];
+type Operation179 = operations["create_skill"];
 type Operation179Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation179["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation180 = operations["validate_package_api_v1_skills_validate_post"];
+type Operation180 = operations["validate_skill"];
 type Operation180Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation180["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation181 = operations["get_skill_api_v1_skills__skill_id__get"];
+type Operation181 = operations["get_skill"];
 type Operation181Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation181["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation182 = operations["update_skill_api_v1_skills__skill_id__patch"];
+type Operation182 = operations["update_skill"];
 type Operation182Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1459,8 +1336,7 @@ type Operation182Options = {
     Operation182["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation183 =
-  operations["archive_skill_api_v1_skills__skill_id__archive_post"];
+type Operation183 = operations["archive_skill"];
 type Operation183Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1470,8 +1346,7 @@ type Operation183Options = {
     Operation183["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation190 =
-  operations["unarchive_skill_api_v1_skills__skill_id__unarchive_post"];
+type Operation190 = operations["unarchive_skill"];
 type Operation190Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1481,8 +1356,7 @@ type Operation190Options = {
     Operation190["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation184 =
-  operations["list_revisions_api_v1_skills__skill_id__revisions_get"];
+type Operation184 = operations["list_skill_revisions"];
 type Operation184Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation184["parameters"]["query"]>;
@@ -1490,8 +1364,7 @@ type Operation184Options = {
     Operation184["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation185 =
-  operations["create_revision_api_v1_skills__skill_id__revisions_post"];
+type Operation185 = operations["create_skill_revision"];
 type Operation185Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1501,16 +1374,14 @@ type Operation185Options = {
     Operation185["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation186 =
-  operations["get_revision_api_v1_skills__skill_id__revisions__revision_id__get"];
+type Operation186 = operations["get_skill_revision"];
 type Operation186Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation186["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation189 =
-  operations["set_default_revision_api_v1_skills__skill_id__revisions__revision_id__set_default_post"];
+type Operation189 = operations["set_default_skill_revision"];
 type Operation189Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1520,23 +1391,21 @@ type Operation189Options = {
     Operation189["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation187 =
-  operations["read_archive_api_v1_skills__skill_id__revisions__revision_id__content_get"];
+type Operation187 = operations["read_skill_archive"];
 type Operation187Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation187["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation188 =
-  operations["read_file_api_v1_skills__skill_id__revisions__revision_id__files__path__get"];
+type Operation188 = operations["read_skill_file"];
 type Operation188Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation188["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation191 = operations["list_subscriptions_api_v1_subscriptions_get"];
+type Operation191 = operations["list_subscriptions"];
 type Operation191Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation191["parameters"]["query"]>;
@@ -1544,15 +1413,14 @@ type Operation191Options = {
     Operation191["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation192 = operations["create_subscription_api_v1_subscriptions_post"];
+type Operation192 = operations["create_subscription"];
 type Operation192Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation192["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation193 =
-  operations["delete_subscription_api_v1_subscriptions__subscription_id__delete"];
+type Operation193 = operations["delete_subscription"];
 type Operation193Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1562,16 +1430,14 @@ type Operation193Options = {
     Operation193["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation194 =
-  operations["get_subscription_api_v1_subscriptions__subscription_id__get"];
+type Operation194 = operations["get_subscription"];
 type Operation194Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation194["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation195 =
-  operations["update_subscription_api_v1_subscriptions__subscription_id__patch"];
+type Operation195 = operations["update_subscription"];
 type Operation195Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1581,8 +1447,7 @@ type Operation195Options = {
     Operation195["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation196 =
-  operations["list_deliveries_api_v1_subscriptions__subscription_id__deliveries_get"];
+type Operation196 = operations["list_deliveries"];
 type Operation196Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation196["parameters"]["query"]>;
@@ -1590,15 +1455,14 @@ type Operation196Options = {
     Operation196["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation197 =
-  operations["redeliver_api_v1_subscriptions__subscription_id__deliveries__delivery_id__redeliver_post"];
+type Operation197 = operations["redeliver"];
 type Operation197Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation197["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation198 = operations["list_threads_api_v1_threads_get"];
+type Operation198 = operations["list_threads"];
 type Operation198Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation198["parameters"]["query"]>;
@@ -1606,7 +1470,7 @@ type Operation198Options = {
     Operation198["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation199 = operations["create_thread_api_v1_threads_post"];
+type Operation199 = operations["create_thread"];
 type Operation199Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -1616,15 +1480,14 @@ type Operation199Options = {
     Operation199["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation200 = operations["get_thread_api_v1_threads__thread_id__get"];
+type Operation200 = operations["get_thread"];
 type Operation200Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation200["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation201 =
-  operations["update_thread_api_v1_threads__thread_id__patch"];
+type Operation201 = operations["update_thread"];
 type Operation201Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1634,8 +1497,7 @@ type Operation201Options = {
     Operation201["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation202 =
-  operations["archive_thread_api_v1_threads__thread_id__archive_post"];
+type Operation202 = operations["archive_thread"];
 type Operation202Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1645,16 +1507,14 @@ type Operation202Options = {
     Operation202["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation203 =
-  operations["list_mounts_api_v1_threads__thread_id__environments_get"];
+type Operation203 = operations["list_environment_mounts"];
 type Operation203Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation203["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation204 =
-  operations["add_mount_api_v1_threads__thread_id__environments_post"];
+type Operation204 = operations["add_environment_mount"];
 type Operation204Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1664,8 +1524,7 @@ type Operation204Options = {
     Operation204["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation205 =
-  operations["remove_mount_api_v1_threads__thread_id__environments__name__delete"];
+type Operation205 = operations["remove_environment_mount"];
 type Operation205Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1675,8 +1534,7 @@ type Operation205Options = {
     Operation205["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation206 =
-  operations["update_mount_api_v1_threads__thread_id__environments__name__patch"];
+type Operation206 = operations["update_environment_mount"];
 type Operation206Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1686,8 +1544,7 @@ type Operation206Options = {
     Operation206["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation207 =
-  operations["list_inbox_api_v1_threads__thread_id__inbox_get"];
+type Operation207 = operations["list_inbox"];
 type Operation207Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation207["parameters"]["query"]>;
@@ -1695,8 +1552,7 @@ type Operation207Options = {
     Operation207["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation208 =
-  operations["submit_message_api_v1_threads__thread_id__inbox_post"];
+type Operation208 = operations["submit_message"];
 type Operation208Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -1706,8 +1562,7 @@ type Operation208Options = {
     Operation208["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation209 =
-  operations["reorder_inbox_api_v1_threads__thread_id__inbox_order_put"];
+type Operation209 = operations["reorder_inbox"];
 type Operation209Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1717,8 +1572,7 @@ type Operation209Options = {
     Operation209["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation210 =
-  operations["withdraw_entry_api_v1_threads__thread_id__inbox__entry_id__delete"];
+type Operation210 = operations["withdraw_entry"];
 type Operation210Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1728,8 +1582,7 @@ type Operation210Options = {
     Operation210["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation211 =
-  operations["get_entry_api_v1_threads__thread_id__inbox__entry_id__get"];
+type Operation211 = operations["get_inbox_entry"];
 type Operation211Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation211["parameters"]["query"]>;
@@ -1737,8 +1590,7 @@ type Operation211Options = {
     Operation211["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation212 =
-  operations["edit_entry_api_v1_threads__thread_id__inbox__entry_id__patch"];
+type Operation212 = operations["edit_entry"];
 type Operation212Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1748,16 +1600,14 @@ type Operation212Options = {
     Operation212["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation213 =
-  operations["list_mounts_api_v1_threads__thread_id__memories_get"];
+type Operation213 = operations["list_memory_mounts"];
 type Operation213Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation213["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation214 =
-  operations["add_mount_api_v1_threads__thread_id__memories_post"];
+type Operation214 = operations["add_memory_mount"];
 type Operation214Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1767,8 +1617,7 @@ type Operation214Options = {
     Operation214["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation215 =
-  operations["remove_mount_api_v1_threads__thread_id__memories__name__delete"];
+type Operation215 = operations["remove_memory_mount"];
 type Operation215Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1778,8 +1627,7 @@ type Operation215Options = {
     Operation215["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation216 =
-  operations["update_mount_api_v1_threads__thread_id__memories__name__patch"];
+type Operation216 = operations["update_memory_mount"];
 type Operation216Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1789,8 +1637,7 @@ type Operation216Options = {
     Operation216["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation217 =
-  operations["list_thread_runs_api_v1_threads__thread_id__runs_get"];
+type Operation217 = operations["list_thread_runs"];
 type Operation217Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation217["parameters"]["query"]>;
@@ -1798,8 +1645,7 @@ type Operation217Options = {
     Operation217["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation218 =
-  operations["thread_stream_api_v1_threads__thread_id__stream_get"];
+type Operation218 = operations["thread_stream"];
 type Operation218Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation218["parameters"]["query"]>;
@@ -1810,15 +1656,14 @@ type Operation218Options = {
     Operation218["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation219 = operations["list_toolsets_api_v1_toolsets_get"];
+type Operation219 = operations["list_toolsets"];
 type Operation219Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation219["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation220 =
-  operations["define_toolsets_api_v1_toolsets_definitions_get"];
+type Operation220 = operations["define_toolsets"];
 type Operation220Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation220["parameters"]["query"]>;
@@ -1826,7 +1671,7 @@ type Operation220Options = {
     Operation220["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation221 = operations["index_toolsets_api_v1_toolsets_index_get"];
+type Operation221 = operations["index_toolsets"];
 type Operation221Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation221["parameters"]["query"]>;
@@ -1834,14 +1679,14 @@ type Operation221Options = {
     Operation221["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation222 = operations["get_trace_backend_api_v1_trace_backend_get"];
+type Operation222 = operations["get_trace_backend"];
 type Operation222Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation222["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation223 = operations["list_traces_api_v1_traces_get"];
+type Operation223 = operations["list_traces"];
 type Operation223Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation223["parameters"]["query"]>;
@@ -1849,7 +1694,7 @@ type Operation223Options = {
     Operation223["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation224 = operations["get_trace_api_v1_traces__trace_id__get"];
+type Operation224 = operations["get_trace"];
 type Operation224Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation224["parameters"]["query"]>;
@@ -1857,8 +1702,7 @@ type Operation224Options = {
     Operation224["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation225 =
-  operations["list_trace_spans_api_v1_traces__trace_id__spans_get"];
+type Operation225 = operations["list_trace_spans"];
 type Operation225Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation225["parameters"]["query"]>;
@@ -1866,8 +1710,7 @@ type Operation225Options = {
     Operation225["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation226 =
-  operations["read_span_content_api_v1_traces__trace_id__spans__span_id__content_get"];
+type Operation226 = operations["read_span_content"];
 type Operation226Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation226["parameters"]["query"]>;
@@ -1875,7 +1718,7 @@ type Operation226Options = {
     Operation226["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation227 = operations["create_upload_api_v1_uploads_post"];
+type Operation227 = operations["create_upload"];
 type Operation227Options = {
   signal?: AbortSignal;
   idempotencyKey: NonNullable<
@@ -1885,7 +1728,7 @@ type Operation227Options = {
     Operation227["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation228 = operations["summarize_usage_api_v1_usage_get"];
+type Operation228 = operations["summarize_usage"];
 type Operation228Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation228["parameters"]["query"]>;
@@ -1893,7 +1736,7 @@ type Operation228Options = {
     Operation228["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation229 = operations["usage_agents_api_v1_usage_agents_get"];
+type Operation229 = operations["usage_agents"];
 type Operation229Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation229["parameters"]["query"]>;
@@ -1901,7 +1744,7 @@ type Operation229Options = {
     Operation229["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation230 = operations["context_usage_api_v1_usage_context_get"];
+type Operation230 = operations["context_usage"];
 type Operation230Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation230["parameters"]["query"]>;
@@ -1909,7 +1752,7 @@ type Operation230Options = {
     Operation230["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation231 = operations["usage_models_api_v1_usage_models_get"];
+type Operation231 = operations["usage_models"];
 type Operation231Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation231["parameters"]["query"]>;
@@ -1917,7 +1760,7 @@ type Operation231Options = {
     Operation231["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation232 = operations["usage_overview_api_v1_usage_overview_get"];
+type Operation232 = operations["usage_overview"];
 type Operation232Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation232["parameters"]["query"]>;
@@ -1925,41 +1768,39 @@ type Operation232Options = {
     Operation232["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation233 =
-  operations["model_request_metrics_api_v1_usage_records__record_id__metrics_get"];
+type Operation233 = operations["model_request_metrics"];
 type Operation233Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation233["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation234 = operations["get_profile_api_v1_users_me_get"];
+type Operation234 = operations["get_profile"];
 type Operation234Options = { signal?: AbortSignal };
-type Operation235 = operations["update_profile_api_v1_users_me_patch"];
+type Operation235 = operations["update_profile"];
 type Operation235Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation235["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation239 = operations["disable_account_api_v1_users_me_disable_post"];
+type Operation239 = operations["disable_account"];
 type Operation239Options = { signal?: AbortSignal };
-type Operation245 = operations["change_password_api_v1_users_me_password_post"];
+type Operation245 = operations["change_password"];
 type Operation245Options = { signal?: AbortSignal };
-type Operation236 =
-  operations["list_account_audit_events_api_v1_users_me_audit_events_get"];
+type Operation236 = operations["list_account_audit_events"];
 type Operation236Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation236["parameters"]["query"]>;
 };
-type Operation237 = operations["delete_avatar_api_v1_users_me_avatar_delete"];
+type Operation237 = operations["delete_user_avatar"];
 type Operation237Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation237["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation238 = operations["put_avatar_api_v1_users_me_avatar_put"];
+type Operation238 = operations["put_user_avatar"];
 type Operation238Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1967,30 +1808,28 @@ type Operation238Options = {
   >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation240 = operations["list_user_keys_api_v1_users_me_keys_get"];
+type Operation240 = operations["list_user_keys"];
 type Operation240Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation240["parameters"]["query"]>;
 };
-type Operation241 = operations["create_user_key_api_v1_users_me_keys_post"];
+type Operation241 = operations["create_user_key"];
 type Operation241Options = { signal?: AbortSignal };
-type Operation242 =
-  operations["revoke_user_key_api_v1_users_me_keys__key_id__delete"];
+type Operation242 = operations["revoke_user_key"];
 type Operation242Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation242["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation243 =
-  operations["list_login_sessions_api_v1_users_me_login_sessions_get"];
+type Operation243 = operations["list_login_sessions"];
 type Operation243Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation243["parameters"]["query"]>;
 };
 type Operation244Options = { signal?: AbortSignal };
 type Operation246Options = { signal?: AbortSignal };
-type Operation247 = operations["list_providers_api_v1_web_providers_get"];
+type Operation247 = operations["list_web_providers"];
 type Operation247Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation247["parameters"]["query"]>;
@@ -1998,23 +1837,21 @@ type Operation247Options = {
     Operation247["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation248 = operations["create_provider_api_v1_web_providers_post"];
+type Operation248 = operations["create_web_provider"];
 type Operation248Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation248["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation249 =
-  operations["get_provider_api_v1_web_providers__provider_id__get"];
+type Operation249 = operations["get_web_provider"];
 type Operation249Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation249["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation250 =
-  operations["update_provider_api_v1_web_providers__provider_id__patch"];
+type Operation250 = operations["update_web_provider"];
 type Operation250Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -2024,59 +1861,50 @@ type Operation250Options = {
     Operation250["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation251 =
-  operations["test_provider_api_v1_web_providers__provider_id__test_post"];
+type Operation251 = operations["test_web_provider"];
 type Operation251Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation251["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation252 = operations["list_workspaces_api_v1_workspaces_get"];
+type Operation252 = operations["list_workspaces"];
 type Operation252Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation252["parameters"]["query"]>;
 };
-type Operation253 =
-  operations["get_workspace_api_v1_workspaces__workspace_id__get"];
+type Operation253 = operations["get_workspace"];
 type Operation253Options = { signal?: AbortSignal };
-type Operation254 =
-  operations["update_workspace_api_v1_workspaces__workspace_id__patch"];
+type Operation254 = operations["update_workspace"];
 type Operation254Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation254["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation255 =
-  operations["archive_workspace_api_v1_workspaces__workspace_id__archive_post"];
+type Operation255 = operations["archive_workspace"];
 type Operation255Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation255["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation256 =
-  operations["list_workspace_audit_events_api_v1_workspaces__workspace_id__audit_events_get"];
+type Operation256 = operations["list_workspace_audit_events"];
 type Operation256Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation256["parameters"]["query"]>;
 };
-type Operation257 =
-  operations["list_workspace_grants_api_v1_workspaces__workspace_id__grants_get"];
+type Operation257 = operations["list_workspace_grants"];
 type Operation257Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation257["parameters"]["query"]>;
 };
-type Operation258 =
-  operations["create_workspace_grant_api_v1_workspaces__workspace_id__grants_post"];
+type Operation258 = operations["create_workspace_grant"];
 type Operation258Options = { signal?: AbortSignal };
 type Operation259Options = { signal?: AbortSignal };
-type Operation260 =
-  operations["change_workspace_grant_api_v1_workspaces__workspace_id__grants__grant_id__patch"];
+type Operation260 = operations["change_workspace_grant"];
 type Operation260Options = { signal?: AbortSignal };
-type Operation261 =
-  operations["delete_workspace_icon_api_v1_workspaces__workspace_id__icon_delete"];
+type Operation261 = operations["delete_workspace_icon"];
 type Operation261Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -2084,8 +1912,7 @@ type Operation261Options = {
   >;
 };
 type Operation262Options = { signal?: AbortSignal };
-type Operation263 =
-  operations["put_workspace_icon_api_v1_workspaces__workspace_id__icon_put"];
+type Operation263 = operations["put_workspace_icon"];
 type Operation263Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -2093,85 +1920,72 @@ type Operation263Options = {
   >;
   contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation264 =
-  operations["list_workspace_invitations_api_v1_workspaces__workspace_id__invitations_get"];
+type Operation264 = operations["list_workspace_invitations"];
 type Operation264Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation264["parameters"]["query"]>;
 };
-type Operation265 =
-  operations["create_workspace_invitation_api_v1_workspaces__workspace_id__invitations_post"];
+type Operation265 = operations["create_workspace_invitation"];
 type Operation265Options = { signal?: AbortSignal };
-type Operation266 =
-  operations["resend_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__resend_post"];
+type Operation266 = operations["resend_workspace_invitation"];
 type Operation266Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation266["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation267 =
-  operations["revoke_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__revoke_post"];
+type Operation267 = operations["revoke_workspace_invitation"];
 type Operation267Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation267["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation268 =
-  operations["list_workspace_keys_api_v1_workspaces__workspace_id__keys_get"];
+type Operation268 = operations["list_workspace_keys"];
 type Operation268Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation268["parameters"]["query"]>;
 };
-type Operation269 =
-  operations["revoke_workspace_key_api_v1_workspaces__workspace_id__keys__key_id__delete"];
+type Operation269 = operations["revoke_workspace_key"];
 type Operation269Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation269["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation270 =
-  operations["list_service_accounts_api_v1_workspaces__workspace_id__service_accounts_get"];
+type Operation270 = operations["list_service_accounts"];
 type Operation270Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation270["parameters"]["query"]>;
 };
-type Operation271 =
-  operations["create_service_account_api_v1_workspaces__workspace_id__service_accounts_post"];
+type Operation271 = operations["create_service_account"];
 type Operation271Options = { signal?: AbortSignal };
-type Operation272 =
-  operations["delete_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__delete"];
+type Operation272 = operations["delete_service_account"];
 type Operation272Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation272["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation273 =
-  operations["get_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__get"];
+type Operation273 = operations["get_service_account"];
 type Operation273Options = { signal?: AbortSignal };
-type Operation274 =
-  operations["update_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__patch"];
+type Operation274 = operations["update_service_account"];
 type Operation274Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation274["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation275 =
-  operations["list_service_account_keys_api_v1_workspaces__workspace_id__service_accounts__account_id__keys_get"];
+type Operation275 = operations["list_service_account_keys"];
 type Operation275Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation275["parameters"]["query"]>;
 };
-type Operation276 =
-  operations["create_service_account_key_api_v1_workspaces__workspace_id__service_accounts__account_id__keys_post"];
+type Operation276 = operations["create_service_account_key"];
 type Operation276Options = { signal?: AbortSignal };
-type Operation277 = operations["health_healthz_get"];
+type Operation277 = operations["health"];
 type Operation277Options = { signal?: AbortSignal };
-type Operation278 = operations["ready_readyz_get"];
+type Operation278 = operations["ready"];
 type Operation278Options = { signal?: AbortSignal };
 export class ServiceResources {
   constructor(private readonly transport: Transport) {}
@@ -2424,7 +2238,7 @@ export class AgentsResource {
     );
   }
   ref(
-    value: operations["get_agent_api_v1_agents__agent_id__get"]["parameters"]["path"]["agent_id"],
+    value: operations["get_agent"]["parameters"]["path"]["agent_id"],
   ): AgentsAgentIdResource {
     return new AgentsAgentIdResource(
       this.transport,
@@ -2675,7 +2489,7 @@ export class AgentsAgentIdRevisionsResource {
     );
   }
   ref(
-    value: operations["get_revision_api_v1_agents__agent_id__revisions__revision_id__get"]["parameters"]["path"]["revision_id"],
+    value: operations["get_agent_revision"]["parameters"]["path"]["revision_id"],
   ): AgentsAgentIdRevisionsRevisionIdResource {
     return new AgentsAgentIdRevisionsRevisionIdResource(
       this.transport,
@@ -2825,7 +2639,7 @@ export class AssetsResource {
     );
   }
   ref(
-    value: operations["retire_asset_api_v1_assets__asset_id__delete"]["parameters"]["path"]["asset_id"],
+    value: operations["retire_asset"]["parameters"]["path"]["asset_id"],
   ): AssetsAssetIdResource {
     return new AssetsAssetIdResource(
       this.transport,
@@ -3143,7 +2957,7 @@ export class ConnectionsResource {
     );
   }
   ref(
-    value: operations["get_connection_api_v1_connections__connection_id__get"]["parameters"]["path"]["connection_id"],
+    value: operations["get_connection"]["parameters"]["path"]["connection_id"],
   ): ConnectionsConnectionIdResource {
     return new ConnectionsConnectionIdResource(
       this.transport,
@@ -3469,7 +3283,7 @@ export class ConnectorProvidersResource {
     );
   }
   ref(
-    value: operations["get_provider_api_v1_connector_providers__provider_id__get"]["parameters"]["path"]["provider_id"],
+    value: operations["get_connector_provider"]["parameters"]["path"]["provider_id"],
   ): ConnectorProvidersProviderIdResource {
     return new ConnectorProvidersProviderIdResource(
       this.transport,
@@ -3590,7 +3404,7 @@ export class ConnectorProvidersProviderIdAppsResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["get_app_api_v1_connector_providers__provider_id__apps__app__get"]["parameters"]["path"]["app"],
+    value: operations["get_connector_app"]["parameters"]["path"]["app"],
   ): ConnectorProvidersProviderIdAppsAppResource {
     return new ConnectorProvidersProviderIdAppsAppResource(
       this.transport,
@@ -3738,7 +3552,7 @@ export class DesktopAssistanceResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["complete_assistance_api_v1_desktop_assistance__assistance_id__complete_post"]["parameters"]["path"]["assistance_id"],
+    value: operations["complete_assistance"]["parameters"]["path"]["assistance_id"],
   ): DesktopAssistanceAssistanceIdResource {
     return new DesktopAssistanceAssistanceIdResource(
       this.transport,
@@ -3919,7 +3733,7 @@ export class EnvironmentProvidersResource {
     );
   }
   ref(
-    value: operations["delete_environment_provider_api_v1_environment_providers__provider_id__delete"]["parameters"]["path"]["provider_id"],
+    value: operations["delete_environment_provider"]["parameters"]["path"]["provider_id"],
   ): EnvironmentProvidersProviderIdResource {
     return new EnvironmentProvidersProviderIdResource(
       this.transport,
@@ -4106,7 +3920,7 @@ export class EnvironmentTemplatesResource {
     );
   }
   ref(
-    value: operations["get_template_api_v1_environment_templates__template_id__get"]["parameters"]["path"]["template_id"],
+    value: operations["get_environment_template"]["parameters"]["path"]["template_id"],
   ): EnvironmentTemplatesTemplateIdResource {
     return new EnvironmentTemplatesTemplateIdResource(
       this.transport,
@@ -4224,7 +4038,7 @@ export class EnvironmentsResource {
     );
   }
   ref(
-    value: operations["delete_environment_api_v1_environments__environment_id__delete"]["parameters"]["path"]["environment_id"],
+    value: operations["delete_environment"]["parameters"]["path"]["environment_id"],
   ): EnvironmentsEnvironmentIdResource {
     return new EnvironmentsEnvironmentIdResource(
       this.transport,
@@ -4480,7 +4294,7 @@ export class FindingsResource {
     );
   }
   ref(
-    value: operations["get_finding_api_v1_findings__finding_id__get"]["parameters"]["path"]["finding_id"],
+    value: operations["get_finding"]["parameters"]["path"]["finding_id"],
   ): FindingsFindingIdResource {
     return new FindingsFindingIdResource(
       this.transport,
@@ -4546,7 +4360,7 @@ export class InvitationsResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["accept_api_v1_invitations__invitation_id__accept_post"]["parameters"]["path"]["invitation_id"],
+    value: operations["accept"]["parameters"]["path"]["invitation_id"],
   ): InvitationsInvitationIdResource {
     return new InvitationsInvitationIdResource(
       this.transport,
@@ -4718,7 +4532,7 @@ export class MemoriesResource {
     );
   }
   ref(
-    value: operations["delete_memory_api_v1_memories__memory_id__delete"]["parameters"]["path"]["memory_id"],
+    value: operations["delete_memory"]["parameters"]["path"]["memory_id"],
   ): MemoriesMemoryIdResource {
     return new MemoriesMemoryIdResource(
       this.transport,
@@ -4897,7 +4711,7 @@ export class MemoriesMemoryIdFilesResource {
     );
   }
   ref(
-    value: operations["delete_file_api_v1_memories__memory_id__files__path__delete"]["parameters"]["path"]["path"],
+    value: operations["delete_file"]["parameters"]["path"]["path"],
   ): MemoriesMemoryIdFilesPathResource {
     return new MemoriesMemoryIdFilesPathResource(
       this.transport,
@@ -5055,7 +4869,7 @@ export class MemoriesMemoryIdRecordsResource {
     );
   }
   ref(
-    value: operations["delete_record_api_v1_memories__memory_id__records__record_id__delete"]["parameters"]["path"]["record_id"],
+    value: operations["delete_record"]["parameters"]["path"]["record_id"],
   ): MemoriesMemoryIdRecordsRecordIdResource {
     return new MemoriesMemoryIdRecordsRecordIdResource(
       this.transport,
@@ -5171,7 +4985,7 @@ export class MemoriesMemoryIdRevisionsResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["get_revision_api_v1_memories__memory_id__revisions__seq__get"]["parameters"]["path"]["seq"],
+    value: operations["get_memory_revision"]["parameters"]["path"]["seq"],
   ): MemoriesMemoryIdRevisionsSeqResource {
     return new MemoriesMemoryIdRevisionsSeqResource(
       this.transport,
@@ -5294,7 +5108,7 @@ export class MemoryProvidersResource {
     );
   }
   ref(
-    value: operations["get_provider_api_v1_memory_providers__provider_id__get"]["parameters"]["path"]["provider_id"],
+    value: operations["get_memory_provider"]["parameters"]["path"]["provider_id"],
   ): MemoryProvidersProviderIdResource {
     return new MemoryProvidersProviderIdResource(
       this.transport,
@@ -5441,7 +5255,7 @@ export class MemorySpacesResource {
     );
   }
   ref(
-    value: operations["delete_space_api_v1_memory_spaces__space_id__delete"]["parameters"]["path"]["space_id"],
+    value: operations["delete_space"]["parameters"]["path"]["space_id"],
   ): MemorySpacesSpaceIdResource {
     return new MemorySpacesSpaceIdResource(
       this.transport,
@@ -5750,7 +5564,7 @@ export class ModelProvidersResource {
     );
   }
   ref(
-    value: operations["get_provider_api_v1_model_providers__provider_id__get"]["parameters"]["path"]["provider_id"],
+    value: operations["get_model_provider"]["parameters"]["path"]["provider_id"],
   ): ModelProvidersProviderIdResource {
     return new ModelProvidersProviderIdResource(
       this.transport,
@@ -6034,7 +5848,7 @@ export class ModelsResource {
     );
   }
   ref(
-    value: operations["get_model_api_v1_models__key__get"]["parameters"]["path"]["key"],
+    value: operations["get_model"]["parameters"]["path"]["key"],
   ): ModelsKeyResource {
     return new ModelsKeyResource(
       this.transport,
@@ -6128,7 +5942,7 @@ export class OrganizationsResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["get_organization_api_v1_organizations__organization_id__get"]["parameters"]["path"]["organization_id"],
+    value: operations["get_organization"]["parameters"]["path"]["organization_id"],
   ): OrganizationsOrganizationIdResource {
     return new OrganizationsOrganizationIdResource(
       this.transport,
@@ -6292,7 +6106,7 @@ export class OrganizationsOrganizationIdGrantsResource {
     });
   }
   ref(
-    value: operations["delete_organization_grant_api_v1_organizations__organization_id__grants__grant_id__delete"]["parameters"]["path"]["grant_id"],
+    value: operations["delete_organization_grant"]["parameters"]["path"]["grant_id"],
   ): OrganizationsOrganizationIdGrantsGrantIdResource {
     return new OrganizationsOrganizationIdGrantsGrantIdResource(
       this.transport,
@@ -6440,7 +6254,7 @@ export class OrganizationsOrganizationIdInvitationsResource {
     });
   }
   ref(
-    value: operations["resend_organization_invitation_api_v1_organizations__organization_id__invitations__invitation_id__resend_post"]["parameters"]["path"]["invitation_id"],
+    value: operations["resend_organization_invitation"]["parameters"]["path"]["invitation_id"],
   ): OrganizationsOrganizationIdInvitationsInvitationIdResource {
     return new OrganizationsOrganizationIdInvitationsInvitationIdResource(
       this.transport,
@@ -6581,7 +6395,7 @@ export class ProviderTypesResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["list_provider_types_api_v1_provider_types__kind__get"]["parameters"]["path"]["kind"],
+    value: operations["list_provider_types"]["parameters"]["path"]["kind"],
   ): ProviderTypesKindResource {
     return new ProviderTypesKindResource(
       this.transport,
@@ -6636,7 +6450,7 @@ export class RunsResource {
     );
   }
   ref(
-    value: operations["get_run_api_v1_runs__run_id__get"]["parameters"]["path"]["run_id"],
+    value: operations["get_run"]["parameters"]["path"]["run_id"],
   ): RunsRunIdResource {
     return new RunsRunIdResource(
       this.transport,
@@ -6868,7 +6682,7 @@ export class RunsRunIdAttemptsResource {
     );
   }
   ref(
-    value: operations["get_attempt_api_v1_runs__run_id__attempts__attempt_id__get"]["parameters"]["path"]["attempt_id"],
+    value: operations["get_run_attempt"]["parameters"]["path"]["attempt_id"],
   ): RunsRunIdAttemptsAttemptIdResource {
     return new RunsRunIdAttemptsAttemptIdResource(
       this.transport,
@@ -6945,7 +6759,7 @@ export class RunsRunIdContentsResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["run_content_api_v1_runs__run_id__contents__content_id__get"]["parameters"]["path"]["content_id"],
+    value: operations["get_run_content"]["parameters"]["path"]["content_id"],
   ): RunsRunIdContentsContentIdResource {
     return new RunsRunIdContentsContentIdResource(
       this.transport,
@@ -6988,7 +6802,7 @@ export class RunsRunIdDesktopAssistanceResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["get_assistance_api_v1_runs__run_id__desktop_assistance__call_id__get"]["parameters"]["path"]["call_id"],
+    value: operations["get_assistance"]["parameters"]["path"]["call_id"],
   ): RunsRunIdDesktopAssistanceCallIdResource {
     return new RunsRunIdDesktopAssistanceCallIdResource(
       this.transport,
@@ -7083,7 +6897,7 @@ export class RunsRunIdImagesResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["run_image_api_v1_runs__run_id__images__image_id__get"]["parameters"]["path"]["image_id"],
+    value: operations["run_image"]["parameters"]["path"]["image_id"],
   ): RunsRunIdImagesImageIdResource {
     return new RunsRunIdImagesImageIdResource(
       this.transport,
@@ -7138,7 +6952,7 @@ export class RunsRunIdItemsResource {
     );
   }
   ref(
-    value: operations["read_item_content_api_v1_runs__run_id__items__item_id__content_get"]["parameters"]["path"]["item_id"],
+    value: operations["read_run_item_content"]["parameters"]["path"]["item_id"],
   ): RunsRunIdItemsItemIdResource {
     return new RunsRunIdItemsItemIdResource(
       this.transport,
@@ -7278,7 +7092,7 @@ export class SessionsResource {
     );
   }
   ref(
-    value: operations["get_session_api_v1_sessions__session_id__get"]["parameters"]["path"]["session_id"],
+    value: operations["get_session"]["parameters"]["path"]["session_id"],
   ): SessionsSessionIdResource {
     return new SessionsSessionIdResource(
       this.transport,
@@ -7487,7 +7301,7 @@ export class SkillsResource {
     );
   }
   ref(
-    value: operations["get_skill_api_v1_skills__skill_id__get"]["parameters"]["path"]["skill_id"],
+    value: operations["get_skill"]["parameters"]["path"]["skill_id"],
   ): SkillsSkillIdResource {
     return new SkillsSkillIdResource(
       this.transport,
@@ -7670,7 +7484,7 @@ export class SkillsSkillIdRevisionsResource {
     );
   }
   ref(
-    value: operations["get_revision_api_v1_skills__skill_id__revisions__revision_id__get"]["parameters"]["path"]["revision_id"],
+    value: operations["get_skill_revision"]["parameters"]["path"]["revision_id"],
   ): SkillsSkillIdRevisionsRevisionIdResource {
     return new SkillsSkillIdRevisionsRevisionIdResource(
       this.transport,
@@ -7768,7 +7582,7 @@ export class SkillsSkillIdRevisionsRevisionIdFilesResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["read_file_api_v1_skills__skill_id__revisions__revision_id__files__path__get"]["parameters"]["path"]["path"],
+    value: operations["read_skill_file"]["parameters"]["path"]["path"],
   ): SkillsSkillIdRevisionsRevisionIdFilesPathResource {
     return new SkillsSkillIdRevisionsRevisionIdFilesPathResource(
       this.transport,
@@ -7858,7 +7672,7 @@ export class SubscriptionsResource {
     );
   }
   ref(
-    value: operations["delete_subscription_api_v1_subscriptions__subscription_id__delete"]["parameters"]["path"]["subscription_id"],
+    value: operations["delete_subscription"]["parameters"]["path"]["subscription_id"],
   ): SubscriptionsSubscriptionIdResource {
     return new SubscriptionsSubscriptionIdResource(
       this.transport,
@@ -7984,7 +7798,7 @@ export class SubscriptionsSubscriptionIdDeliveriesResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["redeliver_api_v1_subscriptions__subscription_id__deliveries__delivery_id__redeliver_post"]["parameters"]["path"]["delivery_id"],
+    value: operations["redeliver"]["parameters"]["path"]["delivery_id"],
   ): SubscriptionsSubscriptionIdDeliveriesDeliveryIdResource {
     return new SubscriptionsSubscriptionIdDeliveriesDeliveryIdResource(
       this.transport,
@@ -8087,7 +7901,7 @@ export class ThreadsResource {
     );
   }
   ref(
-    value: operations["get_thread_api_v1_threads__thread_id__get"]["parameters"]["path"]["thread_id"],
+    value: operations["get_thread"]["parameters"]["path"]["thread_id"],
   ): ThreadsThreadIdResource {
     return new ThreadsThreadIdResource(
       this.transport,
@@ -8256,7 +8070,7 @@ export class ThreadsThreadIdEnvironmentsResource {
     );
   }
   ref(
-    value: operations["remove_mount_api_v1_threads__thread_id__environments__name__delete"]["parameters"]["path"]["name"],
+    value: operations["remove_environment_mount"]["parameters"]["path"]["name"],
   ): ThreadsThreadIdEnvironmentsNameResource {
     return new ThreadsThreadIdEnvironmentsNameResource(
       this.transport,
@@ -8378,7 +8192,7 @@ export class ThreadsThreadIdInboxResource {
     );
   }
   ref(
-    value: operations["withdraw_entry_api_v1_threads__thread_id__inbox__entry_id__delete"]["parameters"]["path"]["entry_id"],
+    value: operations["withdraw_entry"]["parameters"]["path"]["entry_id"],
   ): ThreadsThreadIdInboxEntryIdResource {
     return new ThreadsThreadIdInboxEntryIdResource(
       this.transport,
@@ -8554,7 +8368,7 @@ export class ThreadsThreadIdMemoriesResource {
     );
   }
   ref(
-    value: operations["remove_mount_api_v1_threads__thread_id__memories__name__delete"]["parameters"]["path"]["name"],
+    value: operations["remove_memory_mount"]["parameters"]["path"]["name"],
   ): ThreadsThreadIdMemoriesNameResource {
     return new ThreadsThreadIdMemoriesNameResource(
       this.transport,
@@ -8824,7 +8638,7 @@ export class TracesResource {
     );
   }
   ref(
-    value: operations["get_trace_api_v1_traces__trace_id__get"]["parameters"]["path"]["trace_id"],
+    value: operations["get_trace"]["parameters"]["path"]["trace_id"],
   ): TracesTraceIdResource {
     return new TracesTraceIdResource(
       this.transport,
@@ -8891,7 +8705,7 @@ export class TracesTraceIdSpansResource {
     );
   }
   ref(
-    value: operations["read_span_content_api_v1_traces__trace_id__spans__span_id__content_get"]["parameters"]["path"]["span_id"],
+    value: operations["read_span_content"]["parameters"]["path"]["span_id"],
   ): TracesTraceIdSpansSpanIdResource {
     return new TracesTraceIdSpansSpanIdResource(
       this.transport,
@@ -9170,7 +8984,7 @@ export class UsageRecordsResource {
     private readonly path: string,
   ) {}
   ref(
-    value: operations["model_request_metrics_api_v1_usage_records__record_id__metrics_get"]["parameters"]["path"]["record_id"],
+    value: operations["model_request_metrics"]["parameters"]["path"]["record_id"],
   ): UsageRecordsRecordIdResource {
     return new UsageRecordsRecordIdResource(
       this.transport,
@@ -9229,7 +9043,7 @@ export class UsersResource {
     return new UsersMeResource(this.transport, this.path + "/me");
   }
   ref(
-    value: operations["get_avatar_api_v1_users__user_id__avatar_get"]["parameters"]["path"]["user_id"],
+    value: operations["get_user_avatar"]["parameters"]["path"]["user_id"],
   ): UsersUserIdResource {
     return new UsersUserIdResource(
       this.transport,
@@ -9458,7 +9272,7 @@ export class UsersMeKeysResource {
     });
   }
   ref(
-    value: operations["revoke_user_key_api_v1_users_me_keys__key_id__delete"]["parameters"]["path"]["key_id"],
+    value: operations["revoke_user_key"]["parameters"]["path"]["key_id"],
   ): UsersMeKeysKeyIdResource {
     return new UsersMeKeysKeyIdResource(
       this.transport,
@@ -9525,7 +9339,7 @@ export class UsersMeLoginSessionsResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["revoke_login_session_api_v1_users_me_login_sessions__session_id__delete"]["parameters"]["path"]["session_id"],
+    value: operations["revoke_login_session"]["parameters"]["path"]["session_id"],
   ): UsersMeLoginSessionsSessionIdResource {
     return new UsersMeLoginSessionsSessionIdResource(
       this.transport,
@@ -9641,7 +9455,7 @@ export class WebProvidersResource {
     );
   }
   ref(
-    value: operations["get_provider_api_v1_web_providers__provider_id__get"]["parameters"]["path"]["provider_id"],
+    value: operations["get_web_provider"]["parameters"]["path"]["provider_id"],
   ): WebProvidersProviderIdResource {
     return new WebProvidersProviderIdResource(
       this.transport,
@@ -9756,7 +9570,7 @@ export class WorkspacesResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["get_workspace_api_v1_workspaces__workspace_id__get"]["parameters"]["path"]["workspace_id"],
+    value: operations["get_workspace"]["parameters"]["path"]["workspace_id"],
   ): WorkspacesWorkspaceIdResource {
     return new WorkspacesWorkspaceIdResource(
       this.transport,
@@ -9941,7 +9755,7 @@ export class WorkspacesWorkspaceIdGrantsResource {
     });
   }
   ref(
-    value: operations["delete_workspace_grant_api_v1_workspaces__workspace_id__grants__grant_id__delete"]["parameters"]["path"]["grant_id"],
+    value: operations["delete_workspace_grant"]["parameters"]["path"]["grant_id"],
   ): WorkspacesWorkspaceIdGrantsGrantIdResource {
     return new WorkspacesWorkspaceIdGrantsGrantIdResource(
       this.transport,
@@ -10089,7 +9903,7 @@ export class WorkspacesWorkspaceIdInvitationsResource {
     });
   }
   ref(
-    value: operations["resend_workspace_invitation_api_v1_workspaces__workspace_id__invitations__invitation_id__resend_post"]["parameters"]["path"]["invitation_id"],
+    value: operations["resend_workspace_invitation"]["parameters"]["path"]["invitation_id"],
   ): WorkspacesWorkspaceIdInvitationsInvitationIdResource {
     return new WorkspacesWorkspaceIdInvitationsInvitationIdResource(
       this.transport,
@@ -10177,7 +9991,7 @@ export class WorkspacesWorkspaceIdKeysResource {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
-    value: operations["revoke_workspace_key_api_v1_workspaces__workspace_id__keys__key_id__delete"]["parameters"]["path"]["key_id"],
+    value: operations["revoke_workspace_key"]["parameters"]["path"]["key_id"],
   ): WorkspacesWorkspaceIdKeysKeyIdResource {
     return new WorkspacesWorkspaceIdKeysKeyIdResource(
       this.transport,
@@ -10259,7 +10073,7 @@ export class WorkspacesWorkspaceIdServiceAccountsResource {
     });
   }
   ref(
-    value: operations["delete_service_account_api_v1_workspaces__workspace_id__service_accounts__account_id__delete"]["parameters"]["path"]["account_id"],
+    value: operations["delete_service_account"]["parameters"]["path"]["account_id"],
   ): WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
     return new WorkspacesWorkspaceIdServiceAccountsAccountIdResource(
       this.transport,

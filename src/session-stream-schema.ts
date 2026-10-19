@@ -76,8 +76,6 @@ export interface components {
       } | null;
       /** @default null */
       output_spec?: components["schemas"]["OutputSpec"] | null;
-      /** @default null */
-      platform_tools?: components["schemas"]["PlatformSelection"] | null;
       /**
        * Plugins
        * @default null
@@ -946,29 +944,6 @@ export interface components {
       | "providers"
       | "execution";
     /**
-     * PlatformSelection
-     * @description Platform MCP groups selected independently of local operating instructions.
-     */
-    PlatformSelection: {
-      /**
-       * Groups
-       * @default []
-       */
-      groups?: components["schemas"]["PlatformGroup"][];
-      /**
-       * Read Permission
-       * @default allow
-       * @enum {string}
-       */
-      read_permission?: "allow" | "ask" | "deny";
-      /**
-       * Write Permission
-       * @default ask
-       * @enum {string}
-       */
-      write_permission?: "allow" | "ask" | "deny";
-    };
-    /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.
      */
@@ -1417,17 +1392,9 @@ export interface components {
       /** @default inherit */
       permission?: components["schemas"]["ToolPermissionSetting"];
     };
-    /** @enum {string} */
     ToolsetKey:
-      | "files"
-      | "shell"
-      | "computer"
-      | "web"
-      | "memory"
-      | "assets"
-      | "configuration"
-      | "traces"
-      | "findings";
+      | ("files" | "shell" | "computer" | "web" | "memory" | "assets")
+      | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
       /** Config */
