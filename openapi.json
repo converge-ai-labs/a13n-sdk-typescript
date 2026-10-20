@@ -6670,7 +6670,16 @@
           "run_attempt.succeeded",
           "run_attempt.yielded",
           "run_attempt.failed",
-          "run_attempt.cancelled"
+          "run_attempt.cancelled",
+          "schedule.enabled",
+          "schedule.paused",
+          "schedule.completed",
+          "schedule.archived",
+          "schedule_occurrence.submitted",
+          "schedule_occurrence.skipped",
+          "schedule_occurrence.failed",
+          "schedule_occurrence.cancelled",
+          "schedule_occurrence.completed"
         ],
         "type": "string"
       },
@@ -10033,6 +10042,29 @@
       "Occurrence": {
         "additionalProperties": false,
         "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "completion_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Run Id"
+          },
           "covered_from_at": {
             "anyOf": [
               {
@@ -10079,6 +10111,18 @@
                 "type": "null"
               }
             ]
+          },
+          "execution_outcome": {
+            "anyOf": [
+              {
+                "enum": ["succeeded", "failed", "cancelled"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Outcome"
           },
           "finished_at": {
             "anyOf": [
@@ -10228,7 +10272,7 @@
       },
       "OccurrenceExecution": {
         "additionalProperties": false,
-        "description": "Current execution facts, independent of the immutable submission result and its version.",
+        "description": "Current execution observations alongside the durable occurrence completion facts.",
         "properties": {
           "has_unfinished_work": {
             "title": "Has Unfinished Work",
@@ -10340,12 +10384,42 @@
         "type": "object"
       },
       "OccurrenceStatus": {
-        "enum": ["pending", "submitted", "skipped", "failed", "cancelled"],
+        "enum": [
+          "pending",
+          "submitted",
+          "completed",
+          "skipped",
+          "failed",
+          "cancelled"
+        ],
         "type": "string"
       },
       "OccurrenceSummary": {
         "additionalProperties": false,
         "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "completion_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Run Id"
+          },
           "covered_from_at": {
             "anyOf": [
               {
@@ -10392,6 +10466,18 @@
                 "type": "null"
               }
             ]
+          },
+          "execution_outcome": {
+            "anyOf": [
+              {
+                "enum": ["succeeded", "failed", "cancelled"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Outcome"
           },
           "finished_at": {
             "anyOf": [
@@ -15821,7 +15907,7 @@
             "items": {
               "$ref": "#/components/schemas/LifecycleKind"
             },
-            "maxItems": 12,
+            "maxItems": 21,
             "minItems": 1,
             "title": "Kinds",
             "type": "array"
@@ -15860,7 +15946,7 @@
       },
       "SubscriptionFilter": {
         "additionalProperties": false,
-        "description": "Absent fields match every run.",
+        "description": "Absent fields match every event; a specified identity must exist and match.",
         "properties": {
           "agent_id": {
             "anyOf": [
@@ -15874,6 +15960,19 @@
               }
             ],
             "title": "Agent Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "maxLength": 41,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
           },
           "session_id": {
             "anyOf": [
@@ -15961,7 +16060,7 @@
                 "items": {
                   "$ref": "#/components/schemas/LifecycleKind"
                 },
-                "maxItems": 12,
+                "maxItems": 21,
                 "minItems": 1,
                 "type": "array"
               },

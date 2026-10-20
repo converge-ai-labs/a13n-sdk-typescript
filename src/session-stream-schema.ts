@@ -889,7 +889,7 @@ export interface components {
     };
     /**
      * OccurrenceExecution
-     * @description Current execution facts, independent of the immutable submission result and its version.
+     * @description Current execution observations alongside the durable occurrence completion facts.
      */
     OccurrenceExecution: {
       /** Has Unfinished Work */
@@ -904,9 +904,24 @@ export interface components {
     };
     /** @enum {string} */
     OccurrenceStatus:
-      "pending" | "submitted" | "skipped" | "failed" | "cancelled";
+      | "pending"
+      | "submitted"
+      | "completed"
+      | "skipped"
+      | "failed"
+      | "cancelled";
     /** OccurrenceSummary */
     OccurrenceSummary: {
+      /**
+       * Completed At
+       * @default null
+       */
+      completed_at?: string | null;
+      /**
+       * Completion Run Id
+       * @default null
+       */
+      completion_run_id?: string | null;
       /** Covered From At */
       covered_from_at: string | null;
       /**
@@ -925,6 +940,11 @@ export interface components {
       entry_id: string | null;
       /** @default null */
       execution?: components["schemas"]["OccurrenceExecution"] | null;
+      /**
+       * Execution Outcome
+       * @default null
+       */
+      execution_outcome?: ("succeeded" | "failed" | "cancelled") | null;
       /** Finished At */
       finished_at: string | null;
       /** Id */
