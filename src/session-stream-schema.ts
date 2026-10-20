@@ -249,7 +249,7 @@ export interface components {
       pause_reason: string | null;
       /** Principal Id */
       principal_id: string;
-      schedule: components["schemas"]["CronSchedule"];
+      schedule: components["schemas"]["ScheduleRule"];
       /** Session Id */
       session_id: string;
       state: components["schemas"]["ScheduleState"];
@@ -955,6 +955,19 @@ export interface components {
       /** Version */
       version: number;
     };
+    /** OnceSchedule */
+    OnceSchedule: {
+      /**
+       * Run At
+       * Format: date-time
+       */
+      run_at: string;
+      /**
+       * Type
+       * @constant
+       */
+      type: "once";
+    };
     /**
      * OutputSpec
      * @description Plain text without a schema, one structured output, or at least two named variants.
@@ -1317,8 +1330,11 @@ export interface components {
       /** Schedule Id */
       schedule_id: string;
     };
+    ScheduleRule:
+      | components["schemas"]["CronSchedule"]
+      | components["schemas"]["OnceSchedule"];
     /** @enum {string} */
-    ScheduleState: "paused" | "enabled" | "archived";
+    ScheduleState: "paused" | "enabled" | "completed" | "archived";
     /** @enum {string} */
     ScheduleTrigger: "scheduled" | "manual";
     /**

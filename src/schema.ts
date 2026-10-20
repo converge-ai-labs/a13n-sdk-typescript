@@ -7588,7 +7588,7 @@ export interface components {
       max_lateness_seconds: number;
       /** Name */
       name: string;
-      schedule: components["schemas"]["CronSchedule"];
+      schedule: components["schemas"]["ScheduleRule"];
       /** Timezone Data Version */
       timezone_data_version: string;
       /** Utc Offset Seconds */
@@ -7645,6 +7645,19 @@ export interface components {
       updated_at: string;
       /** Version */
       version: number;
+    };
+    /** OnceSchedule */
+    OnceSchedule: {
+      /**
+       * Run At
+       * Format: date-time
+       */
+      run_at: string;
+      /**
+       * Type
+       * @constant
+       */
+      type: "once";
     };
     /** @enum {string} */
     OperationKind: "setup" | "complete" | "refresh" | "revoke";
@@ -8708,7 +8721,7 @@ export interface components {
       pause_reason: ("manual" | "authority_invalid" | "target_invalid") | null;
       /** Principal Id */
       principal_id: string;
-      schedule: components["schemas"]["CronSchedule"];
+      schedule: components["schemas"]["ScheduleRule"];
       /** Session Id */
       session_id: string;
       state: components["schemas"]["ScheduleState"];
@@ -8747,7 +8760,7 @@ export interface components {
       max_lateness_seconds?: number;
       /** Name */
       name: string;
-      schedule: components["schemas"]["CronSchedule"];
+      schedule: components["schemas"]["ScheduleRule"];
       /**
        * State
        * @default paused
@@ -8814,10 +8827,13 @@ export interface components {
        * @default 5
        */
       count?: number;
-      schedule: components["schemas"]["CronSchedule"];
+      schedule: components["schemas"]["ScheduleRule"];
     };
+    ScheduleRule:
+      | components["schemas"]["CronSchedule"]
+      | components["schemas"]["OnceSchedule"];
     /** @enum {string} */
-    ScheduleState: "paused" | "enabled" | "archived";
+    ScheduleState: "paused" | "enabled" | "completed" | "archived";
     /** ScheduleStatus */
     ScheduleStatus: {
       busy_occurrences: components["schemas"]["BusyOccurrencePage"];
@@ -8867,7 +8883,7 @@ export interface components {
       max_lateness_seconds?: number | null;
       /** Name */
       name?: string | null;
-      schedule?: components["schemas"]["CronSchedule"] | null;
+      schedule?: components["schemas"]["ScheduleRule"] | null;
     };
     /** SelectedTrace */
     SelectedTrace: {
