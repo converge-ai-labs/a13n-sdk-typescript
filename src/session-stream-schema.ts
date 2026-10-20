@@ -237,6 +237,25 @@ export interface components {
        */
       permission?: "inherit" | "allow" | "deny";
     };
+    /** Configuration */
+    Configuration: {
+      /** Id */
+      id: string;
+      /** Max Lateness Seconds */
+      max_lateness_seconds: number;
+      /** Name */
+      name: string;
+      /** Pause Reason */
+      pause_reason: string | null;
+      /** Principal Id */
+      principal_id: string;
+      schedule: components["schemas"]["CronSchedule"];
+      /** Session Id */
+      session_id: string;
+      state: components["schemas"]["ScheduleState"];
+      /** Version */
+      version: number;
+    };
     /**
      * ConnectionSelection
      * @description An agent's use of one connection: all the tools it exposes, or a subset, and their permissions.
@@ -282,6 +301,19 @@ export interface components {
        * @default false
        */
       truncated?: boolean;
+    };
+    /** CronSchedule */
+    CronSchedule: {
+      /** Expression */
+      expression: string;
+      /** Timezone */
+      timezone: string;
+      /**
+       * Type
+       * @default cron
+       * @constant
+       */
+      type?: "cron";
     };
     /** DelegationContextPolicy */
     DelegationContextPolicy: {
@@ -609,6 +641,12 @@ export interface components {
       /** Thread Id */
       thread_id: string;
     };
+    /** InitialRun */
+    InitialRun: {
+      /** Id */
+      id: string;
+      status: components["schemas"]["RunStatus"];
+    };
     /**
      * IsolatedSkillSync
      * @description Reuse immutable package directories, with a soft count budget.
@@ -841,6 +879,82 @@ export interface components {
        */
       thread_id?: string | null;
     };
+    /** OccurrenceEvent */
+    OccurrenceEvent: {
+      occurrence: components["schemas"]["OccurrenceSummary"];
+      /** Schedule Id */
+      schedule_id: string;
+      /** Session Id */
+      session_id: string;
+    };
+    /**
+     * OccurrenceExecution
+     * @description Current execution facts, independent of the immutable submission result and its version.
+     */
+    OccurrenceExecution: {
+      /** Has Unfinished Work */
+      has_unfinished_work: boolean;
+      initial_entry_status: components["schemas"]["EntryStatus"] | null;
+      initial_run: components["schemas"]["InitialRun"] | null;
+      /**
+       * Observed At
+       * Format: date-time
+       */
+      observed_at: string;
+    };
+    /** @enum {string} */
+    OccurrenceStatus:
+      "pending" | "submitted" | "skipped" | "failed" | "cancelled";
+    /** OccurrenceSummary */
+    OccurrenceSummary: {
+      /** Covered From At */
+      covered_from_at: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Deadline At
+       * Format: date-time
+       */
+      deadline_at: string;
+      /** Dispatch Attempts */
+      dispatch_attempts: number;
+      /** Entry Id */
+      entry_id: string | null;
+      /** @default null */
+      execution?: components["schemas"]["OccurrenceExecution"] | null;
+      /** Finished At */
+      finished_at: string | null;
+      /** Id */
+      id: string;
+      /** Last Error */
+      last_error: string | null;
+      /** Next Attempt At */
+      next_attempt_at: string | null;
+      /** Reason */
+      reason: string | null;
+      /** Schedule Id */
+      schedule_id: string;
+      /** Schedule Version */
+      schedule_version: number;
+      /** Scheduled At */
+      scheduled_at: string | null;
+      /** Session Id */
+      session_id: string;
+      status: components["schemas"]["OccurrenceStatus"];
+      /** Thread Id */
+      thread_id: string | null;
+      trigger: components["schemas"]["ScheduleTrigger"];
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Version */
+      version: number;
+    };
     /**
      * OutputSpec
      * @description Plain text without a schema, one structured output, or at least two named variants.
@@ -956,6 +1070,15 @@ export interface components {
       instance_name: string;
       /** Plugin Key */
       plugin_key: string;
+    };
+    /** Progress */
+    Progress: {
+      /** Last Occurrence Id */
+      last_occurrence_id: string | null;
+      /** Next Fire At */
+      next_fire_at: string | null;
+      /** Pending Occurrence Id */
+      pending_occurrence_id: string | null;
     };
     /**
      * ProxyToolSearchConfig
@@ -1149,6 +1272,8 @@ export interface components {
        * @enum {string}
        */
       revision_selection: "pinned" | "default" | "inherited";
+      /** @default null */
+      schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
       sealed_at: string | null;
       /** Session Id */
@@ -1176,6 +1301,26 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** ScheduleEvent */
+    ScheduleEvent: {
+      configuration: components["schemas"]["Configuration"];
+      progress: components["schemas"]["Progress"];
+      /** Schedule Id */
+      schedule_id: string;
+      /** Session Id */
+      session_id: string;
+    };
+    /** ScheduleOrigin */
+    ScheduleOrigin: {
+      /** Occurrence Id */
+      occurrence_id: string;
+      /** Schedule Id */
+      schedule_id: string;
+    };
+    /** @enum {string} */
+    ScheduleState: "paused" | "enabled" | "archived";
+    /** @enum {string} */
+    ScheduleTrigger: "scheduled" | "manual";
     /**
      * SharedSkillSync
      * @description Publish mutable conventional names; the last completed publication wins.
@@ -1307,6 +1452,11 @@ export interface components {
        * @enum {string}
        */
       purpose?: "conversation" | "memory_organization";
+      /**
+       * Schedule Occurrence Id
+       * @default null
+       */
+      schedule_occurrence_id?: string | null;
       /** Session Id */
       session_id: string;
       /** Subagent */
@@ -1578,4 +1728,6 @@ export type SessionStreamFrame =
   | { type: "delta"; data: components["schemas"]["Delta"] }
   | { type: "gap"; data: components["schemas"]["Gap"] }
   | { type: "items"; data: components["schemas"]["RunSnapshot"] }
+  | { type: "occurrence"; data: components["schemas"]["OccurrenceEvent"] }
+  | { type: "schedule"; data: components["schemas"]["ScheduleEvent"] }
   | { type: "thread"; data: components["schemas"]["ThreadState"] };

@@ -1250,7 +1250,7 @@ type Operation170Options = {
     Operation170["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation172 = operations["list_sessions"];
+type Operation172 = operations["list_schedules"];
 type Operation172Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation172["parameters"]["query"]>;
@@ -1258,21 +1258,24 @@ type Operation172Options = {
     Operation172["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation173 = operations["create_session"];
+type Operation173 = operations["create_schedule"];
 type Operation173Options = {
   signal?: AbortSignal;
+  idempotencyKey: NonNullable<
+    NonNullable<Operation173["parameters"]["header"]>["Idempotency-Key"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation173["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation174 = operations["get_session"];
+type Operation174 = operations["preview_schedule"];
 type Operation174Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation174["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation175 = operations["update_session"];
+type Operation175 = operations["archive_schedule"];
 type Operation175Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1282,51 +1285,47 @@ type Operation175Options = {
     Operation175["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation176 = operations["get_message_authors"];
+type Operation176 = operations["get_schedule"];
 type Operation176Options = {
   signal?: AbortSignal;
-  query: NonNullable<Operation176["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation176["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation177 = operations["session_stream"];
+type Operation177 = operations["update_schedule"];
 type Operation177Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation177["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation177["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation178 = operations["list_skills"];
+type Operation178 = operations["dispatch_schedule"];
 type Operation178Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation178["parameters"]["query"]>;
+  idempotencyKey: NonNullable<
+    NonNullable<Operation178["parameters"]["header"]>["Idempotency-Key"]
+  >;
+  ifMatch: NonNullable<
+    NonNullable<Operation178["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation178["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation179 = operations["create_skill"];
+type Operation179 = operations["enable_schedule"];
 type Operation179Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation179["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation179["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation180 = operations["validate_skill"];
-type Operation180Options = {
-  signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation180["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation181 = operations["get_skill"];
-type Operation181Options = {
-  signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation181["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation182 = operations["update_skill"];
+type Operation182 = operations["pause_schedule"];
 type Operation182Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1336,27 +1335,30 @@ type Operation182Options = {
     Operation182["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation183 = operations["archive_skill"];
+type Operation180 = operations["list_schedule_occurrences"];
+type Operation180Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation180["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation180["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation181 = operations["get_schedule_occurrence"];
+type Operation181Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation181["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation181["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation183 = operations["get_schedule_status"];
 type Operation183Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation183["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation183["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation190 = operations["unarchive_skill"];
-type Operation190Options = {
-  signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation190["parameters"]["header"]>["If-Match"]
-  >;
-  xWorkspaceId?: NonNullable<
-    Operation190["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation184 = operations["list_skill_revisions"];
+type Operation184 = operations["list_sessions"];
 type Operation184Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation184["parameters"]["query"]>;
@@ -1364,80 +1366,85 @@ type Operation184Options = {
     Operation184["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation185 = operations["create_skill_revision"];
+type Operation185 = operations["create_session"];
 type Operation185Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation185["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation185["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation186 = operations["get_skill_revision"];
+type Operation186 = operations["get_session"];
 type Operation186Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation186["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation189 = operations["set_default_skill_revision"];
-type Operation189Options = {
-  signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation189["parameters"]["header"]>["If-Match"]
-  >;
-  xWorkspaceId?: NonNullable<
-    Operation189["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation187 = operations["read_skill_archive"];
+type Operation187 = operations["update_session"];
 type Operation187Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation187["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation187["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation188 = operations["read_skill_file"];
+type Operation188 = operations["get_message_authors"];
 type Operation188Options = {
   signal?: AbortSignal;
+  query: NonNullable<Operation188["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation188["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation191 = operations["list_subscriptions"];
+type Operation189 = operations["session_stream"];
+type Operation189Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation189["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation190 = operations["list_skills"];
+type Operation190Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation190["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation190["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation191 = operations["create_skill"];
 type Operation191Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation191["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation191["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation192 = operations["create_subscription"];
+type Operation192 = operations["validate_skill"];
 type Operation192Options = {
   signal?: AbortSignal;
   xWorkspaceId?: NonNullable<
     Operation192["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation193 = operations["delete_subscription"];
+type Operation193 = operations["get_skill"];
 type Operation193Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation193["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation193["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation194 = operations["get_subscription"];
+type Operation194 = operations["update_skill"];
 type Operation194Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation194["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation194["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation195 = operations["update_subscription"];
+type Operation195 = operations["archive_skill"];
 type Operation195Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1447,57 +1454,7 @@ type Operation195Options = {
     Operation195["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation196 = operations["list_deliveries"];
-type Operation196Options = {
-  signal?: AbortSignal;
-  query?: NonNullable<Operation196["parameters"]["query"]>;
-  xWorkspaceId?: NonNullable<
-    Operation196["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation197 = operations["redeliver"];
-type Operation197Options = {
-  signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation197["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation198 = operations["list_threads"];
-type Operation198Options = {
-  signal?: AbortSignal;
-  query?: NonNullable<Operation198["parameters"]["query"]>;
-  xWorkspaceId?: NonNullable<
-    Operation198["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation199 = operations["create_thread"];
-type Operation199Options = {
-  signal?: AbortSignal;
-  idempotencyKey: NonNullable<
-    NonNullable<Operation199["parameters"]["header"]>["Idempotency-Key"]
-  >;
-  xWorkspaceId?: NonNullable<
-    Operation199["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation200 = operations["get_thread"];
-type Operation200Options = {
-  signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation200["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation201 = operations["update_thread"];
-type Operation201Options = {
-  signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation201["parameters"]["header"]>["If-Match"]
-  >;
-  xWorkspaceId?: NonNullable<
-    Operation201["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation202 = operations["archive_thread"];
+type Operation202 = operations["unarchive_skill"];
 type Operation202Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1507,24 +1464,71 @@ type Operation202Options = {
     Operation202["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation203 = operations["list_environment_mounts"];
+type Operation196 = operations["list_skill_revisions"];
+type Operation196Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation196["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation196["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation197 = operations["create_skill_revision"];
+type Operation197Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation197["parameters"]["header"]>["If-Match"]
+  >;
+  xWorkspaceId?: NonNullable<
+    Operation197["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation198 = operations["get_skill_revision"];
+type Operation198Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation198["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation201 = operations["set_default_skill_revision"];
+type Operation201Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation201["parameters"]["header"]>["If-Match"]
+  >;
+  xWorkspaceId?: NonNullable<
+    Operation201["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation199 = operations["read_skill_archive"];
+type Operation199Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation199["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation200 = operations["read_skill_file"];
+type Operation200Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation200["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation203 = operations["list_subscriptions"];
 type Operation203Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation203["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation203["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation204 = operations["add_environment_mount"];
+type Operation204 = operations["create_subscription"];
 type Operation204Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation204["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation204["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation205 = operations["remove_environment_mount"];
+type Operation205 = operations["delete_subscription"];
 type Operation205Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1534,80 +1538,74 @@ type Operation205Options = {
     Operation205["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation206 = operations["update_environment_mount"];
+type Operation206 = operations["get_subscription"];
 type Operation206Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation206["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation206["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation207 = operations["list_inbox"];
+type Operation207 = operations["update_subscription"];
 type Operation207Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation207["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation207["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation207["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation208 = operations["submit_message"];
+type Operation208 = operations["list_deliveries"];
 type Operation208Options = {
   signal?: AbortSignal;
-  idempotencyKey: NonNullable<
-    NonNullable<Operation208["parameters"]["header"]>["Idempotency-Key"]
-  >;
+  query?: NonNullable<Operation208["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation208["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation209 = operations["reorder_inbox"];
+type Operation209 = operations["redeliver"];
 type Operation209Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation209["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation209["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation210 = operations["withdraw_entry"];
+type Operation210 = operations["list_threads"];
 type Operation210Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation210["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation210["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation210["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation211 = operations["get_inbox_entry"];
+type Operation211 = operations["create_thread"];
 type Operation211Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation211["parameters"]["query"]>;
+  idempotencyKey: NonNullable<
+    NonNullable<Operation211["parameters"]["header"]>["Idempotency-Key"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation211["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation212 = operations["edit_entry"];
+type Operation212 = operations["get_thread"];
 type Operation212Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation212["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation212["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation213 = operations["list_memory_mounts"];
+type Operation213 = operations["update_thread"];
 type Operation213Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation213["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation213["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation214 = operations["add_memory_mount"];
+type Operation214 = operations["archive_thread"];
 type Operation214Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1617,17 +1615,14 @@ type Operation214Options = {
     Operation214["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation215 = operations["remove_memory_mount"];
+type Operation215 = operations["list_environment_mounts"];
 type Operation215Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation215["parameters"]["header"]>["If-Match"]
-  >;
   xWorkspaceId?: NonNullable<
     Operation215["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation216 = operations["update_memory_mount"];
+type Operation216 = operations["add_environment_mount"];
 type Operation216Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
@@ -1637,56 +1632,65 @@ type Operation216Options = {
     Operation216["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation217 = operations["list_thread_runs"];
+type Operation217 = operations["remove_environment_mount"];
 type Operation217Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation217["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation217["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation217["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation218 = operations["thread_stream"];
+type Operation218 = operations["update_environment_mount"];
 type Operation218Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation218["parameters"]["query"]>;
-  lastEventId?: NonNullable<
-    Operation218["parameters"]["header"]
-  >["Last-Event-ID"];
+  ifMatch: NonNullable<
+    NonNullable<Operation218["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation218["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation219 = operations["list_toolsets"];
+type Operation219 = operations["list_inbox"];
 type Operation219Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation219["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation219["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation220 = operations["define_toolsets"];
+type Operation220 = operations["submit_message"];
 type Operation220Options = {
   signal?: AbortSignal;
-  query: NonNullable<Operation220["parameters"]["query"]>;
+  idempotencyKey: NonNullable<
+    NonNullable<Operation220["parameters"]["header"]>["Idempotency-Key"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation220["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation221 = operations["index_toolsets"];
+type Operation221 = operations["reorder_inbox"];
 type Operation221Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation221["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation221["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation221["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation222 = operations["get_trace_backend"];
+type Operation222 = operations["withdraw_entry"];
 type Operation222Options = {
   signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation222["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation222["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation223 = operations["list_traces"];
+type Operation223 = operations["get_inbox_entry"];
 type Operation223Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation223["parameters"]["query"]>;
@@ -1694,73 +1698,80 @@ type Operation223Options = {
     Operation223["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation224 = operations["get_trace"];
+type Operation224 = operations["edit_entry"];
 type Operation224Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation224["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation224["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation224["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation225 = operations["list_trace_spans"];
+type Operation225 = operations["list_memory_mounts"];
 type Operation225Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation225["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation225["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation226 = operations["read_span_content"];
+type Operation226 = operations["add_memory_mount"];
 type Operation226Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation226["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation226["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation226["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation227 = operations["create_upload"];
+type Operation227 = operations["remove_memory_mount"];
 type Operation227Options = {
   signal?: AbortSignal;
-  idempotencyKey: NonNullable<
-    NonNullable<Operation227["parameters"]["header"]>["Idempotency-Key"]
+  ifMatch: NonNullable<
+    NonNullable<Operation227["parameters"]["header"]>["If-Match"]
   >;
   xWorkspaceId?: NonNullable<
     Operation227["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation228 = operations["summarize_usage"];
+type Operation228 = operations["update_memory_mount"];
 type Operation228Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation228["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation228["parameters"]["header"]>["If-Match"]
+  >;
   xWorkspaceId?: NonNullable<
     Operation228["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation229 = operations["usage_agents"];
+type Operation229 = operations["list_thread_runs"];
 type Operation229Options = {
   signal?: AbortSignal;
-  query: NonNullable<Operation229["parameters"]["query"]>;
+  query?: NonNullable<Operation229["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation229["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation230 = operations["context_usage"];
+type Operation230 = operations["thread_stream"];
 type Operation230Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation230["parameters"]["query"]>;
+  lastEventId?: NonNullable<
+    Operation230["parameters"]["header"]
+  >["Last-Event-ID"];
   xWorkspaceId?: NonNullable<
     Operation230["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation231 = operations["usage_models"];
+type Operation231 = operations["list_toolsets"];
 type Operation231Options = {
   signal?: AbortSignal;
-  query: NonNullable<Operation231["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation231["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation232 = operations["usage_overview"];
+type Operation232 = operations["define_toolsets"];
 type Operation232Options = {
   signal?: AbortSignal;
   query: NonNullable<Operation232["parameters"]["query"]>;
@@ -1768,225 +1779,322 @@ type Operation232Options = {
     Operation232["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation233 = operations["model_request_metrics"];
+type Operation233 = operations["index_toolsets"];
 type Operation233Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation233["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation233["parameters"]["header"]
   >["X-Workspace-ID"];
 };
-type Operation234 = operations["get_profile"];
-type Operation234Options = { signal?: AbortSignal };
-type Operation235 = operations["update_profile"];
+type Operation234 = operations["get_trace_backend"];
+type Operation234Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation234["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation235 = operations["list_traces"];
 type Operation235Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation235["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation235["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation235["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation239 = operations["disable_account"];
-type Operation239Options = { signal?: AbortSignal };
-type Operation245 = operations["change_password"];
-type Operation245Options = { signal?: AbortSignal };
-type Operation236 = operations["list_account_audit_events"];
+type Operation236 = operations["get_trace"];
 type Operation236Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation236["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation236["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation237 = operations["delete_user_avatar"];
+type Operation237 = operations["list_trace_spans"];
 type Operation237Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation237["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation237["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation237["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation238 = operations["put_user_avatar"];
+type Operation238 = operations["read_span_content"];
 type Operation238Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation238["parameters"]["header"]>["If-Match"]
-  >;
-  contentType: "image/jpeg" | "image/png" | "image/webp";
+  query?: NonNullable<Operation238["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation238["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation240 = operations["list_user_keys"];
+type Operation239 = operations["create_upload"];
+type Operation239Options = {
+  signal?: AbortSignal;
+  idempotencyKey: NonNullable<
+    NonNullable<Operation239["parameters"]["header"]>["Idempotency-Key"]
+  >;
+  xWorkspaceId?: NonNullable<
+    Operation239["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation240 = operations["summarize_usage"];
 type Operation240Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation240["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation240["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation241 = operations["create_user_key"];
-type Operation241Options = { signal?: AbortSignal };
-type Operation242 = operations["revoke_user_key"];
+type Operation241 = operations["usage_agents"];
+type Operation241Options = {
+  signal?: AbortSignal;
+  query: NonNullable<Operation241["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation241["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation242 = operations["context_usage"];
 type Operation242Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation242["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation242["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation242["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation243 = operations["list_login_sessions"];
+type Operation243 = operations["usage_models"];
 type Operation243Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation243["parameters"]["query"]>;
+  query: NonNullable<Operation243["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation243["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation244Options = { signal?: AbortSignal };
+type Operation244 = operations["usage_overview"];
+type Operation244Options = {
+  signal?: AbortSignal;
+  query: NonNullable<Operation244["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation244["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation245 = operations["model_request_metrics"];
+type Operation245Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation245["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation246 = operations["get_profile"];
 type Operation246Options = { signal?: AbortSignal };
-type Operation247 = operations["list_web_providers"];
+type Operation247 = operations["update_profile"];
 type Operation247Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation247["parameters"]["query"]>;
-  xWorkspaceId?: NonNullable<
-    Operation247["parameters"]["header"]
-  >["X-Workspace-ID"];
+  ifMatch: NonNullable<
+    NonNullable<Operation247["parameters"]["header"]>["If-Match"]
+  >;
 };
-type Operation248 = operations["create_web_provider"];
+type Operation251 = operations["disable_account"];
+type Operation251Options = { signal?: AbortSignal };
+type Operation257 = operations["change_password"];
+type Operation257Options = { signal?: AbortSignal };
+type Operation248 = operations["list_account_audit_events"];
 type Operation248Options = {
   signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation248["parameters"]["header"]
-  >["X-Workspace-ID"];
+  query?: NonNullable<Operation248["parameters"]["query"]>;
 };
-type Operation249 = operations["get_web_provider"];
+type Operation249 = operations["delete_user_avatar"];
 type Operation249Options = {
   signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation249["parameters"]["header"]
-  >["X-Workspace-ID"];
+  ifMatch: NonNullable<
+    NonNullable<Operation249["parameters"]["header"]>["If-Match"]
+  >;
 };
-type Operation250 = operations["update_web_provider"];
+type Operation250 = operations["put_user_avatar"];
 type Operation250Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation250["parameters"]["header"]>["If-Match"]
   >;
-  xWorkspaceId?: NonNullable<
-    Operation250["parameters"]["header"]
-  >["X-Workspace-ID"];
+  contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation251 = operations["test_web_provider"];
-type Operation251Options = {
-  signal?: AbortSignal;
-  xWorkspaceId?: NonNullable<
-    Operation251["parameters"]["header"]
-  >["X-Workspace-ID"];
-};
-type Operation252 = operations["list_workspaces"];
+type Operation252 = operations["list_user_keys"];
 type Operation252Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation252["parameters"]["query"]>;
 };
-type Operation253 = operations["get_workspace"];
+type Operation253 = operations["create_user_key"];
 type Operation253Options = { signal?: AbortSignal };
-type Operation254 = operations["update_workspace"];
+type Operation254 = operations["revoke_user_key"];
 type Operation254Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation254["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation255 = operations["archive_workspace"];
+type Operation255 = operations["list_login_sessions"];
 type Operation255Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation255["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation255["parameters"]["query"]>;
 };
-type Operation256 = operations["list_workspace_audit_events"];
-type Operation256Options = {
-  signal?: AbortSignal;
-  query?: NonNullable<Operation256["parameters"]["query"]>;
-};
-type Operation257 = operations["list_workspace_grants"];
-type Operation257Options = {
-  signal?: AbortSignal;
-  query?: NonNullable<Operation257["parameters"]["query"]>;
-};
-type Operation258 = operations["create_workspace_grant"];
+type Operation256Options = { signal?: AbortSignal };
 type Operation258Options = { signal?: AbortSignal };
-type Operation259Options = { signal?: AbortSignal };
-type Operation260 = operations["change_workspace_grant"];
-type Operation260Options = { signal?: AbortSignal };
-type Operation261 = operations["delete_workspace_icon"];
+type Operation259 = operations["list_web_providers"];
+type Operation259Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation259["parameters"]["query"]>;
+  xWorkspaceId?: NonNullable<
+    Operation259["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation260 = operations["create_web_provider"];
+type Operation260Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation260["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation261 = operations["get_web_provider"];
 type Operation261Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation261["parameters"]["header"]>["If-Match"]
-  >;
+  xWorkspaceId?: NonNullable<
+    Operation261["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation262Options = { signal?: AbortSignal };
-type Operation263 = operations["put_workspace_icon"];
-type Operation263Options = {
+type Operation262 = operations["update_web_provider"];
+type Operation262Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
-    NonNullable<Operation263["parameters"]["header"]>["If-Match"]
+    NonNullable<Operation262["parameters"]["header"]>["If-Match"]
   >;
-  contentType: "image/jpeg" | "image/png" | "image/webp";
+  xWorkspaceId?: NonNullable<
+    Operation262["parameters"]["header"]
+  >["X-Workspace-ID"];
 };
-type Operation264 = operations["list_workspace_invitations"];
+type Operation263 = operations["test_web_provider"];
+type Operation263Options = {
+  signal?: AbortSignal;
+  xWorkspaceId?: NonNullable<
+    Operation263["parameters"]["header"]
+  >["X-Workspace-ID"];
+};
+type Operation264 = operations["list_workspaces"];
 type Operation264Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation264["parameters"]["query"]>;
 };
-type Operation265 = operations["create_workspace_invitation"];
+type Operation265 = operations["get_workspace"];
 type Operation265Options = { signal?: AbortSignal };
-type Operation266 = operations["resend_workspace_invitation"];
+type Operation266 = operations["update_workspace"];
 type Operation266Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation266["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation267 = operations["revoke_workspace_invitation"];
+type Operation267 = operations["archive_workspace"];
 type Operation267Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
     NonNullable<Operation267["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation268 = operations["list_workspace_keys"];
+type Operation268 = operations["list_workspace_audit_events"];
 type Operation268Options = {
   signal?: AbortSignal;
   query?: NonNullable<Operation268["parameters"]["query"]>;
 };
-type Operation269 = operations["revoke_workspace_key"];
+type Operation269 = operations["list_workspace_grants"];
 type Operation269Options = {
   signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation269["parameters"]["header"]>["If-Match"]
-  >;
+  query?: NonNullable<Operation269["parameters"]["query"]>;
 };
-type Operation270 = operations["list_service_accounts"];
-type Operation270Options = {
-  signal?: AbortSignal;
-  query?: NonNullable<Operation270["parameters"]["query"]>;
-};
-type Operation271 = operations["create_service_account"];
+type Operation270 = operations["create_workspace_grant"];
+type Operation270Options = { signal?: AbortSignal };
 type Operation271Options = { signal?: AbortSignal };
-type Operation272 = operations["delete_service_account"];
-type Operation272Options = {
+type Operation272 = operations["change_workspace_grant"];
+type Operation272Options = { signal?: AbortSignal };
+type Operation273 = operations["delete_workspace_icon"];
+type Operation273Options = {
   signal?: AbortSignal;
   ifMatch: NonNullable<
-    NonNullable<Operation272["parameters"]["header"]>["If-Match"]
+    NonNullable<Operation273["parameters"]["header"]>["If-Match"]
   >;
 };
-type Operation273 = operations["get_service_account"];
-type Operation273Options = { signal?: AbortSignal };
-type Operation274 = operations["update_service_account"];
-type Operation274Options = {
-  signal?: AbortSignal;
-  ifMatch: NonNullable<
-    NonNullable<Operation274["parameters"]["header"]>["If-Match"]
-  >;
-};
-type Operation275 = operations["list_service_account_keys"];
+type Operation274Options = { signal?: AbortSignal };
+type Operation275 = operations["put_workspace_icon"];
 type Operation275Options = {
   signal?: AbortSignal;
-  query?: NonNullable<Operation275["parameters"]["query"]>;
+  ifMatch: NonNullable<
+    NonNullable<Operation275["parameters"]["header"]>["If-Match"]
+  >;
+  contentType: "image/jpeg" | "image/png" | "image/webp";
 };
-type Operation276 = operations["create_service_account_key"];
-type Operation276Options = { signal?: AbortSignal };
-type Operation277 = operations["health"];
+type Operation276 = operations["list_workspace_invitations"];
+type Operation276Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation276["parameters"]["query"]>;
+};
+type Operation277 = operations["create_workspace_invitation"];
 type Operation277Options = { signal?: AbortSignal };
-type Operation278 = operations["ready"];
-type Operation278Options = { signal?: AbortSignal };
+type Operation278 = operations["resend_workspace_invitation"];
+type Operation278Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation278["parameters"]["header"]>["If-Match"]
+  >;
+};
+type Operation279 = operations["revoke_workspace_invitation"];
+type Operation279Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation279["parameters"]["header"]>["If-Match"]
+  >;
+};
+type Operation280 = operations["list_workspace_keys"];
+type Operation280Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation280["parameters"]["query"]>;
+};
+type Operation281 = operations["revoke_workspace_key"];
+type Operation281Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation281["parameters"]["header"]>["If-Match"]
+  >;
+};
+type Operation282 = operations["list_service_accounts"];
+type Operation282Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation282["parameters"]["query"]>;
+};
+type Operation283 = operations["create_service_account"];
+type Operation283Options = { signal?: AbortSignal };
+type Operation284 = operations["delete_service_account"];
+type Operation284Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation284["parameters"]["header"]>["If-Match"]
+  >;
+};
+type Operation285 = operations["get_service_account"];
+type Operation285Options = { signal?: AbortSignal };
+type Operation286 = operations["update_service_account"];
+type Operation286Options = {
+  signal?: AbortSignal;
+  ifMatch: NonNullable<
+    NonNullable<Operation286["parameters"]["header"]>["If-Match"]
+  >;
+};
+type Operation287 = operations["list_service_account_keys"];
+type Operation287Options = {
+  signal?: AbortSignal;
+  query?: NonNullable<Operation287["parameters"]["query"]>;
+};
+type Operation288 = operations["create_service_account_key"];
+type Operation288Options = { signal?: AbortSignal };
+type Operation289 = operations["health"];
+type Operation289Options = { signal?: AbortSignal };
+type Operation290 = operations["ready"];
+type Operation290Options = { signal?: AbortSignal };
 export class ServiceResources {
   constructor(private readonly transport: Transport) {}
   /** POST /api/v1/agent-composer. Preserves response metadata; mutations are not replayed. */
@@ -2119,6 +2227,9 @@ export class ServiceResources {
   }
   get runs(): RunsResource {
     return new RunsResource(this.transport, "/api/v1/runs");
+  }
+  get schedules(): SchedulesResource {
+    return new SchedulesResource(this.transport, "/api/v1/schedules");
   }
   get sessions(): SessionsResource {
     return new SessionsResource(this.transport, "/api/v1/sessions");
@@ -7030,12 +7141,12 @@ export class RunsRunIdLineageResource {
   }
 }
 
-export class SessionsResource {
+export class SchedulesResource {
   constructor(
     private readonly transport: Transport,
     private readonly path: string,
   ) {}
-  /** GET /api/v1/sessions. Preserves response metadata; mutations are not replayed. */
+  /** GET /api/v1/schedules. Preserves response metadata; mutations are not replayed. */
   list(
     options: Operation172Options = {},
   ): Promise<
@@ -7067,15 +7178,383 @@ export class SessionsResource {
   items(options: Operation172Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
-  /** POST /api/v1/sessions. Preserves response metadata; mutations are not replayed. */
+  /** POST /api/v1/schedules. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
       Operation173["requestBody"]
     >["content"]["application/json"],
-    options: Operation173Options = {},
+    options: Operation173Options,
   ): Promise<
     ResourceResult<
       Operation173["responses"][201]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path,
+      body,
+      Object.fromEntries(
+        Object.entries({
+          "Idempotency-Key": options.idempotencyKey,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  /** POST /api/v1/schedules/preview. Preserves response metadata; mutations are not replayed. */
+  preview(
+    body: NonNullable<
+      Operation174["requestBody"]
+    >["content"]["application/json"],
+    options: Operation174Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation174["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path + "/preview",
+      body,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  ref(
+    value: operations["archive_schedule"]["parameters"]["path"]["schedule_id"],
+  ): SchedulesScheduleIdResource {
+    return new SchedulesScheduleIdResource(
+      this.transport,
+      this.path + "/" + encodeURIComponent(selector(String(value))),
+    );
+  }
+}
+
+export class SchedulesScheduleIdResource {
+  constructor(
+    private readonly transport: Transport,
+    private readonly path: string,
+  ) {}
+  /** DELETE /api/v1/schedules/{schedule_id}. Preserves response metadata; mutations are not replayed. */
+  delete(options: Operation175Options): Promise<ResourceResult<undefined>> {
+    return jsonRequest(
+      this.transport,
+      "DELETE",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({
+          "If-Match": options.ifMatch,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  /** GET /api/v1/schedules/{schedule_id}. Preserves response metadata; mutations are not replayed. */
+  get(
+    options: Operation176Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation176["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "GET",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  /** PATCH /api/v1/schedules/{schedule_id}. Preserves response metadata; mutations are not replayed. */
+  update(
+    body: NonNullable<
+      Operation177["requestBody"]
+    >["content"]["application/json"],
+    options: Operation177Options,
+  ): Promise<
+    ResourceResult<
+      Operation177["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "PATCH",
+      this.path,
+      body,
+      Object.fromEntries(
+        Object.entries({
+          "If-Match": options.ifMatch,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  /** POST /api/v1/schedules/{schedule_id}/dispatch. Preserves response metadata; mutations are not replayed. */
+  dispatch(
+    body: NonNullable<
+      Operation178["requestBody"]
+    >["content"]["application/json"],
+    options: Operation178Options,
+  ): Promise<
+    ResourceResult<
+      Operation178["responses"][202]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path + "/dispatch",
+      body,
+      Object.fromEntries(
+        Object.entries({
+          "Idempotency-Key": options.idempotencyKey,
+          "If-Match": options.ifMatch,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  /** POST /api/v1/schedules/{schedule_id}/enable. Preserves response metadata; mutations are not replayed. */
+  enable(
+    body: NonNullable<
+      Operation179["requestBody"]
+    >["content"]["application/json"],
+    options: Operation179Options,
+  ): Promise<
+    ResourceResult<
+      Operation179["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path + "/enable",
+      body,
+      Object.fromEntries(
+        Object.entries({
+          "If-Match": options.ifMatch,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  get occurrences(): SchedulesScheduleIdOccurrencesResource {
+    return new SchedulesScheduleIdOccurrencesResource(
+      this.transport,
+      this.path + "/occurrences",
+    );
+  }
+  /** POST /api/v1/schedules/{schedule_id}/pause. Preserves response metadata; mutations are not replayed. */
+  pause(
+    body: NonNullable<
+      Operation182["requestBody"]
+    >["content"]["application/json"],
+    options: Operation182Options,
+  ): Promise<
+    ResourceResult<
+      Operation182["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "POST",
+      this.path + "/pause",
+      body,
+      Object.fromEntries(
+        Object.entries({
+          "If-Match": options.ifMatch,
+          "X-Workspace-ID": options.xWorkspaceId,
+        })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+  get status(): SchedulesScheduleIdStatusResource {
+    return new SchedulesScheduleIdStatusResource(
+      this.transport,
+      this.path + "/status",
+    );
+  }
+}
+
+export class SchedulesScheduleIdOccurrencesResource {
+  constructor(
+    private readonly transport: Transport,
+    private readonly path: string,
+  ) {}
+  /** GET /api/v1/schedules/{schedule_id}/occurrences. Preserves response metadata; mutations are not replayed. */
+  list(
+    options: Operation180Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation180["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "GET",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal, query: options.query },
+    );
+  }
+  pages(options: Operation180Options = {}) {
+    const query = snapshot(options.query ?? {});
+    return new PageIterator(
+      query.cursor,
+      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
+      (value) => value,
+    );
+  }
+  items(options: Operation180Options = {}) {
+    return flattenPages(this.pages(options), (value) => value);
+  }
+  ref(
+    value: operations["get_schedule_occurrence"]["parameters"]["path"]["occurrence_id"],
+  ): SchedulesScheduleIdOccurrencesOccurrenceIdResource {
+    return new SchedulesScheduleIdOccurrencesOccurrenceIdResource(
+      this.transport,
+      this.path + "/" + encodeURIComponent(selector(String(value))),
+    );
+  }
+}
+
+export class SchedulesScheduleIdOccurrencesOccurrenceIdResource {
+  constructor(
+    private readonly transport: Transport,
+    private readonly path: string,
+  ) {}
+  /** GET /api/v1/schedules/{schedule_id}/occurrences/{occurrence_id}. Preserves response metadata; mutations are not replayed. */
+  get(
+    options: Operation181Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation181["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "GET",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal, query: options.query },
+    );
+  }
+}
+
+export class SchedulesScheduleIdStatusResource {
+  constructor(
+    private readonly transport: Transport,
+    private readonly path: string,
+  ) {}
+  /** GET /api/v1/schedules/{schedule_id}/status. Preserves response metadata; mutations are not replayed. */
+  get(
+    options: Operation183Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation183["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "GET",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal },
+    );
+  }
+}
+
+export class SessionsResource {
+  constructor(
+    private readonly transport: Transport,
+    private readonly path: string,
+  ) {}
+  /** GET /api/v1/sessions. Preserves response metadata; mutations are not replayed. */
+  list(
+    options: Operation184Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation184["responses"][200]["content"]["application/json"]
+    >
+  > {
+    return jsonRequest(
+      this.transport,
+      "GET",
+      this.path,
+      undefined,
+      Object.fromEntries(
+        Object.entries({ "X-Workspace-ID": options.xWorkspaceId })
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)]),
+      ),
+      { signal: options.signal, query: options.query },
+    );
+  }
+  pages(options: Operation184Options = {}) {
+    const query = snapshot(options.query ?? {});
+    return new PageIterator(
+      query.cursor,
+      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
+      (value) => value,
+    );
+  }
+  items(options: Operation184Options = {}) {
+    return flattenPages(this.pages(options), (value) => value);
+  }
+  /** POST /api/v1/sessions. Preserves response metadata; mutations are not replayed. */
+  create(
+    body: NonNullable<
+      Operation185["requestBody"]
+    >["content"]["application/json"],
+    options: Operation185Options = {},
+  ): Promise<
+    ResourceResult<
+      Operation185["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7108,10 +7587,10 @@ export class SessionsSessionIdResource {
   ) {}
   /** GET /api/v1/sessions/{session_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation174Options = {},
+    options: Operation186Options = {},
   ): Promise<
     ResourceResult<
-      Operation174["responses"][200]["content"]["application/json"]
+      Operation186["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7130,12 +7609,12 @@ export class SessionsSessionIdResource {
   /** PATCH /api/v1/sessions/{session_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation175["requestBody"]
+      Operation187["requestBody"]
     >["content"]["application/json"],
-    options: Operation175Options,
+    options: Operation187Options,
   ): Promise<
     ResourceResult<
-      Operation175["responses"][200]["content"]["application/json"]
+      Operation187["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7175,10 +7654,10 @@ export class SessionsSessionIdMessageAuthorsResource {
   ) {}
   /** GET /api/v1/sessions/{session_id}/message-authors. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation176Options,
+    options: Operation188Options,
   ): Promise<
     ResourceResult<
-      Operation176["responses"][200]["content"]["application/json"]
+      Operation188["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7202,7 +7681,7 @@ export class SessionsSessionIdStreamResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/sessions/{session_id}/stream. Caller owns and closes the unbuffered body. */
-  get(options: Operation177Options = {}): Promise<BinaryResult> {
+  get(options: Operation189Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal },
       headers: Object.fromEntries(
@@ -7222,10 +7701,10 @@ export class SkillsResource {
   ) {}
   /** GET /api/v1/skills. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation178Options = {},
+    options: Operation190Options = {},
   ): Promise<
     ResourceResult<
-      Operation178["responses"][200]["content"]["application/json"]
+      Operation190["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7241,7 +7720,7 @@ export class SkillsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation178Options = {}) {
+  pages(options: Operation190Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -7249,18 +7728,18 @@ export class SkillsResource {
       (value) => value,
     );
   }
-  items(options: Operation178Options = {}) {
+  items(options: Operation190Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/skills. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation179["requestBody"]
+      Operation191["requestBody"]
     >["content"]["application/json"],
-    options: Operation179Options = {},
+    options: Operation191Options = {},
   ): Promise<
     ResourceResult<
-      Operation179["responses"][201]["content"]["application/json"]
+      Operation191["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7279,12 +7758,12 @@ export class SkillsResource {
   /** POST /api/v1/skills/validate. Preserves response metadata; mutations are not replayed. */
   validate(
     body: NonNullable<
-      Operation180["requestBody"]
+      Operation192["requestBody"]
     >["content"]["application/json"],
-    options: Operation180Options = {},
+    options: Operation192Options = {},
   ): Promise<
     ResourceResult<
-      Operation180["responses"][200]["content"]["application/json"]
+      Operation192["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7317,10 +7796,10 @@ export class SkillsSkillIdResource {
   ) {}
   /** GET /api/v1/skills/{skill_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation181Options = {},
+    options: Operation193Options = {},
   ): Promise<
     ResourceResult<
-      Operation181["responses"][200]["content"]["application/json"]
+      Operation193["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7339,12 +7818,12 @@ export class SkillsSkillIdResource {
   /** PATCH /api/v1/skills/{skill_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation182["requestBody"]
+      Operation194["requestBody"]
     >["content"]["application/json"],
-    options: Operation182Options,
+    options: Operation194Options,
   ): Promise<
     ResourceResult<
-      Operation182["responses"][200]["content"]["application/json"]
+      Operation194["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7365,10 +7844,10 @@ export class SkillsSkillIdResource {
   }
   /** POST /api/v1/skills/{skill_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation183Options,
+    options: Operation195Options,
   ): Promise<
     ResourceResult<
-      Operation183["responses"][200]["content"]["application/json"]
+      Operation195["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7395,10 +7874,10 @@ export class SkillsSkillIdResource {
   }
   /** POST /api/v1/skills/{skill_id}/unarchive. Preserves response metadata; mutations are not replayed. */
   unarchive(
-    options: Operation190Options,
+    options: Operation202Options,
   ): Promise<
     ResourceResult<
-      Operation190["responses"][200]["content"]["application/json"]
+      Operation202["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7426,10 +7905,10 @@ export class SkillsSkillIdRevisionsResource {
   ) {}
   /** GET /api/v1/skills/{skill_id}/revisions. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation184Options = {},
+    options: Operation196Options = {},
   ): Promise<
     ResourceResult<
-      Operation184["responses"][200]["content"]["application/json"]
+      Operation196["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7445,7 +7924,7 @@ export class SkillsSkillIdRevisionsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation184Options = {}) {
+  pages(options: Operation196Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -7453,18 +7932,18 @@ export class SkillsSkillIdRevisionsResource {
       (value) => value,
     );
   }
-  items(options: Operation184Options = {}) {
+  items(options: Operation196Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/skills/{skill_id}/revisions. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation185["requestBody"]
+      Operation197["requestBody"]
     >["content"]["application/json"],
-    options: Operation185Options,
+    options: Operation197Options,
   ): Promise<
     ResourceResult<
-      Operation185["responses"][201]["content"]["application/json"]
+      Operation197["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7500,10 +7979,10 @@ export class SkillsSkillIdRevisionsRevisionIdResource {
   ) {}
   /** GET /api/v1/skills/{skill_id}/revisions/{revision_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation186Options = {},
+    options: Operation198Options = {},
   ): Promise<
     ResourceResult<
-      Operation186["responses"][200]["content"]["application/json"]
+      Operation198["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7533,10 +8012,10 @@ export class SkillsSkillIdRevisionsRevisionIdResource {
   }
   /** POST /api/v1/skills/{skill_id}/revisions/{revision_id}/set-default. Preserves response metadata; mutations are not replayed. */
   setDefault(
-    options: Operation189Options,
+    options: Operation201Options,
   ): Promise<
     ResourceResult<
-      Operation189["responses"][200]["content"]["application/json"]
+      Operation201["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7563,7 +8042,7 @@ export class SkillsSkillIdRevisionsRevisionIdContentResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/skills/{skill_id}/revisions/{revision_id}/content. Caller owns and closes the unbuffered body. */
-  get(options: Operation187Options = {}): Promise<BinaryResult> {
+  get(options: Operation199Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal },
       headers: Object.fromEntries(
@@ -7597,7 +8076,7 @@ export class SkillsSkillIdRevisionsRevisionIdFilesPathResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/skills/{skill_id}/revisions/{revision_id}/files/{path}. Caller owns and closes the unbuffered body. */
-  get(options: Operation188Options = {}): Promise<BinaryResult> {
+  get(options: Operation200Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal },
       headers: Object.fromEntries(
@@ -7617,10 +8096,10 @@ export class SubscriptionsResource {
   ) {}
   /** GET /api/v1/subscriptions. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation191Options = {},
+    options: Operation203Options = {},
   ): Promise<
     ResourceResult<
-      Operation191["responses"][200]["content"]["application/json"]
+      Operation203["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7636,7 +8115,7 @@ export class SubscriptionsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation191Options = {}) {
+  pages(options: Operation203Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -7644,18 +8123,18 @@ export class SubscriptionsResource {
       (value) => value,
     );
   }
-  items(options: Operation191Options = {}) {
+  items(options: Operation203Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/subscriptions. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation192["requestBody"]
+      Operation204["requestBody"]
     >["content"]["application/json"],
-    options: Operation192Options = {},
+    options: Operation204Options = {},
   ): Promise<
     ResourceResult<
-      Operation192["responses"][201]["content"]["application/json"]
+      Operation204["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7687,7 +8166,7 @@ export class SubscriptionsSubscriptionIdResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/subscriptions/{subscription_id}. Preserves response metadata; mutations are not replayed. */
-  delete(options: Operation193Options): Promise<ResourceResult<undefined>> {
+  delete(options: Operation205Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -7706,10 +8185,10 @@ export class SubscriptionsSubscriptionIdResource {
   }
   /** GET /api/v1/subscriptions/{subscription_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation194Options = {},
+    options: Operation206Options = {},
   ): Promise<
     ResourceResult<
-      Operation194["responses"][200]["content"]["application/json"]
+      Operation206["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7728,12 +8207,12 @@ export class SubscriptionsSubscriptionIdResource {
   /** PATCH /api/v1/subscriptions/{subscription_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation195["requestBody"]
+      Operation207["requestBody"]
     >["content"]["application/json"],
-    options: Operation195Options,
+    options: Operation207Options,
   ): Promise<
     ResourceResult<
-      Operation195["responses"][200]["content"]["application/json"]
+      Operation207["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7767,10 +8246,10 @@ export class SubscriptionsSubscriptionIdDeliveriesResource {
   ) {}
   /** GET /api/v1/subscriptions/{subscription_id}/deliveries. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation196Options = {},
+    options: Operation208Options = {},
   ): Promise<
     ResourceResult<
-      Operation196["responses"][200]["content"]["application/json"]
+      Operation208["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7786,7 +8265,7 @@ export class SubscriptionsSubscriptionIdDeliveriesResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation196Options = {}) {
+  pages(options: Operation208Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -7794,7 +8273,7 @@ export class SubscriptionsSubscriptionIdDeliveriesResource {
       (value) => value,
     );
   }
-  items(options: Operation196Options = {}) {
+  items(options: Operation208Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
@@ -7814,10 +8293,10 @@ export class SubscriptionsSubscriptionIdDeliveriesDeliveryIdResource {
   ) {}
   /** POST /api/v1/subscriptions/{subscription_id}/deliveries/{delivery_id}/redeliver. Preserves response metadata; mutations are not replayed. */
   redeliver(
-    options: Operation197Options = {},
+    options: Operation209Options = {},
   ): Promise<
     ResourceResult<
-      Operation197["responses"][200]["content"]["application/json"]
+      Operation209["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7842,10 +8321,10 @@ export class ThreadsResource {
   ) {}
   /** GET /api/v1/threads. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation198Options = {},
+    options: Operation210Options = {},
   ): Promise<
     ResourceResult<
-      Operation198["responses"][200]["content"]["application/json"]
+      Operation210["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7861,7 +8340,7 @@ export class ThreadsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation198Options = {}) {
+  pages(options: Operation210Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -7869,19 +8348,19 @@ export class ThreadsResource {
       (value) => value,
     );
   }
-  items(options: Operation198Options = {}) {
+  items(options: Operation210Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/threads. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation199["requestBody"]
+      Operation211["requestBody"]
     >["content"]["application/json"],
-    options: Operation199Options,
+    options: Operation211Options,
   ): Promise<
     ResourceResult<
-      | Operation199["responses"][200]["content"]["application/json"]
-      | Operation199["responses"][201]["content"]["application/json"]
+      | Operation211["responses"][200]["content"]["application/json"]
+      | Operation211["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7917,10 +8396,10 @@ export class ThreadsThreadIdResource {
   ) {}
   /** GET /api/v1/threads/{thread_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation200Options = {},
+    options: Operation212Options = {},
   ): Promise<
     ResourceResult<
-      Operation200["responses"][200]["content"]["application/json"]
+      Operation212["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7939,12 +8418,12 @@ export class ThreadsThreadIdResource {
   /** PATCH /api/v1/threads/{thread_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation201["requestBody"]
+      Operation213["requestBody"]
     >["content"]["application/json"],
-    options: Operation201Options,
+    options: Operation213Options,
   ): Promise<
     ResourceResult<
-      Operation201["responses"][200]["content"]["application/json"]
+      Operation213["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -7965,10 +8444,10 @@ export class ThreadsThreadIdResource {
   }
   /** POST /api/v1/threads/{thread_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation202Options,
+    options: Operation214Options,
   ): Promise<
     ResourceResult<
-      Operation202["responses"][200]["content"]["application/json"]
+      Operation214["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8023,10 +8502,10 @@ export class ThreadsThreadIdEnvironmentsResource {
   ) {}
   /** GET /api/v1/threads/{thread_id}/environments. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation203Options = {},
+    options: Operation215Options = {},
   ): Promise<
     ResourceResult<
-      Operation203["responses"][200]["content"]["application/json"]
+      Operation215["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8045,12 +8524,12 @@ export class ThreadsThreadIdEnvironmentsResource {
   /** POST /api/v1/threads/{thread_id}/environments. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation204["requestBody"]
+      Operation216["requestBody"]
     >["content"]["application/json"],
-    options: Operation204Options,
+    options: Operation216Options,
   ): Promise<
     ResourceResult<
-      Operation204["responses"][201]["content"]["application/json"]
+      Operation216["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8085,7 +8564,7 @@ export class ThreadsThreadIdEnvironmentsNameResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/threads/{thread_id}/environments/{name}. Preserves response metadata; mutations are not replayed. */
-  delete(options: Operation205Options): Promise<ResourceResult<undefined>> {
+  delete(options: Operation217Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -8105,12 +8584,12 @@ export class ThreadsThreadIdEnvironmentsNameResource {
   /** PATCH /api/v1/threads/{thread_id}/environments/{name}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation206["requestBody"]
+      Operation218["requestBody"]
     >["content"]["application/json"],
-    options: Operation206Options,
+    options: Operation218Options,
   ): Promise<
     ResourceResult<
-      Operation206["responses"][200]["content"]["application/json"]
+      Operation218["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8138,10 +8617,10 @@ export class ThreadsThreadIdInboxResource {
   ) {}
   /** GET /api/v1/threads/{thread_id}/inbox. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation207Options = {},
+    options: Operation219Options = {},
   ): Promise<
     ResourceResult<
-      Operation207["responses"][200]["content"]["application/json"]
+      Operation219["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8160,13 +8639,13 @@ export class ThreadsThreadIdInboxResource {
   /** POST /api/v1/threads/{thread_id}/inbox. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation208["requestBody"]
+      Operation220["requestBody"]
     >["content"]["application/json"],
-    options: Operation208Options,
+    options: Operation220Options,
   ): Promise<
     ResourceResult<
-      | Operation208["responses"][200]["content"]["application/json"]
-      | Operation208["responses"][201]["content"]["application/json"]
+      | Operation220["responses"][200]["content"]["application/json"]
+      | Operation220["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8209,12 +8688,12 @@ export class ThreadsThreadIdInboxOrderResource {
   /** PUT /api/v1/threads/{thread_id}/inbox/order. Preserves response metadata; mutations are not replayed. */
   replace(
     body: NonNullable<
-      Operation209["requestBody"]
+      Operation221["requestBody"]
     >["content"]["application/json"],
-    options: Operation209Options,
+    options: Operation221Options,
   ): Promise<
     ResourceResult<
-      Operation209["responses"][200]["content"]["application/json"]
+      Operation221["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8242,10 +8721,10 @@ export class ThreadsThreadIdInboxEntryIdResource {
   ) {}
   /** DELETE /api/v1/threads/{thread_id}/inbox/{entry_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation210Options,
+    options: Operation222Options,
   ): Promise<
     ResourceResult<
-      Operation210["responses"][200]["content"]["application/json"]
+      Operation222["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8266,10 +8745,10 @@ export class ThreadsThreadIdInboxEntryIdResource {
   }
   /** GET /api/v1/threads/{thread_id}/inbox/{entry_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation211Options = {},
+    options: Operation223Options = {},
   ): Promise<
     ResourceResult<
-      Operation211["responses"][200]["content"]["application/json"]
+      Operation223["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8288,12 +8767,12 @@ export class ThreadsThreadIdInboxEntryIdResource {
   /** PATCH /api/v1/threads/{thread_id}/inbox/{entry_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation212["requestBody"]
+      Operation224["requestBody"]
     >["content"]["application/json"],
-    options: Operation212Options,
+    options: Operation224Options,
   ): Promise<
     ResourceResult<
-      Operation212["responses"][200]["content"]["application/json"]
+      Operation224["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8321,10 +8800,10 @@ export class ThreadsThreadIdMemoriesResource {
   ) {}
   /** GET /api/v1/threads/{thread_id}/memories. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation213Options = {},
+    options: Operation225Options = {},
   ): Promise<
     ResourceResult<
-      Operation213["responses"][200]["content"]["application/json"]
+      Operation225["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8343,12 +8822,12 @@ export class ThreadsThreadIdMemoriesResource {
   /** POST /api/v1/threads/{thread_id}/memories. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation214["requestBody"]
+      Operation226["requestBody"]
     >["content"]["application/json"],
-    options: Operation214Options,
+    options: Operation226Options,
   ): Promise<
     ResourceResult<
-      Operation214["responses"][201]["content"]["application/json"]
+      Operation226["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8383,7 +8862,7 @@ export class ThreadsThreadIdMemoriesNameResource {
     private readonly path: string,
   ) {}
   /** DELETE /api/v1/threads/{thread_id}/memories/{name}. Preserves response metadata; mutations are not replayed. */
-  delete(options: Operation215Options): Promise<ResourceResult<undefined>> {
+  delete(options: Operation227Options): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
       "DELETE",
@@ -8403,12 +8882,12 @@ export class ThreadsThreadIdMemoriesNameResource {
   /** PATCH /api/v1/threads/{thread_id}/memories/{name}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation216["requestBody"]
+      Operation228["requestBody"]
     >["content"]["application/json"],
-    options: Operation216Options,
+    options: Operation228Options,
   ): Promise<
     ResourceResult<
-      Operation216["responses"][200]["content"]["application/json"]
+      Operation228["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8436,10 +8915,10 @@ export class ThreadsThreadIdRunsResource {
   ) {}
   /** GET /api/v1/threads/{thread_id}/runs. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation217Options = {},
+    options: Operation229Options = {},
   ): Promise<
     ResourceResult<
-      Operation217["responses"][200]["content"]["application/json"]
+      Operation229["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8463,7 +8942,7 @@ export class ThreadsThreadIdStreamResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/threads/{thread_id}/stream. Caller owns and closes the unbuffered body. */
-  get(options: Operation218Options = {}): Promise<BinaryResult> {
+  get(options: Operation230Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal, query: options.query },
       headers: Object.fromEntries(
@@ -8486,10 +8965,10 @@ export class ToolsetsResource {
   ) {}
   /** GET /api/v1/toolsets. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation219Options = {},
+    options: Operation231Options = {},
   ): Promise<
     ResourceResult<
-      Operation219["responses"][200]["content"]["application/json"]
+      Operation231["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8523,10 +9002,10 @@ export class ToolsetsDefinitionsResource {
   ) {}
   /** GET /api/v1/toolsets/definitions. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation220Options,
+    options: Operation232Options,
   ): Promise<
     ResourceResult<
-      Operation220["responses"][200]["content"]["application/json"]
+      Operation232["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8551,10 +9030,10 @@ export class ToolsetsIndexResource {
   ) {}
   /** GET /api/v1/toolsets/index. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation221Options = {},
+    options: Operation233Options = {},
   ): Promise<
     ResourceResult<
-      Operation221["responses"][200]["content"]["application/json"]
+      Operation233["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8570,7 +9049,7 @@ export class ToolsetsIndexResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation221Options = {}) {
+  pages(options: Operation233Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -8578,7 +9057,7 @@ export class ToolsetsIndexResource {
       (value) => value,
     );
   }
-  items(options: Operation221Options = {}) {
+  items(options: Operation233Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -8590,10 +9069,10 @@ export class TraceBackendResource {
   ) {}
   /** GET /api/v1/trace-backend. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation222Options = {},
+    options: Operation234Options = {},
   ): Promise<
     ResourceResult<
-      Operation222["responses"][200]["content"]["application/json"]
+      Operation234["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8618,10 +9097,10 @@ export class TracesResource {
   ) {}
   /** GET /api/v1/traces. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation223Options = {},
+    options: Operation235Options = {},
   ): Promise<
     ResourceResult<
-      Operation223["responses"][200]["content"]["application/json"]
+      Operation235["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8654,10 +9133,10 @@ export class TracesTraceIdResource {
   ) {}
   /** GET /api/v1/traces/{trace_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation224Options = {},
+    options: Operation236Options = {},
   ): Promise<
     ResourceResult<
-      Operation224["responses"][200]["content"]["application/json"]
+      Operation236["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8685,10 +9164,10 @@ export class TracesTraceIdSpansResource {
   ) {}
   /** GET /api/v1/traces/{trace_id}/spans. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation225Options = {},
+    options: Operation237Options = {},
   ): Promise<
     ResourceResult<
-      Operation225["responses"][200]["content"]["application/json"]
+      Operation237["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8734,10 +9213,10 @@ export class TracesTraceIdSpansSpanIdContentResource {
   ) {}
   /** GET /api/v1/traces/{trace_id}/spans/{span_id}/content. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation226Options = {},
+    options: Operation238Options = {},
   ): Promise<
     ResourceResult<
-      Operation226["responses"][200]["content"]["application/json"]
+      Operation238["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8753,7 +9232,7 @@ export class TracesTraceIdSpansSpanIdContentResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation226Options = {}) {
+  pages(options: Operation238Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -8761,7 +9240,7 @@ export class TracesTraceIdSpansSpanIdContentResource {
       (value) => value,
     );
   }
-  items(options: Operation226Options = {}) {
+  items(options: Operation238Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -8774,12 +9253,12 @@ export class UploadsResource {
   /** POST /api/v1/uploads. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation227["requestBody"]
+      Operation239["requestBody"]
     >["content"]["multipart/form-data"],
-    options: Operation227Options,
+    options: Operation239Options,
   ): Promise<
     ResourceResult<
-      Operation227["responses"][200]["content"]["application/json"]
+      Operation239["responses"][200]["content"]["application/json"]
     >
   > {
     return uploadRequest(
@@ -8808,10 +9287,10 @@ export class UsageResource {
   ) {}
   /** GET /api/v1/usage. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation228Options = {},
+    options: Operation240Options = {},
   ): Promise<
     ResourceResult<
-      Operation228["responses"][200]["content"]["application/json"]
+      Operation240["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8851,10 +9330,10 @@ export class UsageAgentsResource {
   ) {}
   /** GET /api/v1/usage/agents. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation229Options,
+    options: Operation241Options,
   ): Promise<
     ResourceResult<
-      Operation229["responses"][200]["content"]["application/json"]
+      Operation241["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8870,7 +9349,7 @@ export class UsageAgentsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation229Options) {
+  pages(options: Operation241Options) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -8878,7 +9357,7 @@ export class UsageAgentsResource {
       (value) => value,
     );
   }
-  items(options: Operation229Options) {
+  items(options: Operation241Options) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -8890,10 +9369,10 @@ export class UsageContextResource {
   ) {}
   /** GET /api/v1/usage/context. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation230Options = {},
+    options: Operation242Options = {},
   ): Promise<
     ResourceResult<
-      Operation230["responses"][200]["content"]["application/json"]
+      Operation242["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8918,10 +9397,10 @@ export class UsageModelsResource {
   ) {}
   /** GET /api/v1/usage/models. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation231Options,
+    options: Operation243Options,
   ): Promise<
     ResourceResult<
-      Operation231["responses"][200]["content"]["application/json"]
+      Operation243["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -8937,7 +9416,7 @@ export class UsageModelsResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation231Options) {
+  pages(options: Operation243Options) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -8945,7 +9424,7 @@ export class UsageModelsResource {
       (value) => value,
     );
   }
-  items(options: Operation231Options) {
+  items(options: Operation243Options) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -8957,10 +9436,10 @@ export class UsageOverviewResource {
   ) {}
   /** GET /api/v1/usage/overview. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation232Options,
+    options: Operation244Options,
   ): Promise<
     ResourceResult<
-      Operation232["responses"][200]["content"]["application/json"]
+      Operation244["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9013,10 +9492,10 @@ export class UsageRecordsRecordIdMetricsResource {
   ) {}
   /** GET /api/v1/usage/records/{record_id}/metrics. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation233Options = {},
+    options: Operation245Options = {},
   ): Promise<
     ResourceResult<
-      Operation233["responses"][200]["content"]["application/json"]
+      Operation245["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9059,10 +9538,10 @@ export class UsersMeResource {
   ) {}
   /** GET /api/v1/users/me. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation234Options = {},
+    options: Operation246Options = {},
   ): Promise<
     ResourceResult<
-      Operation234["responses"][200]["content"]["application/json"]
+      Operation246["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9072,12 +9551,12 @@ export class UsersMeResource {
   /** PATCH /api/v1/users/me. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation235["requestBody"]
+      Operation247["requestBody"]
     >["content"]["application/json"],
-    options: Operation235Options,
+    options: Operation247Options,
   ): Promise<
     ResourceResult<
-      Operation235["responses"][200]["content"]["application/json"]
+      Operation247["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9105,9 +9584,9 @@ export class UsersMeResource {
   /** POST /api/v1/users/me/disable. Preserves response metadata; mutations are not replayed. */
   disable(
     body: NonNullable<
-      Operation239["requestBody"]
+      Operation251["requestBody"]
     >["content"]["application/json"],
-    options: Operation239Options = {},
+    options: Operation251Options = {},
   ): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
@@ -9130,9 +9609,9 @@ export class UsersMeResource {
   /** POST /api/v1/users/me/password. Preserves response metadata; mutations are not replayed. */
   password(
     body: NonNullable<
-      Operation245["requestBody"]
+      Operation257["requestBody"]
     >["content"]["application/json"],
-    options: Operation245Options = {},
+    options: Operation257Options = {},
   ): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
@@ -9152,10 +9631,10 @@ export class UsersMeAuditEventsResource {
   ) {}
   /** GET /api/v1/users/me/audit-events. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation236Options = {},
+    options: Operation248Options = {},
   ): Promise<
     ResourceResult<
-      Operation236["responses"][200]["content"]["application/json"]
+      Operation248["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9163,7 +9642,7 @@ export class UsersMeAuditEventsResource {
       query: options.query,
     });
   }
-  pages(options: Operation236Options = {}) {
+  pages(options: Operation248Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9171,7 +9650,7 @@ export class UsersMeAuditEventsResource {
       (value) => value,
     );
   }
-  items(options: Operation236Options = {}) {
+  items(options: Operation248Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -9183,10 +9662,10 @@ export class UsersMeAvatarResource {
   ) {}
   /** DELETE /api/v1/users/me/avatar. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation237Options,
+    options: Operation249Options,
   ): Promise<
     ResourceResult<
-      Operation237["responses"][200]["content"]["application/json"]
+      Operation249["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9205,10 +9684,10 @@ export class UsersMeAvatarResource {
   /** PUT /api/v1/users/me/avatar. Preserves response metadata; mutations are not replayed. */
   replace(
     body: Binary,
-    options: Operation238Options,
+    options: Operation250Options,
   ): Promise<
     ResourceResult<
-      Operation238["responses"][200]["content"]["application/json"]
+      Operation250["responses"][200]["content"]["application/json"]
     >
   > {
     return uploadRequest(
@@ -9234,10 +9713,10 @@ export class UsersMeKeysResource {
   ) {}
   /** GET /api/v1/users/me/keys. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation240Options = {},
+    options: Operation252Options = {},
   ): Promise<
     ResourceResult<
-      Operation240["responses"][200]["content"]["application/json"]
+      Operation252["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9245,7 +9724,7 @@ export class UsersMeKeysResource {
       query: options.query,
     });
   }
-  pages(options: Operation240Options = {}) {
+  pages(options: Operation252Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9253,18 +9732,18 @@ export class UsersMeKeysResource {
       (value) => value,
     );
   }
-  items(options: Operation240Options = {}) {
+  items(options: Operation252Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/users/me/keys. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation241["requestBody"]
+      Operation253["requestBody"]
     >["content"]["application/json"],
-    options: Operation241Options = {},
+    options: Operation253Options = {},
   ): Promise<
     ResourceResult<
-      Operation241["responses"][201]["content"]["application/json"]
+      Operation253["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "POST", this.path, body, undefined, {
@@ -9288,10 +9767,10 @@ export class UsersMeKeysKeyIdResource {
   ) {}
   /** DELETE /api/v1/users/me/keys/{key_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation242Options,
+    options: Operation254Options,
   ): Promise<
     ResourceResult<
-      Operation242["responses"][200]["content"]["application/json"]
+      Operation254["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9316,10 +9795,10 @@ export class UsersMeLoginSessionsResource {
   ) {}
   /** GET /api/v1/users/me/login-sessions. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation243Options = {},
+    options: Operation255Options = {},
   ): Promise<
     ResourceResult<
-      Operation243["responses"][200]["content"]["application/json"]
+      Operation255["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9327,7 +9806,7 @@ export class UsersMeLoginSessionsResource {
       query: options.query,
     });
   }
-  pages(options: Operation243Options = {}) {
+  pages(options: Operation255Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9335,7 +9814,7 @@ export class UsersMeLoginSessionsResource {
       (value) => value,
     );
   }
-  items(options: Operation243Options = {}) {
+  items(options: Operation255Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
@@ -9355,7 +9834,7 @@ export class UsersMeLoginSessionsSessionIdResource {
   ) {}
   /** DELETE /api/v1/users/me/login-sessions/{session_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation244Options = {},
+    options: Operation256Options = {},
   ): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
@@ -9384,7 +9863,7 @@ export class UsersUserIdAvatarResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/users/{user_id}/avatar. Caller owns and closes the unbuffered body. */
-  get(options: Operation246Options = {}): Promise<BinaryResult> {
+  get(options: Operation258Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal },
       headers: undefined,
@@ -9400,10 +9879,10 @@ export class WebProvidersResource {
   ) {}
   /** GET /api/v1/web-providers. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation247Options = {},
+    options: Operation259Options = {},
   ): Promise<
     ResourceResult<
-      Operation247["responses"][200]["content"]["application/json"]
+      Operation259["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9419,7 +9898,7 @@ export class WebProvidersResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation247Options = {}) {
+  pages(options: Operation259Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9427,18 +9906,18 @@ export class WebProvidersResource {
       (value) => value,
     );
   }
-  items(options: Operation247Options = {}) {
+  items(options: Operation259Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/web-providers. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation248["requestBody"]
+      Operation260["requestBody"]
     >["content"]["application/json"],
-    options: Operation248Options = {},
+    options: Operation260Options = {},
   ): Promise<
     ResourceResult<
-      Operation248["responses"][201]["content"]["application/json"]
+      Operation260["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9471,10 +9950,10 @@ export class WebProvidersProviderIdResource {
   ) {}
   /** GET /api/v1/web-providers/{provider_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation249Options = {},
+    options: Operation261Options = {},
   ): Promise<
     ResourceResult<
-      Operation249["responses"][200]["content"]["application/json"]
+      Operation261["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9493,12 +9972,12 @@ export class WebProvidersProviderIdResource {
   /** PATCH /api/v1/web-providers/{provider_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation250["requestBody"]
+      Operation262["requestBody"]
     >["content"]["application/json"],
-    options: Operation250Options,
+    options: Operation262Options,
   ): Promise<
     ResourceResult<
-      Operation250["responses"][200]["content"]["application/json"]
+      Operation262["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9519,10 +9998,10 @@ export class WebProvidersProviderIdResource {
   }
   /** POST /api/v1/web-providers/{provider_id}/test. Preserves response metadata; mutations are not replayed. */
   test(
-    options: Operation251Options = {},
+    options: Operation263Options = {},
   ): Promise<
     ResourceResult<
-      Operation251["responses"][200]["content"]["application/json"]
+      Operation263["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9547,10 +10026,10 @@ export class WorkspacesResource {
   ) {}
   /** GET /api/v1/workspaces. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation252Options = {},
+    options: Operation264Options = {},
   ): Promise<
     ResourceResult<
-      Operation252["responses"][200]["content"]["application/json"]
+      Operation264["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9558,7 +10037,7 @@ export class WorkspacesResource {
       query: options.query,
     });
   }
-  pages(options: Operation252Options = {}) {
+  pages(options: Operation264Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9566,7 +10045,7 @@ export class WorkspacesResource {
       (value) => value,
     );
   }
-  items(options: Operation252Options = {}) {
+  items(options: Operation264Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
@@ -9586,10 +10065,10 @@ export class WorkspacesWorkspaceIdResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation253Options = {},
+    options: Operation265Options = {},
   ): Promise<
     ResourceResult<
-      Operation253["responses"][200]["content"]["application/json"]
+      Operation265["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9599,12 +10078,12 @@ export class WorkspacesWorkspaceIdResource {
   /** PATCH /api/v1/workspaces/{workspace_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation254["requestBody"]
+      Operation266["requestBody"]
     >["content"]["application/json"],
-    options: Operation254Options,
+    options: Operation266Options,
   ): Promise<
     ResourceResult<
-      Operation254["responses"][200]["content"]["application/json"]
+      Operation266["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9622,10 +10101,10 @@ export class WorkspacesWorkspaceIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/archive. Preserves response metadata; mutations are not replayed. */
   archive(
-    options: Operation255Options,
+    options: Operation267Options,
   ): Promise<
     ResourceResult<
-      Operation255["responses"][200]["content"]["application/json"]
+      Operation267["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9686,10 +10165,10 @@ export class WorkspacesWorkspaceIdAuditEventsResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/audit-events. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation256Options = {},
+    options: Operation268Options = {},
   ): Promise<
     ResourceResult<
-      Operation256["responses"][200]["content"]["application/json"]
+      Operation268["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9697,7 +10176,7 @@ export class WorkspacesWorkspaceIdAuditEventsResource {
       query: options.query,
     });
   }
-  pages(options: Operation256Options = {}) {
+  pages(options: Operation268Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9705,7 +10184,7 @@ export class WorkspacesWorkspaceIdAuditEventsResource {
       (value) => value,
     );
   }
-  items(options: Operation256Options = {}) {
+  items(options: Operation268Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
 }
@@ -9717,10 +10196,10 @@ export class WorkspacesWorkspaceIdGrantsResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/grants. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation257Options = {},
+    options: Operation269Options = {},
   ): Promise<
     ResourceResult<
-      Operation257["responses"][200]["content"]["application/json"]
+      Operation269["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9728,7 +10207,7 @@ export class WorkspacesWorkspaceIdGrantsResource {
       query: options.query,
     });
   }
-  pages(options: Operation257Options = {}) {
+  pages(options: Operation269Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9736,18 +10215,18 @@ export class WorkspacesWorkspaceIdGrantsResource {
       (value) => value,
     );
   }
-  items(options: Operation257Options = {}) {
+  items(options: Operation269Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/workspaces/{workspace_id}/grants. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation258["requestBody"]
+      Operation270["requestBody"]
     >["content"]["application/json"],
-    options: Operation258Options = {},
+    options: Operation270Options = {},
   ): Promise<
     ResourceResult<
-      Operation258["responses"][201]["content"]["application/json"]
+      Operation270["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "POST", this.path, body, undefined, {
@@ -9771,7 +10250,7 @@ export class WorkspacesWorkspaceIdGrantsGrantIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/grants/{grant_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation259Options = {},
+    options: Operation271Options = {},
   ): Promise<ResourceResult<undefined>> {
     return jsonRequest(
       this.transport,
@@ -9785,12 +10264,12 @@ export class WorkspacesWorkspaceIdGrantsGrantIdResource {
   /** PATCH /api/v1/workspaces/{workspace_id}/grants/{grant_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation260["requestBody"]
+      Operation272["requestBody"]
     >["content"]["application/json"],
-    options: Operation260Options = {},
+    options: Operation272Options = {},
   ): Promise<
     ResourceResult<
-      Operation260["responses"][200]["content"]["application/json"]
+      Operation272["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "PATCH", this.path, body, undefined, {
@@ -9806,10 +10285,10 @@ export class WorkspacesWorkspaceIdIconResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/icon. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation261Options,
+    options: Operation273Options,
   ): Promise<
     ResourceResult<
-      Operation261["responses"][200]["content"]["application/json"]
+      Operation273["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9826,7 +10305,7 @@ export class WorkspacesWorkspaceIdIconResource {
     );
   }
   /** GET /api/v1/workspaces/{workspace_id}/icon. Caller owns and closes the unbuffered body. */
-  get(options: Operation262Options = {}): Promise<BinaryResult> {
+  get(options: Operation274Options = {}): Promise<BinaryResult> {
     return binaryRequest(this.transport, this.path, {
       ...{ signal: options.signal },
       headers: undefined,
@@ -9836,10 +10315,10 @@ export class WorkspacesWorkspaceIdIconResource {
   /** PUT /api/v1/workspaces/{workspace_id}/icon. Preserves response metadata; mutations are not replayed. */
   replace(
     body: Binary,
-    options: Operation263Options,
+    options: Operation275Options,
   ): Promise<
     ResourceResult<
-      Operation263["responses"][200]["content"]["application/json"]
+      Operation275["responses"][200]["content"]["application/json"]
     >
   > {
     return uploadRequest(
@@ -9865,10 +10344,10 @@ export class WorkspacesWorkspaceIdInvitationsResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/invitations. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation264Options = {},
+    options: Operation276Options = {},
   ): Promise<
     ResourceResult<
-      Operation264["responses"][200]["content"]["application/json"]
+      Operation276["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9876,7 +10355,7 @@ export class WorkspacesWorkspaceIdInvitationsResource {
       query: options.query,
     });
   }
-  pages(options: Operation264Options = {}) {
+  pages(options: Operation276Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9884,18 +10363,18 @@ export class WorkspacesWorkspaceIdInvitationsResource {
       (value) => value,
     );
   }
-  items(options: Operation264Options = {}) {
+  items(options: Operation276Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/workspaces/{workspace_id}/invitations. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation265["requestBody"]
+      Operation277["requestBody"]
     >["content"]["application/json"],
-    options: Operation265Options = {},
+    options: Operation277Options = {},
   ): Promise<
     ResourceResult<
-      Operation265["responses"][201]["content"]["application/json"]
+      Operation277["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "POST", this.path, body, undefined, {
@@ -9919,10 +10398,10 @@ export class WorkspacesWorkspaceIdInvitationsInvitationIdResource {
   ) {}
   /** POST /api/v1/workspaces/{workspace_id}/invitations/{invitation_id}/resend. Preserves response metadata; mutations are not replayed. */
   resend(
-    options: Operation266Options,
+    options: Operation278Options,
   ): Promise<
     ResourceResult<
-      Operation266["responses"][200]["content"]["application/json"]
+      Operation278["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9940,10 +10419,10 @@ export class WorkspacesWorkspaceIdInvitationsInvitationIdResource {
   }
   /** POST /api/v1/workspaces/{workspace_id}/invitations/{invitation_id}/revoke. Preserves response metadata; mutations are not replayed. */
   revoke(
-    options: Operation267Options,
+    options: Operation279Options,
   ): Promise<
     ResourceResult<
-      Operation267["responses"][200]["content"]["application/json"]
+      Operation279["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -9968,10 +10447,10 @@ export class WorkspacesWorkspaceIdKeysResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/keys. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation268Options = {},
+    options: Operation280Options = {},
   ): Promise<
     ResourceResult<
-      Operation268["responses"][200]["content"]["application/json"]
+      Operation280["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -9979,7 +10458,7 @@ export class WorkspacesWorkspaceIdKeysResource {
       query: options.query,
     });
   }
-  pages(options: Operation268Options = {}) {
+  pages(options: Operation280Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -9987,7 +10466,7 @@ export class WorkspacesWorkspaceIdKeysResource {
       (value) => value,
     );
   }
-  items(options: Operation268Options = {}) {
+  items(options: Operation280Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   ref(
@@ -10007,10 +10486,10 @@ export class WorkspacesWorkspaceIdKeysKeyIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/keys/{key_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation269Options,
+    options: Operation281Options,
   ): Promise<
     ResourceResult<
-      Operation269["responses"][200]["content"]["application/json"]
+      Operation281["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -10035,10 +10514,10 @@ export class WorkspacesWorkspaceIdServiceAccountsResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/service-accounts. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation270Options = {},
+    options: Operation282Options = {},
   ): Promise<
     ResourceResult<
-      Operation270["responses"][200]["content"]["application/json"]
+      Operation282["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -10046,7 +10525,7 @@ export class WorkspacesWorkspaceIdServiceAccountsResource {
       query: options.query,
     });
   }
-  pages(options: Operation270Options = {}) {
+  pages(options: Operation282Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -10054,18 +10533,18 @@ export class WorkspacesWorkspaceIdServiceAccountsResource {
       (value) => value,
     );
   }
-  items(options: Operation270Options = {}) {
+  items(options: Operation282Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/workspaces/{workspace_id}/service-accounts. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation271["requestBody"]
+      Operation283["requestBody"]
     >["content"]["application/json"],
-    options: Operation271Options = {},
+    options: Operation283Options = {},
   ): Promise<
     ResourceResult<
-      Operation271["responses"][201]["content"]["application/json"]
+      Operation283["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "POST", this.path, body, undefined, {
@@ -10089,10 +10568,10 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
   ) {}
   /** DELETE /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}. Preserves response metadata; mutations are not replayed. */
   delete(
-    options: Operation272Options,
+    options: Operation284Options,
   ): Promise<
     ResourceResult<
-      Operation272["responses"][200]["content"]["application/json"]
+      Operation284["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -10110,10 +10589,10 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
   }
   /** GET /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation273Options = {},
+    options: Operation285Options = {},
   ): Promise<
     ResourceResult<
-      Operation273["responses"][200]["content"]["application/json"]
+      Operation285["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -10123,12 +10602,12 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdResource {
   /** PATCH /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}. Preserves response metadata; mutations are not replayed. */
   update(
     body: NonNullable<
-      Operation274["requestBody"]
+      Operation286["requestBody"]
     >["content"]["application/json"],
-    options: Operation274Options,
+    options: Operation286Options,
   ): Promise<
     ResourceResult<
-      Operation274["responses"][200]["content"]["application/json"]
+      Operation286["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(
@@ -10159,10 +10638,10 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdKeysResource {
   ) {}
   /** GET /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}/keys. Preserves response metadata; mutations are not replayed. */
   list(
-    options: Operation275Options = {},
+    options: Operation287Options = {},
   ): Promise<
     ResourceResult<
-      Operation275["responses"][200]["content"]["application/json"]
+      Operation287["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -10170,7 +10649,7 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdKeysResource {
       query: options.query,
     });
   }
-  pages(options: Operation275Options = {}) {
+  pages(options: Operation287Options = {}) {
     const query = snapshot(options.query ?? {});
     return new PageIterator(
       query.cursor,
@@ -10178,18 +10657,18 @@ export class WorkspacesWorkspaceIdServiceAccountsAccountIdKeysResource {
       (value) => value,
     );
   }
-  items(options: Operation275Options = {}) {
+  items(options: Operation287Options = {}) {
     return flattenPages(this.pages(options), (value) => value);
   }
   /** POST /api/v1/workspaces/{workspace_id}/service-accounts/{account_id}/keys. Preserves response metadata; mutations are not replayed. */
   create(
     body: NonNullable<
-      Operation276["requestBody"]
+      Operation288["requestBody"]
     >["content"]["application/json"],
-    options: Operation276Options = {},
+    options: Operation288Options = {},
   ): Promise<
     ResourceResult<
-      Operation276["responses"][201]["content"]["application/json"]
+      Operation288["responses"][201]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "POST", this.path, body, undefined, {
@@ -10205,10 +10684,10 @@ export class HealthzResource {
   ) {}
   /** GET /healthz. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation277Options = {},
+    options: Operation289Options = {},
   ): Promise<
     ResourceResult<
-      Operation277["responses"][200]["content"]["application/json"]
+      Operation289["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
@@ -10224,10 +10703,10 @@ export class ReadyzResource {
   ) {}
   /** GET /readyz. Preserves response metadata; mutations are not replayed. */
   get(
-    options: Operation278Options = {},
+    options: Operation290Options = {},
   ): Promise<
     ResourceResult<
-      Operation278["responses"][200]["content"]["application/json"]
+      Operation290["responses"][200]["content"]["application/json"]
     >
   > {
     return jsonRequest(this.transport, "GET", this.path, undefined, undefined, {
