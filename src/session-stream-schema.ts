@@ -858,6 +858,7 @@ export interface components {
        */
       strategy?: ("bm25" | "regex") | null;
       call_name?: never;
+      describe_name?: never;
       max_results?: never;
       max_search_bytes?: never;
       search_name?: never;
@@ -1121,9 +1122,14 @@ export interface components {
     ProxyToolSearchConfig: {
       /**
        * Call Name
-       * @default call_proxy_tool
+       * @default call_tool
        */
       call_name?: string;
+      /**
+       * Describe Name
+       * @default describe_tool
+       */
+      describe_name?: string;
       /**
        * Max Results
        * @default 10
@@ -1141,7 +1147,7 @@ export interface components {
       mode: "proxy";
       /**
        * Search Name
-       * @default search_proxy_tools
+       * @default discover_tools
        */
       search_name?: string;
       strategy?: never;

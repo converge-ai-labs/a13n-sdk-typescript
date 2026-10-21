@@ -16938,6 +16938,7 @@ function validate203(
         for (const key0 in data) {
           if (!(
             key0 === "call_name" ||
+            key0 === "describe_name" ||
             key0 === "max_results" ||
             key0 === "max_search_bytes" ||
             key0 === "mode" ||
@@ -16976,21 +16977,16 @@ function validate203(
             var valid0 = true;
           }
           if (valid0) {
-            if (data.max_results !== void 0) {
-              let data1 = data.max_results;
+            if (data.describe_name !== void 0) {
               const _errs4 = errors;
-              if (!(
-                typeof data1 == "number" &&
-                !(data1 % 1) &&
-                !isNaN(data1)
-              )) {
+              if (typeof data.describe_name !== "string") {
                 validate203.errors = [
                   {
-                    instancePath: instancePath + "/max_results",
-                    schemaPath: "#/properties/max_results/type",
+                    instancePath: instancePath + "/describe_name",
+                    schemaPath: "#/properties/describe_name/type",
                     keyword: "type",
-                    params: { type: "integer" },
-                    message: "must be integer",
+                    params: { type: "string" },
+                    message: "must be string",
                   },
                 ];
                 return false;
@@ -17000,8 +16996,8 @@ function validate203(
               var valid0 = true;
             }
             if (valid0) {
-              if (data.max_search_bytes !== void 0) {
-                let data2 = data.max_search_bytes;
+              if (data.max_results !== void 0) {
+                let data2 = data.max_results;
                 const _errs6 = errors;
                 if (!(
                   typeof data2 == "number" &&
@@ -17010,8 +17006,8 @@ function validate203(
                 )) {
                   validate203.errors = [
                     {
-                      instancePath: instancePath + "/max_search_bytes",
-                      schemaPath: "#/properties/max_search_bytes/type",
+                      instancePath: instancePath + "/max_results",
+                      schemaPath: "#/properties/max_results/type",
                       keyword: "type",
                       params: { type: "integer" },
                       message: "must be integer",
@@ -17024,29 +17020,21 @@ function validate203(
                 var valid0 = true;
               }
               if (valid0) {
-                if (data.mode !== void 0) {
-                  let data3 = data.mode;
+                if (data.max_search_bytes !== void 0) {
+                  let data3 = data.max_search_bytes;
                   const _errs8 = errors;
-                  if (typeof data3 !== "string") {
+                  if (!(
+                    typeof data3 == "number" &&
+                    !(data3 % 1) &&
+                    !isNaN(data3)
+                  )) {
                     validate203.errors = [
                       {
-                        instancePath: instancePath + "/mode",
-                        schemaPath: "#/properties/mode/type",
+                        instancePath: instancePath + "/max_search_bytes",
+                        schemaPath: "#/properties/max_search_bytes/type",
                         keyword: "type",
-                        params: { type: "string" },
-                        message: "must be string",
-                      },
-                    ];
-                    return false;
-                  }
-                  if ("proxy" !== data3) {
-                    validate203.errors = [
-                      {
-                        instancePath: instancePath + "/mode",
-                        schemaPath: "#/properties/mode/const",
-                        keyword: "const",
-                        params: { allowedValue: "proxy" },
-                        message: "must be equal to constant",
+                        params: { type: "integer" },
+                        message: "must be integer",
                       },
                     ];
                     return false;
@@ -17056,13 +17044,14 @@ function validate203(
                   var valid0 = true;
                 }
                 if (valid0) {
-                  if (data.search_name !== void 0) {
+                  if (data.mode !== void 0) {
+                    let data4 = data.mode;
                     const _errs10 = errors;
-                    if (typeof data.search_name !== "string") {
+                    if (typeof data4 !== "string") {
                       validate203.errors = [
                         {
-                          instancePath: instancePath + "/search_name",
-                          schemaPath: "#/properties/search_name/type",
+                          instancePath: instancePath + "/mode",
+                          schemaPath: "#/properties/mode/type",
                           keyword: "type",
                           params: { type: "string" },
                           message: "must be string",
@@ -17070,9 +17059,41 @@ function validate203(
                       ];
                       return false;
                     }
+                    if ("proxy" !== data4) {
+                      validate203.errors = [
+                        {
+                          instancePath: instancePath + "/mode",
+                          schemaPath: "#/properties/mode/const",
+                          keyword: "const",
+                          params: { allowedValue: "proxy" },
+                          message: "must be equal to constant",
+                        },
+                      ];
+                      return false;
+                    }
                     var valid0 = _errs10 === errors;
                   } else {
                     var valid0 = true;
+                  }
+                  if (valid0) {
+                    if (data.search_name !== void 0) {
+                      const _errs12 = errors;
+                      if (typeof data.search_name !== "string") {
+                        validate203.errors = [
+                          {
+                            instancePath: instancePath + "/search_name",
+                            schemaPath: "#/properties/search_name/type",
+                            keyword: "type",
+                            params: { type: "string" },
+                            message: "must be string",
+                          },
+                        ];
+                        return false;
+                      }
+                      var valid0 = _errs12 === errors;
+                    } else {
+                      var valid0 = true;
+                    }
                   }
                 }
               }
