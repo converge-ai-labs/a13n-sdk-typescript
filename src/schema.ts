@@ -8443,6 +8443,7 @@ export interface components {
       message_history?: components["schemas"]["MessageHistory"];
       options?: components["schemas"]["RunOptions-Input"];
       payload: components["schemas"]["MessagePayload"];
+      session?: components["schemas"]["SessionCreate"] | null;
       /** Session Id */
       session_id?: string | null;
     };
@@ -10123,6 +10124,9 @@ export interface components {
         [key: string]: string;
       };
       memory?: components["schemas"]["SessionMemorySettings"] | null;
+      origin?: components["schemas"]["SessionOrigin"] | null;
+      /** Title */
+      title?: string | null;
     };
     /**
      * SessionMemorySettings
@@ -10139,6 +10143,20 @@ export interface components {
        * @default []
        */
       spaces?: components["schemas"]["SpaceBinding"][];
+    };
+    /**
+     * SessionOrigin
+     * @description Caller-supplied display context, not execution provenance or an authorization boundary.
+     */
+    SessionOrigin: {
+      /** Application */
+      application: string;
+      /** External Id */
+      external_id?: string | null;
+      /** Name */
+      name?: string | null;
+      /** Url */
+      url?: string | null;
     };
     /** SessionPage */
     SessionPage: {
@@ -10183,6 +10201,9 @@ export interface components {
         [key: string]: string;
       } | null;
       memory?: components["schemas"]["SessionMemorySettings"] | null;
+      origin?: components["schemas"]["SessionOrigin"] | null;
+      /** Title */
+      title?: string | null;
     };
     /** SessionView */
     SessionView: {
@@ -10202,6 +10223,7 @@ export interface components {
       /** Last Run Id */
       last_run_id: string | null;
       memory?: components["schemas"]["SessionMemorySettings"];
+      origin?: components["schemas"]["SessionOrigin"] | null;
       preview?: components["schemas"]["SessionPreview"] | null;
       /**
        * Purpose
@@ -10216,6 +10238,8 @@ export interface components {
       run_count?: number;
       /** Schedule Id */
       schedule_id?: string | null;
+      /** Title */
+      title?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -17953,8 +17977,9 @@ export interface operations {
       query?: {
         /** @description All search terms must match one run's retained user/assistant text */
         text_query?: string | null;
-        /** @description A session or thread ID */
+        /** @description Session/thread ID, title, origin, label value or retained conversation text */
         q?: string | null;
+        application?: string | null;
         agent_id?: string | null;
         status?: components["schemas"]["RunStatus"][];
         trigger?: components["schemas"]["Trigger"][];
