@@ -17897,6 +17897,7 @@ var schema95 = {
     "environment_templates",
     "providers",
     "execution",
+    "schedules",
   ],
   type: "string",
 };
@@ -17938,7 +17939,8 @@ function validate212(
     data === "skills" ||
     data === "environment_templates" ||
     data === "providers" ||
-    data === "execution"
+    data === "execution" ||
+    data === "schedules"
   )) {
     validate212.errors = [
       {

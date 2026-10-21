@@ -13452,7 +13452,8 @@
           "skills",
           "environment_templates",
           "providers",
-          "execution"
+          "execution",
+          "schedules"
         ],
         "type": "string"
       },
@@ -38056,10 +38057,15 @@
           }
         ],
         "summary": "List Schedules",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       },
       "post": {
-        "description": "Authorize recurring execution as the creator, independently of the accepting credential's lifetime.",
+        "description": "Save durable execution authority as the creator, beyond this credential or Run's lifetime.\n\nDefaults to paused. Set state=enabled only when automatic future execution is intended.",
         "operationId": "create_schedule",
         "parameters": [
           {
@@ -38133,7 +38139,12 @@
           }
         ],
         "summary": "Create Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/preview": {
@@ -38199,7 +38210,12 @@
           }
         ],
         "summary": "Preview Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}": {
@@ -38276,7 +38292,12 @@
           }
         ],
         "summary": "Archive Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       },
       "get": {
         "operationId": "get_schedule",
@@ -38338,7 +38359,12 @@
           }
         ],
         "summary": "Get Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       },
       "patch": {
         "operationId": "update_schedule",
@@ -38430,7 +38456,12 @@
           }
         ],
         "summary": "Update Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/dispatch": {
@@ -38536,7 +38567,12 @@
           }
         ],
         "summary": "Dispatch Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/enable": {
@@ -38630,7 +38666,12 @@
           }
         ],
         "summary": "Enable Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/occurrences": {
@@ -38821,7 +38862,12 @@
           }
         ],
         "summary": "List Schedule Occurrences",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/occurrences/{occurrence_id}": {
@@ -38911,7 +38957,12 @@
           }
         ],
         "summary": "Get Schedule Occurrence",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/pause": {
@@ -39005,7 +39056,12 @@
           }
         ],
         "summary": "Pause Schedule",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "write",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/schedules/{schedule_id}/status": {
@@ -39069,7 +39125,12 @@
           }
         ],
         "summary": "Get Schedule Status",
-        "tags": ["schedules"]
+        "tags": ["schedules"],
+        "x-a13n-mcp": true,
+        "x-a13n-platform": {
+          "effect": "read",
+          "group": "schedules"
+        }
       }
     },
     "/api/v1/sessions": {

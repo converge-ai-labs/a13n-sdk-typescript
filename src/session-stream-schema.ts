@@ -1089,7 +1089,8 @@ export interface components {
       | "skills"
       | "environment_templates"
       | "providers"
-      | "execution";
+      | "execution"
+      | "schedules";
     /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.
