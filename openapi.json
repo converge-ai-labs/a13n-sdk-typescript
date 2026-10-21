@@ -16978,19 +16978,6 @@
               }
             ],
             "title": "Name"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "maxLength": 2048,
-                "minLength": 8,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
           }
         },
         "required": ["application"],
