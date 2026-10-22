@@ -1,6 +1,6 @@
 {
   "repository": "converge-ai-labs/agent-foundation",
-  "commit": "042eebc6559dcd1f348fb75816094c53499a1283",
+  "commit": "42bfe864504a0a0f5731e1a8a348dee23c4ee116",
   "files": {
     "openapi.json": {
       "source_path": "proto/a13n-service/openapi.json"
