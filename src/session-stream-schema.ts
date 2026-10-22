@@ -421,7 +421,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "message" | "child_result";
+      kind: "message" | "child_result" | "tool_result";
       options: components["schemas"]["RunOptions"];
       /** Origin Run Id */
       origin_run_id: string | null;
@@ -539,6 +539,16 @@ export interface components {
     EnvironmentPermissionSet: {
       /** Operations */
       operations?: components["schemas"]["EnvironmentAction"][];
+    };
+    /**
+     * ExecutionOverride
+     * @description Sparse choices: null inherits; Thread PATCH distinguishes omission from null.
+     */
+    ExecutionOverride: {
+      /** @default null */
+      steering?: components["schemas"]["Steering"] | null;
+      /** @default null */
+      tools?: components["schemas"]["ToolExecutionOverride"] | null;
     };
     /**
      * Failed
@@ -1163,6 +1173,8 @@ export interface components {
     RunOptions: {
       /** @default null */
       configuration?: components["schemas"]["RunConfiguration"] | null;
+      /** @default null */
+      execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -1332,6 +1344,8 @@ export interface components {
       /** Skill Id */
       skill_id: string;
     };
+    /** @enum {string} */
+    Steering: "boundary" | "immediate";
     /** StreamPosition */
     StreamPosition: {
       /** Attempt */
@@ -1401,6 +1415,8 @@ export interface components {
       created_at: string;
       /** Current Run Id */
       current_run_id: string | null;
+      /** @default null */
+      execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Id */
       id: string;
       /** Labels */
@@ -1452,6 +1468,19 @@ export interface components {
       workspace_id: string;
     };
     ToolCallId: string;
+    /** ToolExecutionOverride */
+    ToolExecutionOverride: {
+      /**
+       * Foreground Wait Seconds
+       * @default null
+       */
+      foreground_wait_seconds?: number | null;
+      /**
+       * Mode
+       * @default null
+       */
+      mode?: ("inline" | "auto") | null;
+    };
     /** @enum {string} */
     ToolPermissionMode: "allow" | "deny" | "ask" | "review";
     ToolPermissionSetting:
@@ -1591,7 +1620,13 @@ export interface components {
       };
     };
     /** @enum {string} */
-    Trigger: "input" | "queued" | "resume" | "child_result" | "spawned";
+    Trigger:
+      | "input"
+      | "queued"
+      | "resume"
+      | "child_result"
+      | "tool_result"
+      | "spawned";
     /** UrlPart */
     UrlPart: {
       /**

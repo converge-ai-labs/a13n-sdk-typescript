@@ -1040,7 +1040,8 @@
         "kind": {
           "enum": [
             "message",
-            "child_result"
+            "child_result",
+            "tool_result"
           ],
           "title": "Kind",
           "type": "string"
@@ -1234,6 +1235,36 @@
         }
       },
       "title": "EnvironmentPermissionSet",
+      "type": "object"
+    },
+    "ExecutionOverride": {
+      "additionalProperties": false,
+      "description": "Sparse choices: null inherits; Thread PATCH distinguishes omission from null.",
+      "properties": {
+        "steering": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Steering"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tools": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToolExecutionOverride"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ExecutionOverride",
       "type": "object"
     },
     "Failed": {
@@ -2668,6 +2699,17 @@
           ],
           "default": null
         },
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionOverride"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "labels": {
           "additionalProperties": {
             "maxLength": 128,
@@ -3200,6 +3242,13 @@
       "title": "SkillSelection",
       "type": "object"
     },
+    "Steering": {
+      "enum": [
+        "boundary",
+        "immediate"
+      ],
+      "type": "string"
+    },
     "StreamPosition": {
       "additionalProperties": false,
       "properties": {
@@ -3398,6 +3447,17 @@
           ],
           "title": "Current Run Id"
         },
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionOverride"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "id": {
           "title": "Id",
           "type": "string"
@@ -3548,6 +3608,43 @@
       "minLength": 1,
       "pattern": "\\S",
       "type": "string"
+    },
+    "ToolExecutionOverride": {
+      "additionalProperties": false,
+      "properties": {
+        "foreground_wait_seconds": {
+          "anyOf": [
+            {
+              "maximum": 300,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Foreground Wait Seconds"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "inline",
+                "auto"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mode"
+        }
+      },
+      "title": "ToolExecutionOverride",
+      "type": "object"
     },
     "ToolPermissionMode": {
       "enum": [
@@ -3812,6 +3909,7 @@
         "queued",
         "resume",
         "child_result",
+        "tool_result",
         "spawned"
       ],
       "type": "string"
