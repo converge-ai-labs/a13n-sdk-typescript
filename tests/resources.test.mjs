@@ -84,7 +84,7 @@ test("Run result polls the selected workspace and times out without mutation", a
     baseUrl,
     auth: { type: "bearer", token: "test" },
     fetch: async (request) => {
-      assert.equal(request.url, `${baseUrl}/api/v1/runs/run_one`);
+      assert.equal(request.url, `${baseUrl}/api/v1/runs/run_one?view=detailed`);
       calls++;
       return json({
         status: calls === 2 ? "completed" : "running",

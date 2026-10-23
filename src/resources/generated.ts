@@ -11237,23 +11237,6 @@ export class TracesTraceIdSpansSpanIdContentResource {
       { signal: options.signal, query: options.query },
     );
   }
-  pages(options: Operation274Options = {}) {
-    const query = snapshot(options.query ?? {});
-    return new PageIterator<
-      Operation274["responses"][200]["content"]["application/json"],
-      Operation274["responses"][200]["content"]["application/json"]["items"][number]
-    >(
-      query.cursor,
-      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
-      (value) => value,
-    );
-  }
-  items(options: Operation274Options = {}) {
-    return flattenPages<
-      Operation274["responses"][200]["content"]["application/json"],
-      Operation274["responses"][200]["content"]["application/json"]["items"][number]
-    >(this.pages(options), (value) => value);
-  }
 }
 
 export class UploadsResource {

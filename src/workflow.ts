@@ -2,6 +2,8 @@ import type { components } from "./schema.js";
 
 type Schema = components["schemas"];
 /** Public structural values backed by the pinned Service contract. */
+export type ExecutionOverride = Schema["ExecutionOverride"];
+export type ToolExecutionOverride = Schema["ToolExecutionOverride"];
 export type RunOptions = Schema["RunOptions-Input"];
 export type RunConfiguration = Schema["RunConfiguration-Input"];
 export type AgentOverride = Schema["AgentOverride-Input"];
@@ -72,7 +74,9 @@ export interface SendOptions extends SubmissionOptions {
   options?: RunOptions;
 }
 export interface StartOptions extends SendOptions {
+  execution?: ExecutionOverride | null;
   sessionId?: string | null;
+  session?: Schema["SessionCreate"] | null;
   messageHistory?: MessageHistory;
   memories?: MemoryMount[];
   environments?: EnvironmentMounts;
@@ -118,6 +122,10 @@ export function sendFields(options: SendOptions) {
 export function startFields(options: StartOptions) {
   return {
     ...sendFields(options),
+    ...(options.session !== undefined ? { session: options.session } : {}),
+    ...(options.execution !== undefined
+      ? { execution: options.execution }
+      : {}),
     ...(options.sessionId !== undefined
       ? { session_id: options.sessionId }
       : {}),

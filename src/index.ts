@@ -54,6 +54,8 @@ export type {
   SubmissionOptions,
   ResumeAnswer,
   ResumeAnswers,
+  ExecutionOverride,
+  ToolExecutionOverride,
   RunOptions,
   RunConfiguration,
   AgentOverride,

@@ -455,6 +455,8 @@ client.close();
     ["tests/session-stream.test.mjs", "session-stream.test.mjs"],
     ["tests/desktop-context.test.mjs", "desktop-context.test.mjs"],
     ["tests/desktop-context.ts", "desktop-context.ts"],
+    ["tests/execution.ts", "execution.ts"],
+    ["tests/execution.test.mjs", "execution.test.mjs"],
     ["tests/session-fixtures.mjs", "session-fixtures.mjs"],
     ["tests/session-caller.test.mjs", "session-caller.test.mjs"],
     ["scripts/accept-session.mjs", "accept-session.mjs"],
@@ -484,6 +486,7 @@ client.close();
       "session-stream.test.mjs",
       "session-caller.test.mjs",
       "desktop-context.test.mjs",
+      "execution.test.mjs",
       "followup-caller.test.mjs",
     ],
     { cwd: temporaryRoot, stdio: "inherit" },
@@ -509,7 +512,12 @@ client.close();
         strict: true,
         target: "ES2023",
       },
-      include: ["consumer.ts", "service-refresh.ts", "desktop-context.ts"],
+      include: [
+        "consumer.ts",
+        "service-refresh.ts",
+        "desktop-context.ts",
+        "execution.ts",
+      ],
     }),
   );
   const typescriptPackage = JSON.parse(
