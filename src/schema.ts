@@ -5119,9 +5119,9 @@ export interface components {
       /**
        * Method
        * @default manual_callback
-       * @enum {string}
+       * @constant
        */
-      method?: "manual_callback" | "browser_callback";
+      method?: "manual_callback";
     };
     /** AuthorizationStatus */
     AuthorizationStatus: {
@@ -5144,11 +5144,7 @@ export interface components {
        * State
        * @enum {string}
        */
-      state:
-        | "disconnected"
-        | "connected"
-        | "refreshing"
-        | "reauthentication_required";
+      state: "disconnected" | "connected" | "reauthentication_required";
       /** Subject */
       subject?: string | null;
     };
