@@ -62,6 +62,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["PATCH", new RegExp("^/api/v1/devices/[^/]+$")],
   ["POST", new RegExp("^/api/v1/devices/[^/]+/metrics/query$")],
   ["POST", new RegExp("^/api/v1/devices/[^/]+/rotate-credential$")],
+  ["POST", new RegExp("^/api/v1/environment-provider-options/vercel$")],
   ["GET", new RegExp("^/api/v1/environment-providers$")],
   ["POST", new RegExp("^/api/v1/environment-providers$")],
   ["DELETE", new RegExp("^/api/v1/environment-providers/[^/]+$")],
