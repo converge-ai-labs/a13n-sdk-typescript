@@ -153,8 +153,18 @@ export class RunHandle {
     private readonly resources: ServiceResources,
     private readonly shutdown: AbortSignal,
   ) {}
-  get(options: { signal?: AbortSignal } = {}) {
-    return this.resources.runs.ref(this.id).get(options);
+  async get(
+    options: { signal?: AbortSignal } = {},
+  ): Promise<ResourceResult<Schema["RunView"]>> {
+    const result = await this.resources.runs
+      .ref(this.id)
+      .get({ ...options, query: { view: "detailed" } });
+    if (
+      ("view" in result.data && result.data.view === "compact") ||
+      "representation" in result.data
+    )
+      throw new ProtocolError("Expected detailed Run response");
+    return { ...result, data: result.data as Schema["RunView"] };
   }
   observe(options: WaitOptions = {}): Interaction {
     return new Interaction(
@@ -239,11 +249,19 @@ export class EntryHandle {
     private readonly resources: ServiceResources,
     private readonly shutdown: AbortSignal,
   ) {}
-  get(options: { signal?: AbortSignal } = {}) {
-    return this.resources.threads
+  async get(
+    options: { signal?: AbortSignal } = {},
+  ): Promise<ResourceResult<Schema["EntryView"]>> {
+    const result = await this.resources.threads
       .ref(this.threadId)
       .inbox.ref(this.id)
-      .get(options);
+      .get({ ...options, query: { view: "detailed" } });
+    if (
+      ("view" in result.data && result.data.view === "compact") ||
+      "representation" in result.data
+    )
+      throw new ProtocolError("Expected detailed Entry response");
+    return { ...result, data: result.data as Schema["EntryView"] };
   }
   /** Recover only an identity, without I/O or a fabricated receipt. */
   interaction(options: WaitOptions = {}): Interaction {

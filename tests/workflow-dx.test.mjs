@@ -444,11 +444,15 @@ test("queue, exact Run, SSE and repeated consumers share one deadline", async ()
   const client = clientFor(async (request) => {
     if (request.method === "POST")
       return Response.json(initial, { status: 201 });
-    if (request.url.endsWith("/inbox/entry")) {
+    if (
+      new URL(request.url, "http://localhost").pathname.endsWith("/inbox/entry")
+    ) {
       await new Promise((resolve) => setTimeout(resolve, 20));
       return Response.json(entry());
     }
-    if (request.url.endsWith("/runs/exact"))
+    if (
+      new URL(request.url, "http://localhost").pathname.endsWith("/runs/exact")
+    )
       return Response.json(run("running"));
     return new Response(
       new ReadableStream({
@@ -670,7 +674,11 @@ test("real Fetch: joined close cancels an idle SSE transport while the public it
     response.setHeader("Content-Type", "application/json");
     response.end(
       JSON.stringify(
-        request.url.endsWith("/inbox/entry") ? entry() : run("running"),
+        new URL(request.url, "http://localhost").pathname.endsWith(
+          "/inbox/entry",
+        )
+          ? entry()
+          : run("running"),
       ),
     );
   });

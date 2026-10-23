@@ -153,3 +153,5 @@ The pinned native graph includes Memory Spaces and Session bindings, explicit or
 - [Recover saved Entry/Run identities without resubmitting](docs/07-errors-and-recovery.md)
 
 The complete wire contract is in the [pinned OpenAPI](openapi.json) and [SDK specification](spec/README.md). [CONTRIBUTING.md](CONTRIBUTING.md) owns generation, validation and release procedures.
+
+See [Execution options and migration](docs/execution-and-migration.md) for scoped command variables and compatibility notes.
