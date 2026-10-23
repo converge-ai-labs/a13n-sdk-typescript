@@ -13,15 +13,9 @@ const client = createClient({
 });
 const override: AgentOverride = {
   builtin_skills: ["platform-operations"],
-  platform_tools: {
-    groups: ["execution", "models"],
-    read_permission: "allow",
-    write_permission: "ask",
-  },
 };
 const emptyOverride: AgentOverride = {
   builtin_skills: [],
-  platform_tools: null,
 };
 const memory: Schema["SessionMemorySettings"] = {
   enabled: false,
@@ -189,4 +183,17 @@ export async function refreshTypes() {
   void frozenConfig;
   void check;
   void metrics;
+}
+
+export async function boundedRunDiscovery() {
+  const page: ResourceResult<Schema["ThreadRunPage"]> = await client.api.threads
+    .ref("thread")
+    .runs.list({ query: { anchor: "run" } });
+  const first: number = page.data.first_number;
+  const preview: string = page.data.items[0]!.input_preview.text;
+  // @ts-expect-error Discovery records have no full output.
+  void page.data.items[0]!.output;
+  // @ts-expect-error Run list view selection was removed.
+  await client.api.runs.list({ query: { view: "detailed" } });
+  void [first, preview];
 }

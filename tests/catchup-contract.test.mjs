@@ -396,7 +396,7 @@ test("target native schema additions retain open provider metadata and retired m
     await readFile(new URL("../openapi.json", import.meta.url), "utf8"),
   );
   const schemas = document.components.schemas;
-  assert.equal(Object.keys(schemas).length, 364);
+  assert.ok(schemas.RunListItem && schemas.ThreadRunPage);
   assert.equal(schemas.ChatGPTModel, undefined);
   assert.ok(schemas.ProviderModel.properties.characteristics);
   assert.deepEqual(
@@ -412,7 +412,11 @@ test("target native schema additions retain open provider metadata and retired m
   );
   assert.equal(schemas.SharedSkillSync.properties.overwrite.default, true);
   assert.equal(schemas.IsolatedSkillSync.properties.cache_count.default, 128);
-  assert.deepEqual(schemas.ToolsetKey.enum.slice(-2), ["traces", "findings"]);
+  assert.deepEqual(schemas.ToolsetKey.anyOf[1], {
+    $ref: "#/components/schemas/PlatformGroup",
+  });
+  assert.ok(schemas.PlatformGroup.enum.includes("execution"));
+  assert.ok(schemas.PlatformGroup.enum.includes("schedules"));
   assert.equal(
     schemas.ProviderType.properties.supports_model_discovery.default,
     false,

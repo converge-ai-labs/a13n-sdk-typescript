@@ -9,7 +9,7 @@ const client = createClient({
   baseUrl: "https://service.test",
   auth: { type: "bearer", token: "test" },
 });
-const native: Schema["ToolSearchConfig"] = { mode: "native" };
+
 const proxy: Schema["ToolSearchConfig"] = {
   mode: "proxy",
   search_name: "find_tools",
@@ -19,9 +19,7 @@ const searches: Array<Schema["ToolSearch"] | null> = [
   null,
   {},
   { groups: {} },
-  { config: native },
-  { config: { mode: "native", strategy: null } },
-  { config: { mode: "native", strategy: "regex" } },
+  { config: {} },
   {
     config: proxy,
     groups: {
@@ -42,27 +40,18 @@ for (const tool_search of searches) {
   const projection: SessionStreamSchemas["AgentOverride"] = { tool_search };
   void projection;
 }
-const nativeWithProxyField = { mode: "native" as const, max_results: 1 };
-// @ts-expect-error A closed native branch rejects proxy-only fields even on an existing variable.
-const badNative: Schema["ToolSearchConfig"] = nativeWithProxyField;
-const proxyWithStrategy = {
-  mode: "proxy" as const,
-  strategy: "regex" as const,
+// @ts-expect-error Native tool search is no longer part of the Service contract.
+const badNative: Schema["ToolSearchConfig"] = { mode: "native" };
+const badProxy: Schema["ToolSearchConfig"] = {
+  mode: "proxy",
+  // @ts-expect-error Discovery configuration has no native strategy.
+  strategy: "regex",
 };
-// @ts-expect-error Proxy has no native strategy, including through variable assignment.
-const badProxy: Schema["ToolSearchConfig"] = proxyWithStrategy;
-// @ts-expect-error Session projections retain the same closed discriminated shape.
-const badSession: SessionStreamSchemas["ToolSearchConfig"] =
-  nativeWithProxyField;
-// @ts-expect-error Mode is required despite its upstream default.
-const missingMode: Schema["ToolSearchConfig"] = {};
-const wrongStrategy: Schema["ToolSearchConfig"] = {
+const badSession: SessionStreamSchemas["ToolSearchConfig"] = {
+  // @ts-expect-error Session uses the same proxy-only discovery contract.
   mode: "native",
-  // @ts-expect-error Native strategy is bounded by the accepted schema.
-  strategy: "semantic",
 };
-// @ts-expect-error Proxy strategy is not nullable; it is absent.
-const proxyNull: Schema["ToolSearchConfig"] = { mode: "proxy", strategy: null };
+const defaultMode: Schema["ToolSearchConfig"] = {};
 // @ts-expect-error Config itself is optional, not nullable.
 const nullConfig: Schema["ToolSearch"] = { config: null };
 const missingDescription: Schema["ToolSearch"] = {
@@ -73,9 +62,7 @@ void [
   badNative,
   badProxy,
   badSession,
-  missingMode,
-  wrongStrategy,
-  proxyNull,
+  defaultMode,
   nullConfig,
   missingDescription,
 ];

@@ -237,16 +237,13 @@ for (const query of [
     }
   });
 
-test("tool_search omission/null/empty/native/proxy selections pass unchanged through revision and Run boundaries", async () => {
+test("tool_search omission/null/empty/proxy selections pass unchanged through revision and Run boundaries", async () => {
   const values = [
     undefined,
     null,
     {},
     { groups: {} },
-    { config: { mode: "native" } },
-    { config: { mode: "native", strategy: null } },
-    { config: { mode: "native", strategy: "bm25" } },
-    { config: { mode: "native", strategy: "regex" } },
+    { config: {} },
     {
       config: {
         mode: "proxy",
@@ -434,7 +431,7 @@ test("agent assistance resumes only the caller's exact persisted outcome plus ot
   }
 });
 
-test("Session validates desktop waiting, optional nullable pending ID and tool_search unions without changing native data", async () => {
+test("Session validates desktop waiting, optional nullable pending ID and tool_search configuration without changing native data", async () => {
   for (const pending of [
     { approvals: [], calls: [] },
     { approvals: [], calls: [], desktop_control_id: null },
@@ -450,7 +447,7 @@ test("Session validates desktop waiting, optional nullable pending ID and tool_s
         options: {
           overrides: {
             tool_search: {
-              config: { mode: "native", strategy: null },
+              config: { mode: "proxy", max_results: 7 },
               groups: {},
             },
           },
