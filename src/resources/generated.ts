@@ -7690,7 +7690,7 @@ export class RunsResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/runs. Preserves response metadata; mutations are not replayed. */
-  get(
+  list(
     options: Operation182Options = {},
   ): Promise<
     ResourceResult<
@@ -7709,6 +7709,17 @@ export class RunsResource {
       ),
       { signal: options.signal, query: options.query },
     );
+  }
+  pages(options: Operation182Options = {}) {
+    const query = snapshot(options.query ?? {});
+    return new PageIterator(
+      query.cursor,
+      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
+      (value) => value,
+    );
+  }
+  items(options: Operation182Options = {}) {
+    return flattenPages(this.pages(options), (value) => value);
   }
   ref(
     value: operations["get_run"]["parameters"]["path"]["run_id"],
@@ -8293,7 +8304,7 @@ export class RunsRunIdLineageResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/runs/{run_id}/lineage. Preserves response metadata; mutations are not replayed. */
-  get(
+  list(
     options: Operation199Options = {},
   ): Promise<
     ResourceResult<
@@ -8312,6 +8323,17 @@ export class RunsRunIdLineageResource {
       ),
       { signal: options.signal, query: options.query },
     );
+  }
+  pages(options: Operation199Options = {}) {
+    const query = snapshot(options.query ?? {});
+    return new PageIterator(
+      query.cursor,
+      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
+      (value) => value,
+    );
+  }
+  items(options: Operation199Options = {}) {
+    return flattenPages(this.pages(options), (value) => value);
   }
 }
 
@@ -10094,7 +10116,7 @@ export class ThreadsThreadIdRunsResource {
     private readonly path: string,
   ) {}
   /** GET /api/v1/threads/{thread_id}/runs. Preserves response metadata; mutations are not replayed. */
-  get(
+  list(
     options: Operation258Options = {},
   ): Promise<
     ResourceResult<
@@ -10113,6 +10135,17 @@ export class ThreadsThreadIdRunsResource {
       ),
       { signal: options.signal, query: options.query },
     );
+  }
+  pages(options: Operation258Options = {}) {
+    const query = snapshot(options.query ?? {});
+    return new PageIterator(
+      query.cursor,
+      (cursor) => this.list({ ...options, query: withCursor(query, cursor) }),
+      (value) => value,
+    );
+  }
+  items(options: Operation258Options = {}) {
+    return flattenPages(this.pages(options), (value) => value);
   }
 }
 
