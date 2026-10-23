@@ -203,7 +203,7 @@ This bounded example buffers one image; stream large bodies to a destination ins
 
 ## Configure tool discovery on an Agent revision
 
-`tool_search` controls how selected tools are presented. Use the native tagged configuration rather than a JSON string. This program creates a disposable Agent with native discovery; run it with `A13N_MODEL_KEY` and ordinary Service credentials:
+`tool_search` controls how selected tools are presented. Use the native tagged configuration rather than a JSON string. This program creates a disposable Agent with proxy discovery; run it with `A13N_MODEL_KEY` and ordinary Service credentials:
 
 ```js
 import { createClient } from "@converge.ai/a13n";
@@ -214,10 +214,10 @@ const client = createClient({
 });
 try {
   const created = await client.api.agents.create({
-    name: "Native discovery example",
+    name: "Proxy discovery example",
     config: {
       model: process.env.A13N_MODEL_KEY,
-      tool_search: { config: { mode: "native", strategy: null }, groups: {} },
+      tool_search: { config: { mode: "proxy", max_results: 10 }, groups: {} },
     },
   });
   console.log("Agent ID:", created.data.id);
@@ -226,7 +226,7 @@ try {
 }
 ```
 
-Native strategy may be omitted, null, `bm25` or `regex`; Service checks Model support before execution. For proxy discovery, replace the entire block with `{config:{mode:"proxy",search_name:"search_proxy_tools",call_name:"call_proxy_tool",max_results:10,max_search_bytes:32768},groups:{}}`. Proxy fields cannot accompany native mode, and native `strategy` cannot accompany proxy mode. Explicit `config:null` or `config:{}` is invalid; omitting `config` selects Service's default proxy configuration. Names and numeric bounds remain Service-validated.
+Configuration is proxy-only. Omit mode to use the Service default; null config and native strategy fields are invalid. An empty config is valid. Search, list, describe, groups and call names plus result/byte limits remain Service-validated.
 
 `groups:{}` disables grouping. A named group such as `{policies:{description:"Search approved policy tools",connections:[connectionId]}}` groups tools from an already selected Connection; optional `plugins` and `platform` select their native sources. Grouping grants no source authority. Each group requires a nonblank description, and Service checks duplicate/unknown sources. `tool_search:{}` selects the native defaults; an omitted/null Run override inherits the revision, while a non-null override **replaces the whole block**, including groups. The SDK implements no tool search engine, source selection fallback or provider execution.
 
@@ -262,3 +262,9 @@ try {
 ```
 
 Use exactly one of `thread_id`, `run_id` or `record_id`; omit unused query keys. Service returns 400 for invalid selector combinations and 404 for a missing selected resource. Existing Thread/Run resources without an eligible completed main-Agent contribution return HTTP 200 JSON null. A Thread selector can retain an older completed contribution while a newer Run is pending. This is neither a pending-prompt estimate nor aggregate billing usage. An explicit record selects that contribution, including failed/child contributions. Every non-null response includes all three token/window fields, each nullable; unknown capacity stays null and valid zero stays zero. Capacity uses the current Model configuration. Preserve the response rather than computing a fabricated utilization ratio or subtracting cache usage.
+
+## Browse bounded run history
+
+Run lists return `RunListItem` metadata with `input_preview.text` (at most 200 Unicode code points) and `input_preview.truncated`. Fetch an individual Run for full input, output, options or memory mounts. List `view` selection is removed.
+
+Thread runs are newest first. `ThreadRunPage` exposes `total`, `first_number`, `previous_cursor` (newer) and `next_cursor` (older). Use `anchor` for the first page around an exact Run; subsequent requests send the returned cursor without the anchor. Reads and page iterators are lazy. Session streams also expose native schedule and occurrence frames.

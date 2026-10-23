@@ -16,7 +16,7 @@ Generated Model characteristics preserve nullable `image_input`, `video_input` b
 
 ## Tool discovery configuration
 
-Generated Agent configuration and Run override `tool_search` preserve a closed mode-tagged native union: `proxy` accepts search/call names and result/byte limits; `native` accepts optional nullable `strategy` (`bm25` or `regex`). Cross-mode properties reject even when supplied through typed variables. An omitted config selects Service's proxy default; explicit `config:null` and a config without `mode` are invalid. The outer block preserves omission, null and `{}`. A non-null Run block replaces the entire revision block; omitted/null overrides inherit. `groups:{}` disables grouping. Each named group requires a description and can select Connection/plugin/platform sources already selected for the Agent. Service owns names, bounds, provider support, source validation and execution; grouping changes presentation, not authorization. The SDK forwards this configuration without implementing search or falling back between modes.
+Generated `tool_search` contains a strict proxy-only configuration. Omitted config/mode and an empty config use Service defaults; null config and native strategy fields are invalid. Run override omission/null inherits the revision; a non-null block replaces it and empty groups disables grouping. Groups select already admitted Connection, plugin, platform and capability sources. Service owns source admission and discovery execution.
 
 ## Desktop access and control
 
@@ -58,6 +58,6 @@ Environment mount `permission_ceiling` preserves exact native `EnvironmentAction
 
 Retained Run `images.ref(id).get()` returns an owned unbuffered PNG/JPEG `BinaryResult`, preserving bytes, response metadata, local cancellation/close and ordinary API errors. Raw `a13n.tool_images` references and child attribution pass through unchanged. A streamed reference can precede committed publication and return 404. Images are distinct from Assets and saved JSON/text content. Download failure never replays the Computer action.
 
-Agent `platform_tools` and `builtin_skills` selections pass through the generated configuration/override types, preserving omission, null, empty collections and native permission choices. Service owns platform admission, provider credentials and built-in/uploaded Skill initialization before first inference.
+Agent `builtin_skills` preserves omission, null and empty selections. Service owns tool admission, credentials and instruction initialization before inference.
 
 Native `skill_sync` is a mode-tagged union. Shared mode defaults to overwrite=true and cleanup=false, publishing conventional mutable names; isolated mode defaults to cache_count=128 and immutable digest-keyed packages, with zero disabling trimming. The complete Run block replaces the Agent block. Cross-mode fields are rejected by the generated types. Service owns preparation, overwrite, cleanup, caching and filesystem publication; forwarding these options adds no SDK I/O or readiness operation.

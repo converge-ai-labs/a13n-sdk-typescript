@@ -74,8 +74,8 @@ export function resourceModel(document) {
           `Missing operation identity or success response: ${verb} ${path}`,
         );
       const schemas = success.flatMap(([, response]) =>
-        Object.values(response.content ?? {}).map((content) =>
-          resolve(content.schema),
+        Object.values(response.content ?? {}).flatMap((content) =>
+          (content.schema?.anyOf ?? [content.schema]).map(resolve),
         ),
       );
       const collection =
@@ -83,9 +83,11 @@ export function resourceModel(document) {
         schemas.some((schema) => schema?.properties?.items);
       const paged =
         parameters.some((p) => p.in === "query" && p.name === "cursor") &&
-        schemas.length === 1 &&
-        schemas[0]?.properties?.next_cursor &&
-        schemas[0]?.properties?.items;
+        schemas.length > 0 &&
+        schemas.every(
+          (schema) =>
+            schema?.properties?.next_cursor && schema?.properties?.items,
+        );
       const op = {
         ...operation,
         verb,
@@ -183,6 +185,15 @@ export function generateResources(document) {
       responseMedia.length > 0 && !responseMedia.includes("application/json");
     if (stream && op.verb !== "get")
       throw new Error(`Unsupported streaming method: ${op.path}`);
+    const detailed =
+      op.parameters.find((p) => p.in === "query" && p.name === "view")?.schema
+        .default === "detailed"
+        ? op.success[0]?.[1].content?.[
+            "application/json"
+          ]?.schema.anyOf?.[0]?.$ref
+            ?.split("/")
+            .at(-1)
+        : undefined;
     const result = stream
       ? "BinaryResult"
       : `ResourceResult<${[...new Set(op.success.map(([code, r]) => (r.content?.["application/json"] ? `${type}["responses"][${code}]["content"]["application/json"]` : "undefined")))].join(" | ")}>`;
@@ -200,6 +211,10 @@ export function generateResources(document) {
     const requiredOptions =
       binary || [...query, ...headers].some((p) => p.required);
     aliases.push(`type ${type}Options = { ${optionFields.join("; ")} };`);
+    if (detailed)
+      aliases.push(
+        `type ${type}DetailedOptions = Omit<${type}Options, "query"> & { query?: Omit<NonNullable<${type}["parameters"]["query"]>, "view" | "section"> & { view?: "detailed"${query.some((p) => p.name === "section") ? "; section?: null" : ""} } };`,
+      );
     let body = "undefined";
     const args = [];
     if (media.length) {
@@ -235,14 +250,22 @@ export function generateResources(document) {
       request = `jsonRequest(this.transport, ${quote(op.verb.toUpperCase())}, ${path}, ${body}, ${headerObject}, ${requestOptions})`;
     const lines = [
       `/** ${op.verb.toUpperCase()} ${op.path}. ${stream ? "Caller owns and closes the unbuffered body." : "Preserves response metadata; mutations are not replayed."} */`,
+      ...(detailed
+        ? [
+            `${op.method}(options?: ${type}DetailedOptions): Promise<ResourceResult<components["schemas"][${quote(detailed)}]>>;`,
+            `${op.method}(options: ${type}Options): Promise<${result}>;`,
+          ]
+        : []),
       `${op.method}(${args.join(", ")}): Promise<${result}> { return ${request}; }`,
     ];
     if (op.paged && op.method === "list") {
+      const pageType = result.slice("ResourceResult<".length, -1);
+      const pageArgs = `${pageType}, (${pageType})["items"][number]`;
       lines.push(
-        `pages(options: ${type}Options${requiredOptions ? "" : " = {}"}) { const query = snapshot(options.query ?? {}); return new PageIterator(query.cursor, cursor => this.list({ ...options, query: withCursor(query, cursor) }), value => value); }`,
+        `pages(options: ${type}Options${requiredOptions ? "" : " = {}"}) { const query = snapshot(options.query ?? {}); return new PageIterator<${pageArgs}>(query.cursor, cursor => this.list({ ...options, query: withCursor(query, cursor) }), value => value); }`,
       );
       lines.push(
-        `items(options: ${type}Options${requiredOptions ? "" : " = {}"}) { return flattenPages(this.pages(options), value => value); }`,
+        `items(options: ${type}Options${requiredOptions ? "" : " = {}"}) { return flattenPages<${pageArgs}>(this.pages(options), value => value); }`,
       );
     }
     coverage.push({
@@ -288,7 +311,7 @@ export function generateResources(document) {
   }
   return {
     source: `/** Generated resource bindings. Do not edit; run npm run generate. */
-import type { operations, Binary } from '../schema.js';
+import type { operations, components, Binary } from '../schema.js';
 import type { Transport } from '../transport.js';
 import { jsonRequest, uploadRequest, binaryRequest, multipartBody, selector, snapshot, withCursor, PageIterator, flattenPages, type ResourceResult, type BinaryResult } from './base.js';
 ${aliases.join("\n")}

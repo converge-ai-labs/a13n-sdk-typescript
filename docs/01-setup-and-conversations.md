@@ -162,9 +162,9 @@ await isolated.close();
 
 This fragment uses the selected `agent` inside its client lifetime. Shared mode publishes mutable names under `/workspace/.agents/skills/<name>`; `overwrite:false` keeps an existing name, while `cleanup:true` removes unselected entries and requires a primary environment even with an empty selection. Isolated mode uses immutable digest-keyed packages under `/workspace/.agents/skill-cache`; `cache_count:0` disables trimming. Fields from the two modes cannot be mixed. Omission/null of a Run override inherits the Agent revision. Service owns preparation and filesystem publication; these options do not perform SDK-side environment I/O.
 
-## Select platform tools and built-in Skills
+## Select built-in Skills
 
-Agent configuration and Run overrides expose independent native `platform_tools` and `builtin_skills` selections:
+Agent configuration and Run overrides expose `builtin_skills` instruction selections:
 
 ```js
 const interaction = await agent.start(
@@ -172,11 +172,6 @@ const interaction = await agent.start(
   {
     options: {
       overrides: {
-        platform_tools: {
-          groups: ["execution", "models"],
-          read_permission: "allow",
-          write_permission: "ask",
-        },
         builtin_skills: ["platform-operations"],
       },
     },

@@ -796,7 +796,7 @@ export async function sessionFrameTypes() {
       void frame.data.item;
       // @ts-expect-error Session deltas have no SSE cursor field.
       void frame.cursor;
-    } else {
+    } else if (frame.type === "gap") {
       const type: "gap" = frame.type;
       void type;
       void frame.data.thread_id;

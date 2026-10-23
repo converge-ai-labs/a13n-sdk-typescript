@@ -76,8 +76,6 @@ export interface components {
       } | null;
       /** @default null */
       output_spec?: components["schemas"]["OutputSpec"] | null;
-      /** @default null */
-      platform_tools?: components["schemas"]["PlatformSelection"] | null;
       /**
        * Plugins
        * @default null
@@ -239,18 +237,32 @@ export interface components {
        */
       permission?: "inherit" | "allow" | "deny";
     };
+    /** Configuration */
+    Configuration: {
+      /** Id */
+      id: string;
+      /** Max Lateness Seconds */
+      max_lateness_seconds: number;
+      /** Name */
+      name: string;
+      /** Pause Reason */
+      pause_reason: string | null;
+      /** Principal Id */
+      principal_id: string;
+      schedule: components["schemas"]["ScheduleRule"];
+      /** Session Id */
+      session_id: string;
+      state: components["schemas"]["ScheduleState"];
+      /** Version */
+      version: number;
+    };
     /**
      * ConnectionSelection
-     * @description An agent's use of one connection: all the tools it exposes, or a subset, and their permissions.
+     * @description An agent's selected tools and permissions.
      */
     ConnectionSelection: {
       /** Connection Id */
       connection_id: string;
-      /**
-       * Defer Loading
-       * @default false
-       */
-      defer_loading?: boolean;
       /** @default inherit */
       permission?: components["schemas"]["ToolPermissionSetting"];
       /** Permissions */
@@ -284,6 +296,19 @@ export interface components {
        * @default false
        */
       truncated?: boolean;
+    };
+    /** CronSchedule */
+    CronSchedule: {
+      /** Expression */
+      expression: string;
+      /** Timezone */
+      timezone: string;
+      /**
+       * Type
+       * @default cron
+       * @constant
+       */
+      type?: "cron";
     };
     /** DelegationContextPolicy */
     DelegationContextPolicy: {
@@ -396,7 +421,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "message" | "child_result";
+      kind: "message" | "child_result" | "tool_result";
       options: components["schemas"]["RunOptions"];
       /** Origin Run Id */
       origin_run_id: string | null;
@@ -457,7 +482,9 @@ export interface components {
       | "environment.computer.drag"
       | "environment.computer.scroll"
       | "environment.computer.type_text"
-      | "environment.computer.press_keys";
+      | "environment.computer.press_keys"
+      | "environment.computer.read_clipboard"
+      | "environment.computer.write_clipboard";
     /** EnvironmentMount */
     EnvironmentMount: {
       /** Environment Id */
@@ -512,6 +539,16 @@ export interface components {
     EnvironmentPermissionSet: {
       /** Operations */
       operations?: components["schemas"]["EnvironmentAction"][];
+    };
+    /**
+     * ExecutionOverride
+     * @description Sparse choices: null inherits; Thread PATCH distinguishes omission from null.
+     */
+    ExecutionOverride: {
+      /** @default null */
+      steering?: components["schemas"]["Steering"] | null;
+      /** @default null */
+      tools?: components["schemas"]["ToolExecutionOverride"] | null;
     };
     /**
      * Failed
@@ -608,6 +645,12 @@ export interface components {
       run_id: string;
       /** Thread Id */
       thread_id: string;
+    };
+    /** InitialRun */
+    InitialRun: {
+      /** Id */
+      id: string;
+      status: components["schemas"]["RunStatus"];
     };
     /**
      * IsolatedSkillSync
@@ -805,26 +848,6 @@ export interface components {
       content: components["schemas"]["Part"][];
     };
     /**
-     * NativeToolSearchConfig
-     * @description Provider-native discovery; omitted strategy uses the provider default.
-     */
-    NativeToolSearchConfig: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      mode: "native";
-      /**
-       * Strategy
-       * @default null
-       */
-      strategy?: ("bm25" | "regex") | null;
-      call_name?: never;
-      max_results?: never;
-      max_search_bytes?: never;
-      search_name?: never;
-    };
-    /**
      * ObserverContinuation
      * @description Native conversion cursors required to resume mid-part, without raw history.
      */
@@ -840,6 +863,115 @@ export interface components {
        * @default null
        */
       thread_id?: string | null;
+    };
+    /** OccurrenceEvent */
+    OccurrenceEvent: {
+      occurrence: components["schemas"]["OccurrenceSummary"];
+      /** Schedule Id */
+      schedule_id: string;
+      /** Session Id */
+      session_id: string;
+    };
+    /**
+     * OccurrenceExecution
+     * @description Current execution observations alongside the durable occurrence completion facts.
+     */
+    OccurrenceExecution: {
+      /** Has Unfinished Work */
+      has_unfinished_work: boolean;
+      initial_entry_status: components["schemas"]["EntryStatus"] | null;
+      initial_run: components["schemas"]["InitialRun"] | null;
+      /**
+       * Observed At
+       * Format: date-time
+       */
+      observed_at: string;
+    };
+    /** @enum {string} */
+    OccurrenceStatus:
+      | "pending"
+      | "submitted"
+      | "completed"
+      | "skipped"
+      | "failed"
+      | "cancelled";
+    /** OccurrenceSummary */
+    OccurrenceSummary: {
+      /**
+       * Completed At
+       * @default null
+       */
+      completed_at?: string | null;
+      /**
+       * Completion Run Id
+       * @default null
+       */
+      completion_run_id?: string | null;
+      /** Covered From At */
+      covered_from_at: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Deadline At
+       * Format: date-time
+       */
+      deadline_at: string;
+      /** Dispatch Attempts */
+      dispatch_attempts: number;
+      /** Entry Id */
+      entry_id: string | null;
+      /** @default null */
+      execution?: components["schemas"]["OccurrenceExecution"] | null;
+      /**
+       * Execution Outcome
+       * @default null
+       */
+      execution_outcome?: ("succeeded" | "failed" | "cancelled") | null;
+      /** Finished At */
+      finished_at: string | null;
+      /** Id */
+      id: string;
+      /** Last Error */
+      last_error: string | null;
+      /** Next Attempt At */
+      next_attempt_at: string | null;
+      /** Reason */
+      reason: string | null;
+      /** Schedule Id */
+      schedule_id: string;
+      /** Schedule Version */
+      schedule_version: number;
+      /** Scheduled At */
+      scheduled_at: string | null;
+      /** Session Id */
+      session_id: string;
+      status: components["schemas"]["OccurrenceStatus"];
+      /** Thread Id */
+      thread_id: string | null;
+      trigger: components["schemas"]["ScheduleTrigger"];
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Version */
+      version: number;
+    };
+    /** OnceSchedule */
+    OnceSchedule: {
+      /**
+       * Run At
+       * Format: date-time
+       */
+      run_at: string;
+      /**
+       * Type
+       * @constant
+       */
+      type: "once";
     };
     /**
      * OutputSpec
@@ -942,30 +1074,8 @@ export interface components {
       | "skills"
       | "environment_templates"
       | "providers"
-      | "execution";
-    /**
-     * PlatformSelection
-     * @description Platform MCP groups selected independently of local operating instructions.
-     */
-    PlatformSelection: {
-      /**
-       * Groups
-       * @default []
-       */
-      groups?: components["schemas"]["PlatformGroup"][];
-      /**
-       * Read Permission
-       * @default allow
-       * @enum {string}
-       */
-      read_permission?: "allow" | "ask" | "deny";
-      /**
-       * Write Permission
-       * @default ask
-       * @enum {string}
-       */
-      write_permission?: "allow" | "ask" | "deny";
-    };
+      | "execution"
+      | "schedules";
     /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.
@@ -980,37 +1090,14 @@ export interface components {
       /** Plugin Key */
       plugin_key: string;
     };
-    /**
-     * ProxyToolSearchConfig
-     * @description Names and bounded discovery settings for one Agent's proxy surface.
-     */
-    ProxyToolSearchConfig: {
-      /**
-       * Call Name
-       * @default call_proxy_tool
-       */
-      call_name?: string;
-      /**
-       * Max Results
-       * @default 10
-       */
-      max_results?: number;
-      /**
-       * Max Search Bytes
-       * @default 32768
-       */
-      max_search_bytes?: number;
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      mode: "proxy";
-      /**
-       * Search Name
-       * @default search_proxy_tools
-       */
-      search_name?: string;
-      strategy?: never;
+    /** Progress */
+    Progress: {
+      /** Last Occurrence Id */
+      last_occurrence_id: string | null;
+      /** Next Fire At */
+      next_fire_at: string | null;
+      /** Pending Occurrence Id */
+      pending_occurrence_id: string | null;
     };
     /** RecordSource */
     RecordSource: {
@@ -1086,6 +1173,8 @@ export interface components {
     RunOptions: {
       /** @default null */
       configuration?: components["schemas"]["RunConfiguration"] | null;
+      /** @default null */
+      execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -1172,6 +1261,8 @@ export interface components {
        * @enum {string}
        */
       revision_selection: "pinned" | "default" | "inherited";
+      /** @default null */
+      schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
       sealed_at: string | null;
       /** Session Id */
@@ -1199,6 +1290,29 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** ScheduleEvent */
+    ScheduleEvent: {
+      configuration: components["schemas"]["Configuration"];
+      progress: components["schemas"]["Progress"];
+      /** Schedule Id */
+      schedule_id: string;
+      /** Session Id */
+      session_id: string;
+    };
+    /** ScheduleOrigin */
+    ScheduleOrigin: {
+      /** Occurrence Id */
+      occurrence_id: string;
+      /** Schedule Id */
+      schedule_id: string;
+    };
+    ScheduleRule:
+      | components["schemas"]["CronSchedule"]
+      | components["schemas"]["OnceSchedule"];
+    /** @enum {string} */
+    ScheduleState: "paused" | "enabled" | "completed" | "archived";
+    /** @enum {string} */
+    ScheduleTrigger: "scheduled" | "manual";
     /**
      * SharedSkillSync
      * @description Publish mutable conventional names; the last completed publication wins.
@@ -1230,6 +1344,8 @@ export interface components {
       /** Skill Id */
       skill_id: string;
     };
+    /** @enum {string} */
+    Steering: "boundary" | "immediate";
     /** StreamPosition */
     StreamPosition: {
       /** Attempt */
@@ -1299,6 +1415,8 @@ export interface components {
       created_at: string;
       /** Current Run Id */
       current_run_id: string | null;
+      /** @default null */
+      execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Id */
       id: string;
       /** Labels */
@@ -1330,6 +1448,11 @@ export interface components {
        * @enum {string}
        */
       purpose?: "conversation" | "memory_organization";
+      /**
+       * Schedule Occurrence Id
+       * @default null
+       */
+      schedule_occurrence_id?: string | null;
       /** Session Id */
       session_id: string;
       /** Subagent */
@@ -1345,6 +1468,19 @@ export interface components {
       workspace_id: string;
     };
     ToolCallId: string;
+    /** ToolExecutionOverride */
+    ToolExecutionOverride: {
+      /**
+       * Foreground Wait Seconds
+       * @default null
+       */
+      foreground_wait_seconds?: number | null;
+      /**
+       * Mode
+       * @default null
+       */
+      mode?: ("inline" | "auto") | null;
+    };
     /** @enum {string} */
     ToolPermissionMode: "allow" | "deny" | "ask" | "review";
     ToolPermissionSetting:
@@ -1378,11 +1514,60 @@ export interface components {
         [key: string]: components["schemas"]["ToolSearchGroup"];
       };
     };
-    ToolSearchConfig:
-      | components["schemas"]["ProxyToolSearchConfig"]
-      | components["schemas"]["NativeToolSearchConfig"];
+    /**
+     * ProxyToolSearchConfig
+     * @description Names and bounded discovery settings for one Agent's proxy surface.
+     */
+    ToolSearchConfig: {
+      /**
+       * Call Name
+       * @default call_tool
+       */
+      call_name?: string;
+      /**
+       * Describe Name
+       * @default describe_tool
+       */
+      describe_name?: string;
+      /**
+       * Groups Name
+       * @default list_tool_groups
+       */
+      groups_name?: string;
+      /**
+       * List Name
+       * @default list_tools
+       */
+      list_name?: string;
+      /**
+       * Max Results
+       * @default 10
+       */
+      max_results?: number;
+      /**
+       * Max Search Bytes
+       * @default 32768
+       */
+      max_search_bytes?: number;
+      /**
+       * Mode
+       * @default proxy
+       * @constant
+       */
+      mode?: "proxy";
+      /**
+       * Search Name
+       * @default discover_tools
+       */
+      search_name?: string;
+    };
     /** ToolSearchGroup */
     ToolSearchGroup: {
+      /**
+       * Capabilities
+       * @default []
+       */
+      capabilities?: ("environment" | "web")[];
       /**
        * Connections
        * @default []
@@ -1415,17 +1600,9 @@ export interface components {
       /** @default inherit */
       permission?: components["schemas"]["ToolPermissionSetting"];
     };
-    /** @enum {string} */
     ToolsetKey:
-      | "files"
-      | "shell"
-      | "computer"
-      | "web"
-      | "memory"
-      | "assets"
-      | "configuration"
-      | "traces"
-      | "findings";
+      | ("files" | "shell" | "computer" | "web" | "memory" | "assets")
+      | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
       /** Config */
@@ -1443,7 +1620,13 @@ export interface components {
       };
     };
     /** @enum {string} */
-    Trigger: "input" | "queued" | "resume" | "child_result" | "spawned";
+    Trigger:
+      | "input"
+      | "queued"
+      | "resume"
+      | "child_result"
+      | "tool_result"
+      | "spawned";
     /** UrlPart */
     UrlPart: {
       /**
@@ -1609,4 +1792,6 @@ export type SessionStreamFrame =
   | { type: "delta"; data: components["schemas"]["Delta"] }
   | { type: "gap"; data: components["schemas"]["Gap"] }
   | { type: "items"; data: components["schemas"]["RunSnapshot"] }
+  | { type: "occurrence"; data: components["schemas"]["OccurrenceEvent"] }
+  | { type: "schedule"; data: components["schemas"]["ScheduleEvent"] }
   | { type: "thread"; data: components["schemas"]["ThreadState"] };

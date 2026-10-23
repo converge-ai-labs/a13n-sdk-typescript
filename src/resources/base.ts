@@ -292,5 +292,6 @@ export function withCursor<T extends Record<string, unknown>>(
   const copy = { ...filters } as T & { cursor?: string | null };
   if (cursor === undefined) delete copy.cursor;
   else copy.cursor = cursor;
+  if (cursor != null) delete copy.anchor;
   return copy;
 }
