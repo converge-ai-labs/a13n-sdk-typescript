@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ApiError, createClient, ProtocolError } from "../dist/index.js";
-import { decodeSse } from "../dist/streams/sse.js";
+import { decodeSse, TruncatedStreamError } from "../dist/streams/sse.js";
 import { threadStream } from "../dist/streams/thread-stream.js";
 import { Transport } from "../dist/transport.js";
 
@@ -156,6 +156,21 @@ test("SSE handles split UTF-8, CRLF, multiline data, non-ID frames and cancellat
       assert.fail(`Unexpected incomplete frame: ${frame.data}`);
     }
   }, ProtocolError);
+  // A clean close mid-frame drops the partial frame and reports a retryable truncation.
+  const complete = [];
+  await assert.rejects(
+    async () => {
+      for await (const frame of decodeSse(
+        chunks("id: 1-0\ndata: one\n\nid: 2-0\nevent: delta\ndata: par"),
+      ))
+        complete.push(frame);
+    },
+    (error) =>
+      error instanceof TruncatedStreamError &&
+      error instanceof ProtocolError &&
+      error.message === "The stream ended inside an SSE frame.",
+  );
+  assert.deepEqual(complete, [{ id: "1-0", event: "message", data: "one" }]);
   let canceled = false;
   const body = new ReadableStream({
     start(controller) {

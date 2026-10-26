@@ -10,6 +10,9 @@ export interface DetailedSseFrame extends SseFrame {
 }
 const defaultMaxFrameCharacters = 1024 * 1024;
 
+/** The response ended cleanly inside an SSE frame; the incomplete frame was discarded, never dispatched. */
+export class TruncatedStreamError extends ProtocolError {}
+
 /** Decode incremental UTF-8 and LF/CRLF/CR framing, including split delimiters. */
 export async function* decodeSse(
   body: ReadableStream<Uint8Array>,
@@ -101,7 +104,9 @@ export async function* decodeSseDetailed(
       if (chunk.done) {
         signal?.throwIfAborted();
         if (buffer || values.length)
-          throw new ProtocolError("The stream ended inside an SSE frame.");
+          throw new TruncatedStreamError(
+            "The stream ended inside an SSE frame.",
+          );
         return;
       }
     }

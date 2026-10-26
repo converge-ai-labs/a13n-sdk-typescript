@@ -300,3 +300,46 @@ test("delta requires nullable item and preserves native item metadata with unkno
     missing.client.close();
   }
 });
+
+test("a stream closed mid-frame reconnects with the last applied cursor without duplicates", async () => {
+  const calls = [];
+  const { client, open } = fixture(async (request) => {
+    calls.push(request.headers.get("Last-Event-ID"));
+    return response(
+      calls.length === 1
+        ? output("delta", "1-0", 1) +
+            'id: 2-0\nevent: delta\ndata: {"run_id":"run_one","att'
+        : output("delta", "2-0", 2) + output("boundary", "3-0", 2),
+    );
+  });
+  const stream = threadStream(open, new AbortController().signal);
+  try {
+    const cursors = [];
+    for (let i = 0; i < 3; i++)
+      cursors.push((await stream.next()).value.cursor);
+    assert.deepEqual(cursors, ["1-0", "2-0", "3-0"]);
+    assert.deepEqual(calls, [null, "1-0"]);
+  } finally {
+    await stream.return();
+    client.close();
+  }
+});
+
+test("persistent mid-frame truncation exhausts the reconnect budget", async () => {
+  const calls = [];
+  const { client, open } = fixture(async (request) => {
+    calls.push(request.headers.get("Last-Event-ID"));
+    return response('id: 2-0\nevent: delta\ndata: {"run_id"');
+  });
+  try {
+    await assert.rejects(
+      threadStream(open, new AbortController().signal, { after: "1-0" }).next(),
+      (error) =>
+        error instanceof ProtocolError &&
+        error.message === "The stream ended inside an SSE frame.",
+    );
+    assert.deepEqual(calls, ["1-0", "1-0", "1-0"]);
+  } finally {
+    client.close();
+  }
+});
