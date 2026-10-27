@@ -343,3 +343,66 @@ test("persistent mid-frame truncation exhausts the reconnect budget", async () =
     client.close();
   }
 });
+
+const bytes = (...parts) =>
+  new Response(
+    new ReadableStream({
+      start(controller) {
+        for (const part of parts)
+          controller.enqueue(
+            typeof part === "string" ? new TextEncoder().encode(part) : part,
+          );
+        controller.close();
+      },
+    }),
+    { headers: { "Content-Type": "text/event-stream" } },
+  );
+
+test("a stream closed inside a multi-byte character reconnects with the last cursor without duplicates", async () => {
+  const calls = [];
+  const emoji = new TextEncoder().encode("😀");
+  const { client, open } = fixture(async (request) => {
+    calls.push(request.headers.get("Last-Event-ID"));
+    return calls.length === 1
+      ? bytes(
+          output("delta", "1-0", 1),
+          'id: 2-0\nevent: delta\ndata: {"run_id":"run_one","note":"',
+          emoji.slice(0, 2),
+        )
+      : bytes(output("delta", "2-0", 2), output("boundary", "3-0", 2));
+  });
+  const stream = threadStream(open, new AbortController().signal);
+  try {
+    const cursors = [];
+    for (let i = 0; i < 3; i++)
+      cursors.push((await stream.next()).value.cursor);
+    assert.deepEqual(cursors, ["1-0", "2-0", "3-0"]);
+    assert.deepEqual(calls, [null, "1-0"]);
+  } finally {
+    await stream.return();
+    client.close();
+  }
+});
+
+test("genuinely invalid UTF-8 is a fatal ProtocolError and is not retried", async () => {
+  for (const bad of [0xff, 0x80]) {
+    let calls = 0;
+    const { client, open } = fixture(async () => {
+      calls++;
+      return bytes(output("delta", "1-0", 1), "data: ", Uint8Array.of(bad));
+    });
+    const stream = threadStream(open, new AbortController().signal);
+    try {
+      assert.equal((await stream.next()).value.cursor, "1-0");
+      await assert.rejects(
+        stream.next(),
+        (error) =>
+          error instanceof ProtocolError &&
+          error.message === "The SSE stream contains invalid UTF-8.",
+      );
+      assert.equal(calls, 1);
+    } finally {
+      client.close();
+    }
+  }
+});

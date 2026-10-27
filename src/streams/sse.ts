@@ -54,6 +54,12 @@ export async function* decodeSseDetailed(
       try {
         buffer += decoder.decode(chunk.value, { stream: !chunk.done });
       } catch {
+        // Fatal streaming decoders reject invalid bytes immediately and buffer an
+        // incomplete trailing sequence, so only the EOF flush can signal truncation.
+        if (chunk.done)
+          throw new TruncatedStreamError(
+            "The stream ended inside a UTF-8 sequence.",
+          );
         throw new ProtocolError("The SSE stream contains invalid UTF-8.");
       }
       let boundary: number;
