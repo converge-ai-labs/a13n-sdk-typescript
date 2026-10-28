@@ -72,9 +72,11 @@ const metric: Schema["ModelRequestMetrics"] = {
 };
 // @ts-expect-error Metrics are required nullable fields, not omitted measurements.
 const missingMetric: Schema["ModelRequestMetrics"] = {};
-const summary: Schema["UsageSummary"] = { models: [], runs: [] };
-// @ts-expect-error UsageSummary includes the per-Run breakdown.
-const missingRuns: Schema["UsageSummary"] = { models: [] };
+const summary: Schema["UsageSummary"] = { models: [] };
+const runs: Schema["RunUsagePage"] = { items: [], next_cursor: null };
+void runs;
+// @ts-expect-error Run breakdown pages require a nullable next cursor.
+const missingRuns: Schema["RunUsagePage"] = { items: [] };
 const minimalCreate: Schema["MemorySpaceCreate"] = { name: "Notes" };
 void override;
 void emptyOverride;
@@ -197,3 +199,29 @@ export async function boundedRunDiscovery() {
   await client.api.runs.list({ query: { view: "detailed" } });
   void [first, preview];
 }
+
+const plugin: Schema["PluginType"] = {
+  plugin_key: "demo",
+  display_name: "Demo",
+  description: "Demo plugin",
+  config_schema: null,
+  distribution_name: null,
+  distribution_version: null,
+};
+// @ts-expect-error Plugin metadata fields are required even when null.
+const missingPlugin: Schema["PluginType"] = {
+  plugin_key: "demo",
+  display_name: "Demo",
+  description: "Demo",
+};
+const context: Schema["RequestContext"] = { headers: { "X-Tenant": "demo" } };
+// @ts-expect-error Context headers may be omitted but not null.
+const nullHeaders: Schema["RequestContext"] = { headers: null };
+const compaction: Schema["BackgroundCompactionPolicy"] = {
+  enabled: false,
+  blocking_threshold: 0.95,
+};
+const appResult: Schema["AppToolResult"] = {
+  result: { nested: [null, false, 0, "", {}] },
+};
+void [plugin, missingPlugin, context, nullHeaders, compaction, appResult];
