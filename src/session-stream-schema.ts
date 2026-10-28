@@ -35,7 +35,7 @@ export interface components {
        * Builtin Skills
        * @default null
        */
-      builtin_skills?: "platform-operations"[] | null;
+      builtin_skills?: components["schemas"]["BuiltinSkillName"][] | null;
       /**
        * Client Tools
        * @default null
@@ -165,6 +165,40 @@ export interface components {
        */
       timeout_seconds?: number;
     };
+    /**
+     * AppReady
+     * @description App originals and references are committed; opening still checks access and fetches current HTML.
+     */
+    AppReady: {
+      /** Apps */
+      apps: components["schemas"]["AppReference"][];
+      /** Run Id */
+      run_id: string;
+      /** Thread Id */
+      thread_id: string;
+    };
+    /** AppReference */
+    AppReference: {
+      /** Agent Revision Id */
+      agent_revision_id: string;
+      /** App Id */
+      app_id: string;
+      /** Connection Id */
+      connection_id: string;
+      /** Resource Uri */
+      resource_uri: string;
+      /** Source Run Id */
+      source_run_id: string;
+      /** Tool Call Id */
+      tool_call_id: string;
+      /** Tool Name */
+      tool_name: string;
+      /**
+       * Unavailable
+       * @default false
+       */
+      unavailable?: boolean;
+    };
     ApprovalDecision:
       components["schemas"]["Approve"] | components["schemas"]["Deny"];
     /** Approve */
@@ -189,6 +223,8 @@ export interface components {
       url?: never;
       value?: never;
     };
+    /** @constant */
+    BuiltinSkillName: "platform-operations";
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /**
@@ -1113,6 +1149,16 @@ export interface components {
       sha256: string;
     };
     /**
+     * RequestContext
+     * @description Explicit business headers, frozen in accepted Run options and kept out of model projections.
+     */
+    RequestContext: {
+      /** Headers */
+      headers?: {
+        [key: string]: string;
+      };
+    };
+    /**
      * Resume
      * @description The complete result batch, submitted and stored on the successor without omission defaults.
      */
@@ -1179,6 +1225,8 @@ export interface components {
     RunOptions: {
       /** @default null */
       configuration?: components["schemas"]["RunConfiguration"] | null;
+      /** @default null */
+      context?: components["schemas"]["RequestContext"] | null;
       /** @default null */
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
@@ -1795,6 +1843,7 @@ export type operations = Record<string, never>;
 
 export type SessionStreamSchemas = components["schemas"];
 export type SessionStreamFrame =
+  | { type: "app_ready"; data: components["schemas"]["AppReady"] }
   | { type: "delta"; data: components["schemas"]["Delta"] }
   | { type: "gap"; data: components["schemas"]["Gap"] }
   | { type: "items"; data: components["schemas"]["RunSnapshot"] }

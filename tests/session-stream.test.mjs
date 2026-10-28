@@ -429,3 +429,51 @@ test("Session abort while paused suppresses buffered frames and releases the rea
     f.client.close();
   }
 });
+
+test("App readiness is typed, repeatable, and rejects malformed payloads and SSE IDs", async () => {
+  const data = {
+    thread_id: "thr",
+    run_id: "run",
+    apps: [
+      {
+        app_id: "app",
+        connection_id: "con",
+        agent_revision_id: "rev",
+        source_run_id: "run",
+        tool_call_id: "call",
+        tool_name: "chart",
+        resource_uri: "ui://chart",
+      },
+    ],
+  };
+  const f = fixture(encode("app_ready", data).repeat(2));
+  try {
+    const raw = await f.client.api.sessions.ref("ses").stream.get();
+    assert.deepEqual(await Array.fromAsync(sessionStream(raw)), [
+      { type: "app_ready", data },
+      { type: "app_ready", data },
+    ]);
+    assert.equal(f.requests.length, 1);
+  } finally {
+    f.client.close();
+  }
+  const invalid = [
+    encode("app_ready", data, "id: 1-0\n"),
+    encode("app_ready", { ...data, apps: null }),
+    encode("app_ready", { ...data, apps: [{}] }),
+  ];
+  for (const key of ["thread_id", "run_id", "apps"]) {
+    const missing = { ...data };
+    delete missing[key];
+    invalid.push(encode("app_ready", missing));
+  }
+  for (const body of invalid) {
+    const f = fixture(body);
+    try {
+      const raw = await f.client.api.sessions.ref("ses").stream.get();
+      await assert.rejects(Array.fromAsync(sessionStream(raw)), ProtocolError);
+    } finally {
+      f.client.close();
+    }
+  }
+});

@@ -10,9 +10,9 @@ export interface paths {
     put?: never;
     /**
      * Prepare Composer
-     * @description The workspace's Agent Composer, created or brought up to date with the deployment's definition.
+     * @description The workspace's Agent Composer, initialized or offered an updated official revision without changing its default.
      *
-     *     Refused with `model_required` while the workspace has no model the caller can use.
+     *     Initial preparation requires a usable model; later preparation preserves the selected model and revision.
      */
     post: operations["prepare_composer"];
     delete?: never;
@@ -423,6 +423,66 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/builtin-skills": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Builtin Skills
+     * @description The skills bundled with this Service release, separately from workspace skill resources.
+     */
+    get: operations["list_builtin_skills"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/builtin-skills/{name}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Builtin Skill
+     * @description The current deployment's bundled skill and its package file manifest.
+     */
+    get: operations["get_builtin_skill"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/builtin-skills/{name}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read Builtin Skill Archive
+     * @description Optionally require the manifest's digest; a changed package returns conflict.
+     */
+    get: operations["read_builtin_skill_archive"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/connections": {
     parameters: {
       query?: never;
@@ -643,7 +703,8 @@ export interface paths {
     get: operations["get_connector_provider"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Delete Connector Provider */
+    delete: operations["delete_connector_provider"];
     options?: never;
     head?: never;
     /**
@@ -1602,7 +1663,8 @@ export interface paths {
     get: operations["get_memory_provider"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Delete Memory Provider */
+    delete: operations["delete_memory_provider"];
     options?: never;
     head?: never;
     /**
@@ -1913,7 +1975,8 @@ export interface paths {
     get: operations["get_model_provider"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Delete Model Provider */
+    delete: operations["delete_model_provider"];
     options?: never;
     head?: never;
     /**
@@ -2248,6 +2311,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/plugins": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Plugins
+     * @description The plugins loaded by this Control process, without constructing or executing instances.
+     */
+    get: operations["list_plugins"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/provider-types/{kind}": {
     parameters: {
       query?: never;
@@ -2317,6 +2400,66 @@ export interface paths {
     get: operations["get_run_agent"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/runs/{run_id}/apps/{app_id}/open": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Open Run App
+     * @description Open a saved MCP App with freshly read HTML and its original tool result.
+     */
+    post: operations["open_run_app"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/runs/{run_id}/apps/{app_id}/resources/read": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Read Run App Resource
+     * @description Read the HTML resource bound to a saved MCP App.
+     */
+    post: operations["read_run_app_resource"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/runs/{run_id}/apps/{app_id}/tools/call": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Call Run App Tool
+     * @description Call an App-visible tool on the saved connection without starting a Run.
+     */
+    post: operations["call_run_app_tool"];
     delete?: never;
     options?: never;
     head?: never;
@@ -2822,6 +2965,26 @@ export interface paths {
      *     frames, plus `schedule` and `occurrence` state for Schedule-owned sessions. Every connection starts from a snapshot.
      */
     get: operations["session_stream"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/sessions/{session_id}/threads": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Session Threads
+     * @description Lightweight Session navigation, oldest first, with stable per-origin positions and parent references.
+     */
+    get: operations["list_session_threads"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3693,6 +3856,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/usage/members": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Usage Members */
+    get: operations["list_usage_members"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/usage/models": {
     parameters: {
       query?: never;
@@ -3736,6 +3916,26 @@ export interface paths {
     };
     /** Model Request Metrics */
     get: operations["model_request_metrics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/usage/runs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Run Usage
+     * @description One page of Run usage; Run numbers include all Runs in each Thread, including those without usage.
+     */
+    get: operations["list_run_usage"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3955,7 +4155,8 @@ export interface paths {
     get: operations["get_web_provider"];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Delete Web Provider */
+    delete: operations["delete_web_provider"];
     options?: never;
     head?: never;
     /**
@@ -4361,11 +4562,12 @@ export interface components {
     };
     /** AgentConfig */
     "AgentConfig-Input": {
+      background_compaction?: components["schemas"]["BackgroundCompactionPolicy"];
       /**
        * Builtin Skills
        * @default []
        */
-      builtin_skills?: "platform-operations"[];
+      builtin_skills?: components["schemas"]["BuiltinSkillName"][];
       /**
        * Client Tools
        * @default []
@@ -4443,11 +4645,12 @@ export interface components {
     };
     /** AgentConfig */
     "AgentConfig-Output": {
+      background_compaction?: components["schemas"]["BackgroundCompactionPolicy"];
       /**
        * Builtin Skills
        * @default []
        */
-      builtin_skills?: "platform-operations"[];
+      builtin_skills?: components["schemas"]["BuiltinSkillName"][];
       /**
        * Client Tools
        * @default []
@@ -4584,7 +4787,7 @@ export interface components {
      */
     "AgentOverride-Input": {
       /** Builtin Skills */
-      builtin_skills?: "platform-operations"[] | null;
+      builtin_skills?: components["schemas"]["BuiltinSkillName"][] | null;
       /** Client Tools */
       client_tools?: components["schemas"]["ClientToolDefinition"][] | null;
       /** Connection Tools */
@@ -4636,7 +4839,7 @@ export interface components {
      */
     "AgentOverride-Output": {
       /** Builtin Skills */
-      builtin_skills?: "platform-operations"[] | null;
+      builtin_skills?: components["schemas"]["BuiltinSkillName"][] | null;
       /** Client Tools */
       client_tools?: components["schemas"]["ClientToolDefinition"][] | null;
       /** Connection Tools */
@@ -4729,6 +4932,11 @@ export interface components {
     AgentRevision: {
       /** Agent Id */
       agent_id: string;
+      /**
+       * Builtin Instructions
+       * @description Current deployment guidance for this builtin Agent, not a revision or Run snapshot.
+       */
+      builtin_instructions?: string | null;
       config: components["schemas"]["AgentConfig-Output"];
       /**
        * Created At
@@ -4841,6 +5049,11 @@ export interface components {
       /** Agent Id */
       agent_id?: string | null;
       /**
+       * Instructions
+       * @default
+       */
+      instructions?: string;
+      /**
        * Max Traces
        * @default 10
        */
@@ -4902,6 +5115,62 @@ export interface components {
       items: components["schemas"]["ApiKey"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** AppReference */
+    AppReference: {
+      /** Agent Revision Id */
+      agent_revision_id: string;
+      /** App Id */
+      app_id: string;
+      /** Connection Id */
+      connection_id: string;
+      /** Resource Uri */
+      resource_uri: string;
+      /** Source Run Id */
+      source_run_id: string;
+      /** Tool Call Id */
+      tool_call_id: string;
+      /** Tool Name */
+      tool_name: string;
+      /**
+       * Unavailable
+       * @default false
+       */
+      unavailable?: boolean;
+    };
+    /** AppResource */
+    AppResource: {
+      /** Html */
+      html: string;
+      /** Metadata */
+      metadata: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Mime Type */
+      mime_type: string;
+      /** Uri */
+      uri: string;
+    };
+    /** AppResourceRead */
+    AppResourceRead: {
+      /** Uri */
+      uri: string;
+    };
+    /** AppToolCall */
+    AppToolCall: {
+      /** Arguments */
+      arguments?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Name */
+      name: string;
+    };
+    /** AppToolResult */
+    AppToolResult: {
+      /** Result */
+      result: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
     };
     ApprovalDecision:
       components["schemas"]["Approve"] | components["schemas"]["Deny"];
@@ -5168,6 +5437,22 @@ export interface components {
       /** Subject */
       subject?: string | null;
     };
+    /**
+     * BackgroundCompactionPolicy
+     * @description Host-selected overlap policy, separate from the common compaction trigger.
+     */
+    BackgroundCompactionPolicy: {
+      /**
+       * Blocking Threshold
+       * @default 0.95
+       */
+      blocking_threshold?: number;
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+    };
     /** BearerCredential */
     BearerCredential: {
       /**
@@ -5189,6 +5474,36 @@ export interface components {
        */
       password: string;
     };
+    /** BuiltinSkill */
+    BuiltinSkill: {
+      /** Description */
+      description: string;
+      name: components["schemas"]["BuiltinSkillName"];
+    };
+    /** BuiltinSkillCatalog */
+    BuiltinSkillCatalog: {
+      /** Items */
+      items: components["schemas"]["BuiltinSkill"][];
+    };
+    /**
+     * BuiltinSkillDetail
+     * @description The current process's bundled package, without a workspace resource or revision.
+     */
+    BuiltinSkillDetail: {
+      /** Description */
+      description: string;
+      /** Files */
+      files: components["schemas"]["SkillFile"][];
+      name: components["schemas"]["BuiltinSkillName"];
+      /** Package Digest */
+      package_digest: string;
+      /** Package Size */
+      package_size: number;
+      /** Root */
+      root: string;
+    };
+    /** @constant */
+    BuiltinSkillName: "platform-operations";
     /** BusyOccurrence */
     BusyOccurrence: {
       /** Entry Id */
@@ -7611,6 +7926,8 @@ export interface components {
     McpAuth: "none" | "bearer" | "headers" | "oauth";
     /** McpConfig */
     McpConfig: {
+      /** Forward Context Headers */
+      forward_context_headers?: boolean;
       /**
        * Headers
        * @default []
@@ -7692,6 +8009,32 @@ export interface components {
     MemberPage: {
       /** Items */
       items: components["schemas"]["PrincipalSummary"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** MemberUsage */
+    MemberUsage: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "user" | "service_account";
+      /** Name */
+      name: string;
+      /** Principal Id */
+      principal_id: string;
+      runs: components["schemas"]["RunMetrics"];
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "active" | "disabled";
+      usage: components["schemas"]["ModelMetrics"];
+    };
+    /** MemberUsagePage */
+    MemberUsagePage: {
+      /** Items */
+      items: components["schemas"]["MemberUsage"][];
       /** Next Cursor */
       next_cursor: string | null;
     };
@@ -8982,6 +9325,23 @@ export interface components {
       /** Session Id */
       session_id: string;
     };
+    /** OpenedApp */
+    OpenedApp: {
+      /** Arguments */
+      arguments: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      reference: components["schemas"]["AppReference"];
+      resource: components["schemas"]["AppResource"];
+      /** Result */
+      result: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Tool */
+      tool: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+    };
     /**
      * OperatingSystem
      * @enum {string}
@@ -9214,6 +9574,11 @@ export interface components {
       | "providers"
       | "execution"
       | "schedules";
+    /** PluginCatalog */
+    PluginCatalog: {
+      /** Items */
+      items: components["schemas"]["PluginType"][];
+    };
     /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.
@@ -9225,6 +9590,23 @@ export interface components {
       };
       /** Instance Name */
       instance_name: string;
+      /** Plugin Key */
+      plugin_key: string;
+    };
+    /** PluginType */
+    PluginType: {
+      /** Config Schema */
+      config_schema: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /** Description */
+      description: string;
+      /** Display Name */
+      display_name: string;
+      /** Distribution Name */
+      distribution_name: string | null;
+      /** Distribution Version */
+      distribution_version: string | null;
       /** Plugin Key */
       plugin_key: string;
     };
@@ -9673,6 +10055,16 @@ export interface components {
       reason: string;
     };
     /**
+     * RequestContext
+     * @description Explicit business headers, frozen in accepted Run options and kept out of model projections.
+     */
+    RequestContext: {
+      /** Headers */
+      headers?: {
+        [key: string]: string;
+      };
+    };
+    /**
      * Resume
      * @description The complete result batch, submitted and stored on the successor without omission defaults.
      */
@@ -9998,6 +10390,7 @@ export interface components {
      */
     "RunOptions-Input": {
       configuration?: components["schemas"]["RunConfiguration-Input"] | null;
+      context?: components["schemas"]["RequestContext"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
@@ -10012,6 +10405,7 @@ export interface components {
      */
     "RunOptions-Output": {
       configuration?: components["schemas"]["RunConfiguration-Output"] | null;
+      context?: components["schemas"]["RequestContext"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
@@ -10127,6 +10521,13 @@ export interface components {
       run_number: number;
       /** Thread Id */
       thread_id: string;
+    };
+    /** RunUsagePage */
+    RunUsagePage: {
+      /** Items */
+      items: components["schemas"]["RunUsage"][];
+      /** Next Cursor */
+      next_cursor: string | null;
     };
     /** RunView */
     RunView: {
@@ -11456,12 +11857,62 @@ export interface components {
       /** Version */
       version: string;
     };
+    /**
+     * ThreadNavigation
+     * @description Bounded navigation metadata; positions count the complete Session before filtering.
+     */
+    ThreadNavigation: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Id */
+      id: string;
+      /**
+       * Origin
+       * @enum {string}
+       */
+      origin: "new" | "fork" | "child";
+      /** Origin Count */
+      origin_count: number;
+      /** Origin Number */
+      origin_number: number;
+      origin_thread: components["schemas"]["ThreadReference"] | null;
+      /** Session Id */
+      session_id: string;
+      /** Subagent */
+      subagent: string | null;
+    };
+    /** ThreadNavigationPage */
+    ThreadNavigationPage: {
+      /** Items */
+      items: components["schemas"]["ThreadNavigation"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
     /** ThreadPage */
     ThreadPage: {
       /** Items */
       items: components["schemas"]["ThreadView"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** ThreadReference */
+    ThreadReference: {
+      /** Id */
+      id: string;
+      /**
+       * Origin
+       * @enum {string}
+       */
+      origin: "new" | "fork" | "child";
+      /** Origin Count */
+      origin_count: number;
+      /** Origin Number */
+      origin_number: number;
+      /** Subagent */
+      subagent: string | null;
     };
     /**
      * ThreadRunPage
@@ -11595,6 +12046,10 @@ export interface components {
       description: string | null;
       /** Input Schema */
       input_schema: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Metadata */
+      metadata?: {
         [key: string]: components["schemas"]["JsonValue"];
       };
       /** Name */
@@ -12047,8 +12502,6 @@ export interface components {
     UsageSummary: {
       /** Models */
       models: components["schemas"]["ModelUsage"][];
-      /** Runs */
-      runs: components["schemas"]["RunUsage"][];
     };
     /** UserKeyCreate */
     UserKeyCreate: {
@@ -13147,6 +13600,87 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_builtin_skills: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BuiltinSkillCatalog"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_builtin_skill: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BuiltinSkillDetail"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  read_builtin_skill_archive: {
+    parameters: {
+      query?: {
+        package_digest?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The current builtin skill package as a zip archive */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/zip": Binary;
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_connections: {
     parameters: {
       query?: {
@@ -13586,6 +14120,33 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["Provider"];
         };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  delete_connector_provider: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       400: components["responses"]["Error"];
       default: components["responses"]["Error"];
@@ -15902,6 +16463,33 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  delete_memory_provider: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   update_memory_provider: {
     parameters: {
       query?: never;
@@ -16746,6 +17334,33 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  delete_model_provider: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   update_model_provider: {
     parameters: {
       query?: never;
@@ -17560,6 +18175,31 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_plugins: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PluginCatalog"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_provider_types: {
     parameters: {
       query?: never;
@@ -17779,6 +18419,98 @@ export interface operations {
             | components["schemas"]["RunAgent"]
             | components["schemas"]["RunAgentSummary"]
             | components["schemas"]["TextRead"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  open_run_app: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+        app_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OpenedApp"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  read_run_app_resource: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+        app_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AppResourceRead"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AppResource"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  call_run_app_tool: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+        app_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AppToolCall"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AppToolResult"];
         };
       };
       400: components["responses"]["Error"];
@@ -18848,6 +19580,38 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_session_threads: {
+    parameters: {
+      query?: {
+        origin?: ("new" | "fork" | "child")[] | null;
+        thread_id?: string[] | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        session_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ThreadNavigationPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_skills: {
     parameters: {
       query?: {
@@ -19441,6 +20205,8 @@ export interface operations {
       query?: {
         session_id?: string | null;
         occurrence_id?: string | null;
+        origin?: ("new" | "fork" | "child")[] | null;
+        origin_run_id?: string | null;
         text_query?: string | null;
         label?: string[] | null;
         limit?: number;
@@ -20698,6 +21464,8 @@ export interface operations {
       query: {
         start: string;
         end: string;
+        /** @description Filter by Run execution identity; requires workspace admin. */
+        principal_id?: string | null;
         limit?: number;
         cursor?: string | null;
       };
@@ -20752,11 +21520,45 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_usage_members: {
+    parameters: {
+      query: {
+        start: string;
+        end: string;
+        /** @description Filter by Run execution identity; requires workspace admin. */
+        principal_id?: string | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemberUsagePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   usage_models: {
     parameters: {
       query: {
         start: string;
         end: string;
+        /** @description Filter by Run execution identity; requires workspace admin. */
+        principal_id?: string | null;
         limit?: number;
         cursor?: string | null;
       };
@@ -20787,6 +21589,8 @@ export interface operations {
       query: {
         start: string;
         end: string;
+        /** @description Filter by Run execution identity; requires workspace admin. */
+        principal_id?: string | null;
         timezone?: string;
       };
       header?: {
@@ -20832,6 +21636,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ModelRequestMetrics"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_run_usage: {
+    parameters: {
+      query?: {
+        run_id?: string | null;
+        thread_id?: string | null;
+        session_id?: string | null;
+        ingested_after?: string | null;
+        ingested_before?: string | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RunUsagePage"];
         };
       };
       400: components["responses"]["Error"];
@@ -21248,6 +22085,33 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["Provider"];
         };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  delete_web_provider: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       400: components["responses"]["Error"];
       default: components["responses"]["Error"];

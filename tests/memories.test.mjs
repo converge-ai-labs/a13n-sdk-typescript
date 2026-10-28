@@ -89,6 +89,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
     await providers.ref("prv_one").get();
     await providers.ref("prv_one").update({ enabled: false }, match);
     await providers.ref("prv_one").test();
+    await providers.ref("prv_one").delete(match);
     await client.api.auth.bootstrap({
       email: "owner@example.test",
       password: "test-only",
@@ -103,7 +104,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
             )
           : [],
     );
-    assert.equal(expected.length, 30);
+    assert.equal(expected.length, 31);
     assert.deepEqual([...seen].sort(), expected.sort());
   } finally {
     client.close();
