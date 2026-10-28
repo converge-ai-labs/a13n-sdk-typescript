@@ -2,7 +2,7 @@ import { ApiError, isRecord, ProtocolError } from "../errors.js";
 import type { SessionStreamSchemas } from "../session-stream-schema.js";
 import { delay } from "../transport.js";
 import type { BinaryResult } from "../resources/base.js";
-import { decodeSse, type SseFrame } from "./sse.js";
+import { decodeSse, TruncatedStreamError, type SseFrame } from "./sse.js";
 
 export interface ThreadStreamOptions {
   signal?: AbortSignal;
@@ -201,7 +201,9 @@ export async function* threadStream(
       if (
         signal.aborted ||
         error instanceof ApiError ||
-        error instanceof ProtocolError ||
+        // A truncated stream is a transport loss, retried like a network error.
+        (error instanceof ProtocolError &&
+          !(error instanceof TruncatedStreamError)) ||
         failures >= 2
       )
         throw error;

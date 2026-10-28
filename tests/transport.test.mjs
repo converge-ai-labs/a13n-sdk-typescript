@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ApiError, createClient, ProtocolError } from "../dist/index.js";
-import { decodeSse } from "../dist/streams/sse.js";
+import { decodeSse, TruncatedStreamError } from "../dist/streams/sse.js";
 import { threadStream } from "../dist/streams/thread-stream.js";
 import { Transport } from "../dist/transport.js";
 
@@ -156,6 +156,21 @@ test("SSE handles split UTF-8, CRLF, multiline data, non-ID frames and cancellat
       assert.fail(`Unexpected incomplete frame: ${frame.data}`);
     }
   }, ProtocolError);
+  // A clean close mid-frame drops the partial frame and reports a retryable truncation.
+  const complete = [];
+  await assert.rejects(
+    async () => {
+      for await (const frame of decodeSse(
+        chunks("id: 1-0\ndata: one\n\nid: 2-0\nevent: delta\ndata: par"),
+      ))
+        complete.push(frame);
+    },
+    (error) =>
+      error instanceof TruncatedStreamError &&
+      error instanceof ProtocolError &&
+      error.message === "The stream ended inside an SSE frame.",
+  );
+  assert.deepEqual(complete, [{ id: "1-0", event: "message", data: "one" }]);
   let canceled = false;
   const body = new ReadableStream({
     start(controller) {
@@ -271,4 +286,91 @@ test("typed health probes stay within the configured origin and exact prefix", a
   transport.close();
   assert.equal(requests.length, 2);
   client.close();
+});
+
+const encoder = new TextEncoder();
+function byteChunks(...parts) {
+  return new ReadableStream({
+    start(controller) {
+      for (const part of parts)
+        controller.enqueue(
+          typeof part === "string" ? encoder.encode(part) : part,
+        );
+      controller.close();
+    },
+  });
+}
+async function collect(body) {
+  const frames = [];
+  try {
+    for await (const frame of decodeSse(body)) frames.push(frame);
+  } catch (error) {
+    return { frames, error };
+  }
+  return { frames };
+}
+
+test("SSE UTF-8: EOF inside a multi-byte character is a truncation that drops the partial frame", async () => {
+  const emoji = encoder.encode("😀");
+  for (let cut = 1; cut < emoji.length; cut++) {
+    const { frames, error } = await collect(
+      byteChunks(
+        "id: 1-0\ndata: one\n\n",
+        "id: 2-0\ndata: ",
+        emoji.slice(0, cut),
+      ),
+    );
+    assert.deepEqual(frames, [{ id: "1-0", event: "message", data: "one" }]);
+    assert.ok(error instanceof TruncatedStreamError, `cut ${cut}`);
+    assert.ok(error instanceof ProtocolError);
+    assert.equal(error.message, "The stream ended inside a UTF-8 sequence.");
+  }
+});
+
+test("SSE UTF-8: genuinely invalid bytes stay fatal ProtocolError, not truncation", async () => {
+  const emoji = encoder.encode("😀");
+  const cases = {
+    "0xFF mid-stream": [
+      encoder.encode("data: a"),
+      Uint8Array.of(0xff),
+      "b\n\n",
+    ],
+    "lone continuation byte": [
+      encoder.encode("data: "),
+      Uint8Array.of(0x80),
+      "\n\n",
+    ],
+    "lone continuation byte as final chunk": [
+      "id: 1-0\ndata: one\n\ndata: ",
+      Uint8Array.of(0x80),
+    ],
+    "0xFF as final chunk": ["data: ", Uint8Array.of(0xff)],
+    "invalid continuation after lead byte": [
+      "data: ",
+      emoji.slice(0, 2),
+      Uint8Array.of(0x41),
+    ],
+    "overlong lead byte at EOF": ["data: ", Uint8Array.of(0xc0)],
+  };
+  for (const [name, parts] of Object.entries(cases)) {
+    const { error } = await collect(byteChunks(...parts));
+    assert.ok(error instanceof ProtocolError, name);
+    assert.ok(!(error instanceof TruncatedStreamError), name);
+    assert.equal(error.message, "The SSE stream contains invalid UTF-8.", name);
+  }
+});
+
+test("SSE UTF-8: a complete multi-byte character at EOF is not a UTF-8 truncation", async () => {
+  const emoji = encoder.encode("😀");
+  // Split mid-character across chunks, then complete frame: decoded normally.
+  const ok = await collect(
+    byteChunks("data: ", emoji.slice(0, 2), emoji.slice(2), "\n\n"),
+  );
+  assert.equal(ok.error, undefined);
+  assert.deepEqual(ok.frames, [{ id: "", event: "message", data: "😀" }]);
+  // Complete character but no frame terminator: still the frame-level truncation.
+  const open = await collect(byteChunks("data: ", emoji));
+  assert.deepEqual(open.frames, []);
+  assert.ok(open.error instanceof TruncatedStreamError);
+  assert.equal(open.error.message, "The stream ended inside an SSE frame.");
 });
