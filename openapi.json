@@ -17154,6 +17154,9 @@
             "title": "Stream Url",
             "type": "string"
           },
+          "target": {
+            "$ref": "#/components/schemas/ScheduleTarget"
+          },
           "updated_at": {
             "format": "date-time",
             "title": "Updated At",
@@ -17176,6 +17179,7 @@
           "name",
           "schedule",
           "invocation",
+          "target",
           "id",
           "session_id",
           "stream_url",
@@ -17252,6 +17256,9 @@
             "enum": ["paused", "enabled"],
             "title": "State",
             "type": "string"
+          },
+          "target": {
+            "$ref": "#/components/schemas/ScheduleTarget"
           }
         },
         "required": ["name", "schedule", "invocation"],
@@ -17506,6 +17513,46 @@
         "title": "ScheduleStatus",
         "type": "object"
       },
+      "ScheduleTarget": {
+        "additionalProperties": false,
+        "description": "Omitted IDs create a session and, for thread mode, one empty reusable thread.",
+        "properties": {
+          "mode": {
+            "default": "new_thread",
+            "enum": ["new_thread", "thread"],
+            "title": "Mode",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "maxLength": 41,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "maxLength": 41,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "title": "ScheduleTarget",
+        "type": "object"
+      },
       "ScheduleTime": {
         "additionalProperties": false,
         "properties": {
@@ -17603,6 +17650,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ScheduleRule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleTarget"
               },
               {
                 "type": "null"
@@ -42571,7 +42628,7 @@
     },
     "/api/v1/sessions/{session_id}/stream": {
       "get": {
-        "description": "The session's threads and the live output of their runs over SSE: `thread`, `items`, `delta` and `gap`\nframes, plus `schedule` and `occurrence` state for Schedule-owned sessions. Every connection starts from a snapshot.",
+        "description": "The session's threads and the live output of their runs over SSE: `thread`, `items`, `delta` and `gap`\nframes, plus `schedule` and `occurrence` state scoped to this session. Every connection starts from a snapshot.",
         "operationId": "session_stream",
         "parameters": [
           {
