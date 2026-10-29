@@ -191,7 +191,23 @@ export async function boundedRunDiscovery() {
   const page: ResourceResult<Schema["ThreadRunPage"]> = await client.api.threads
     .ref("thread")
     .runs.list({ query: { anchor: "run" } });
-  const first: number = page.data.first_number;
+  const first: number = page.data.items[0]!.number;
+  const cost: string | null = page.data.items[0]!.cost;
+  const calls: number = page.data.items[0]!.model_calls;
+  const unpriced: number = page.data.items[0]!.unpriced_requests;
+  await client.api.threads
+    .ref("thread")
+    .runs.list({ query: { sort: "cost", direction: "asc" } });
+  await client.api.sessions.list({
+    query: { sort: "runs", direction: "desc" },
+  });
+  // @ts-expect-error Numbering belongs to each Thread Run item.
+  void page.data.first_number;
+  await client.api.threads.ref("thread").runs.list({
+    // @ts-expect-error Ranking metrics are bounded by the Service contract.
+    query: { sort: "invalid" },
+  });
+  void [cost, calls, unpriced];
   const preview: string = page.data.items[0]!.input_preview.text;
   // @ts-expect-error Discovery records have no full output.
   void page.data.items[0]!.output;
