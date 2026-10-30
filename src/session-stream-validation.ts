@@ -18920,7 +18920,15 @@ validate216.evaluated = {
 var schema100 = {
   anyOf: [
     {
-      enum: ["files", "shell", "computer", "web", "memory", "assets"],
+      enum: [
+        "files",
+        "shell",
+        "computer",
+        "browser",
+        "web",
+        "memory",
+        "assets",
+      ],
       type: "string",
     },
     { $ref: "#/$defs/PlatformGroup" },
@@ -19036,6 +19044,7 @@ function validate222(
     data === "files" ||
     data === "shell" ||
     data === "computer" ||
+    data === "browser" ||
     data === "web" ||
     data === "memory" ||
     data === "assets"
@@ -24799,7 +24808,15 @@ validate275.evaluated = {
   dynamicItems: false,
 };
 var schema121 = {
-  enum: ["input", "queued", "resume", "child_result", "tool_result", "spawned"],
+  enum: [
+    "input",
+    "queued",
+    "resume",
+    "child_result",
+    "tool_result",
+    "browser_handback",
+    "spawned",
+  ],
   type: "string",
 };
 function validate278(
@@ -24839,6 +24856,7 @@ function validate278(
     data === "resume" ||
     data === "child_result" ||
     data === "tool_result" ||
+    data === "browser_handback" ||
     data === "spawned"
   )) {
     validate278.errors = [
@@ -27635,7 +27653,7 @@ var schema123 = {
       title: "Incorporated Checkpoint Seq",
     },
     kind: {
-      enum: ["message", "child_result", "tool_result"],
+      enum: ["message", "child_result", "tool_result", "browser_handback"],
       title: "Kind",
       type: "string",
     },
@@ -28412,7 +28430,8 @@ function validate284(
                               if (!(
                                 data10 === "message" ||
                                 data10 === "child_result" ||
-                                data10 === "tool_result"
+                                data10 === "tool_result" ||
+                                data10 === "browser_handback"
                               )) {
                                 validate284.errors = [
                                   {
