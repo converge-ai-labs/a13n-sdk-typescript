@@ -457,7 +457,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "message" | "child_result" | "tool_result";
+      kind: "message" | "child_result" | "tool_result" | "browser_handback";
       options: components["schemas"]["RunOptions"];
       /** Origin Run Id */
       origin_run_id: string | null;
@@ -1655,7 +1655,15 @@ export interface components {
       permission?: components["schemas"]["ToolPermissionSetting"];
     };
     ToolsetKey:
-      | ("files" | "shell" | "computer" | "web" | "memory" | "assets")
+      | (
+          | "files"
+          | "shell"
+          | "computer"
+          | "browser"
+          | "web"
+          | "memory"
+          | "assets"
+        )
       | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
@@ -1680,6 +1688,7 @@ export interface components {
       | "resume"
       | "child_result"
       | "tool_result"
+      | "browser_handback"
       | "spawned";
     /** UrlPart */
     UrlPart: {
