@@ -36,6 +36,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["POST", new RegExp("^/api/v1/browsers/[^/]+/prepare$")],
   ["POST", new RegExp("^/api/v1/browsers/[^/]+/release$")],
   ["POST", new RegExp("^/api/v1/browsers/[^/]+/renew$")],
+  ["POST", new RegExp("^/api/v1/browsers/[^/]+/stop$")],
   ["POST", new RegExp("^/api/v1/browsers/[^/]+/takeover$")],
   ["POST", new RegExp("^/api/v1/browsers/[^/]+/viewer$")],
   ["GET", new RegExp("^/api/v1/builtin-skills$")],

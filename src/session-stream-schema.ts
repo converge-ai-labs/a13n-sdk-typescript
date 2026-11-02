@@ -223,6 +223,23 @@ export interface components {
       url?: never;
       value?: never;
     };
+    /** BrowserBinding */
+    BrowserBinding: {
+      /** Browser Id */
+      browser_id: string;
+      /**
+       * Preparation
+       * @default first_use
+       * @enum {string}
+       */
+      preparation?: "first_use" | "run_start";
+      /**
+       * Tab Access
+       * @default thread
+       * @enum {string}
+       */
+      tab_access?: "global" | "thread";
+    };
     /** @constant */
     BuiltinSkillName: "platform-operations";
     CallResult:
@@ -1267,6 +1284,8 @@ export interface components {
       agent_revision_id: string;
       /** Attempts */
       attempts: number;
+      /** @default null */
+      browser_binding?: components["schemas"]["BrowserBinding"] | null;
       /** Cancel Requested At */
       cancel_requested_at: string | null;
       /**
