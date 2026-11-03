@@ -2317,6 +2317,7 @@ type Operation290Options = {
 type Operation291 = operations["list_toolsets"];
 type Operation291Options = {
   signal?: AbortSignal;
+  query?: NonNullable<Operation291["parameters"]["query"]>;
   xWorkspaceId?: NonNullable<
     Operation291["parameters"]["header"]
   >["X-Workspace-ID"];
@@ -11837,7 +11838,7 @@ export class ToolsetsResource {
           .filter(([, value]) => value !== undefined && value !== null)
           .map(([key, value]) => [key, String(value)]),
       ),
-      { signal: options.signal },
+      { signal: options.signal, query: options.query },
     );
   }
   get definitions(): ToolsetsDefinitionsResource {

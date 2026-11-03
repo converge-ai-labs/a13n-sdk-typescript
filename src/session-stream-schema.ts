@@ -223,6 +223,35 @@ export interface components {
       url?: never;
       value?: never;
     };
+    /**
+     * AutomaticToolSearch
+     * @description Group Service-owned sources individually, following the agent's selections.
+     */
+    AutomaticToolSearch: {
+      /**
+       * Capabilities
+       * @default [
+       *       "browser",
+       *       "computer"
+       *     ]
+       */
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
+      /**
+       * Connections
+       * @default true
+       */
+      connections?: boolean;
+      /**
+       * Exclude Connections
+       * @default []
+       */
+      exclude_connections?: string[];
+      /**
+       * Exclude Platform
+       * @default false
+       */
+      exclude_platform?: boolean;
+    };
     /** BrowserBinding */
     BrowserBinding: {
       /** Browser Id */
@@ -242,6 +271,9 @@ export interface components {
     };
     /** @constant */
     BuiltinSkillName: "platform-operations";
+    /** @enum {string} */
+    BuiltinToolsetKey:
+      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /**
@@ -1492,6 +1524,8 @@ export interface components {
       entries: components["schemas"]["EntryView"][];
       last_run: components["schemas"]["RunView"] | null;
       thread: components["schemas"]["ThreadView"];
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** ThreadView */
     ThreadView: {
@@ -1597,6 +1631,8 @@ export interface components {
      * @description Presentation of already-selected sources, composed by Harness once per agent.
      */
     ToolSearch: {
+      /** @default null */
+      automatic?: components["schemas"]["AutomaticToolSearch"] | null;
       config?: components["schemas"]["ToolSearchConfig"];
       /** Groups */
       groups?: {
@@ -1656,7 +1692,7 @@ export interface components {
        * Capabilities
        * @default []
        */
-      capabilities?: ("environment" | "web")[];
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
       /**
        * Connections
        * @default []
@@ -1690,15 +1726,7 @@ export interface components {
       permission?: components["schemas"]["ToolPermissionSetting"];
     };
     ToolsetKey:
-      | (
-          | "files"
-          | "shell"
-          | "computer"
-          | "browser"
-          | "web"
-          | "memory"
-          | "assets"
-        )
+      | components["schemas"]["BuiltinToolsetKey"]
       | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
@@ -1726,6 +1754,22 @@ export interface components {
       | "browser_handback"
       | "desktop_handback"
       | "spawned";
+    /**
+     * UnavailableConfiguration
+     * @description A collection member whose stored configuration requires operator repair.
+     */
+    UnavailableConfiguration: {
+      /** Id */
+      id: string;
+      /** Kind */
+      kind: string;
+      /**
+       * Reason
+       * @default configuration_unavailable
+       * @constant
+       */
+      reason?: "configuration_unavailable";
+    };
     /** UrlPart */
     UrlPart: {
       /**

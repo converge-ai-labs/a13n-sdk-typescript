@@ -5160,6 +5160,8 @@ export interface components {
       items: components["schemas"]["AgentRevision"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** @enum {string} */
     AgentSource: "custom" | "builtin";
@@ -5627,6 +5629,35 @@ export interface components {
       subject?: string | null;
     };
     /**
+     * AutomaticToolSearch
+     * @description Group Service-owned sources individually, following the agent's selections.
+     */
+    AutomaticToolSearch: {
+      /**
+       * Capabilities
+       * @default [
+       *       "browser",
+       *       "computer"
+       *     ]
+       */
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
+      /**
+       * Connections
+       * @default true
+       */
+      connections?: boolean;
+      /**
+       * Exclude Connections
+       * @default []
+       */
+      exclude_connections?: string[];
+      /**
+       * Exclude Platform
+       * @default false
+       */
+      exclude_platform?: boolean;
+    };
+    /**
      * BackgroundCompactionPolicy
      * @description Host-selected overlap policy, separate from the common compaction trigger.
      */
@@ -5822,6 +5853,9 @@ export interface components {
     };
     /** @constant */
     BuiltinSkillName: "platform-operations";
+    /** @enum {string} */
+    BuiltinToolsetKey:
+      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
     /** BusyOccurrence */
     BusyOccurrence: {
       /** Entry Id */
@@ -6842,6 +6876,22 @@ export interface components {
       /** Name */
       name?: string | null;
     };
+    /** DiscoverySource */
+    DiscoverySource: {
+      /** Description */
+      description: string;
+      /** Display Name */
+      display_name: string;
+      /** Group Name */
+      group_name: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "capabilities" | "platform" | "connections";
+    };
     /** DiskIoMetrics */
     DiskIoMetrics: {
       /** Busy Time Ms */
@@ -6888,6 +6938,8 @@ export interface components {
       items: components["schemas"]["EntryView"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** @enum {string} */
     EntryStatus: "pending" | "assigned" | "consumed" | "failed" | "withdrawn";
@@ -6952,6 +7004,8 @@ export interface components {
       items: components["schemas"]["EntrySummary"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /**
      * EntryUpdate
@@ -10515,6 +10569,8 @@ export interface components {
       items: components["schemas"]["RevisionSummary"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** RevokedConnection */
     RevokedConnection: {
@@ -11099,6 +11155,8 @@ export interface components {
       items: components["schemas"]["Schedule"][];
       /** Next Cursor */
       next_cursor?: string | null;
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** SchedulePreview */
     SchedulePreview: {
@@ -12548,6 +12606,7 @@ export interface components {
      * @description Presentation of already-selected sources, composed by Harness once per agent.
      */
     ToolSearch: {
+      automatic?: components["schemas"]["AutomaticToolSearch"] | null;
       config?: components["schemas"]["ToolSearchConfig"];
       /** Groups */
       groups?: {
@@ -12607,7 +12666,7 @@ export interface components {
        * Capabilities
        * @default []
        */
-      capabilities?: ("environment" | "web")[];
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
       /**
        * Connections
        * @default []
@@ -12642,6 +12701,9 @@ export interface components {
     };
     /** ToolsetCatalog */
     ToolsetCatalog: {
+      discovery_defaults: components["schemas"]["AutomaticToolSearch"];
+      /** Discovery Sources */
+      discovery_sources: components["schemas"]["DiscoverySource"][];
       /** Items */
       items: components["schemas"]["ToolsetDefinition"][];
     };
@@ -12670,15 +12732,7 @@ export interface components {
       tools: components["schemas"]["ToolDefinition"][];
     };
     ToolsetKey:
-      | (
-          | "files"
-          | "shell"
-          | "computer"
-          | "browser"
-          | "web"
-          | "memory"
-          | "assets"
-        )
+      | components["schemas"]["BuiltinToolsetKey"]
       | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
@@ -12792,6 +12846,22 @@ export interface components {
           );
       expression?: never;
       source_id?: never;
+    };
+    /**
+     * UnavailableConfiguration
+     * @description A collection member whose stored configuration requires operator repair.
+     */
+    UnavailableConfiguration: {
+      /** Id */
+      id: string;
+      /** Kind */
+      kind: string;
+      /**
+       * Reason
+       * @default configuration_unavailable
+       * @constant
+       */
+      reason?: "configuration_unavailable";
     };
     /** UnlimitedCpuLimit */
     UnlimitedCpuLimit: {
@@ -21964,7 +22034,9 @@ export interface operations {
   };
   list_toolsets: {
     parameters: {
-      query?: never;
+      query?: {
+        connection_ids?: string[] | null;
+      };
       header?: {
         /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
         "X-Workspace-ID"?: string | null;
