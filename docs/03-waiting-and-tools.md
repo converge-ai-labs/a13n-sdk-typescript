@@ -157,68 +157,8 @@ For a real approval UI, store the reviewed decision and one resume idempotency k
 
 A built-in `ask_user_question` appears among `pending.calls`, not as an approval. Its returned `value` follows the Harness question response shape, for example `{answers:{"Which region?":"US"}}`; inspect the actual question and choices in `call.arguments` and collect the person's response before returning `returned(value)` in the answer map under that call's ID. Service validates question responses against the exact pending arguments. To intentionally skip a question, submit a native failed call result with a nonblank message. Ordinary `agent.send(...)` does not answer it. See [recovery](07-errors-and-recovery.md) for handling uncertain submissions.
 
-## Observe desktop waiting and explicitly hand back control
+## Desktop control and historical waits
 
-`wait_reason:"desktop_control"` is a normal finite waiting result. User-origin takeover can have no pending calls or approvals; `pending.desktop_control_id` identifies its separate control record. This read-only program observes one exact Run and reads control metadata. Save as `desktop-wait.mjs` and set `A13N_RUN_ID` to an authorized Run:
+Desktop control is scoped to an Environment, not to a waiting Run. Read `client.api.environments.ref(environmentId).desktopControl.get()`; use `takeover({thread_id}, {ifMatch})`, fenced `renew({episode,generation})`, `desktopViewer({mode:"control",episode,generation})`, and `handback({ifMatch})` only with the corresponding Service authority and current fences. Viewer credentials are sensitive. Handback is not a new Run and does not answer pending tools.
 
-```js
-import { createClient } from "@converge.ai/a13n";
-
-const client = createClient({
-  baseUrl: process.env.A13N_SERVICE_URL,
-  auth: { type: "bearer", token: process.env.A13N_API_TOKEN },
-});
-try {
-  const interaction = client.runs.ref(process.env.A13N_RUN_ID).observe();
-  try {
-    const outcome = await interaction.result();
-    console.log(outcome.status, outcome.snapshot.data.wait_reason);
-    if (outcome.status === "waiting") {
-      console.log("Desktop control ID:", outcome.pending?.desktop_control_id);
-      console.log(
-        "Other obligations:",
-        outcome.pendingApprovals,
-        outcome.pendingCalls,
-      );
-      const control = await client.api.runs
-        .ref(outcome.runId)
-        .desktopControl.get();
-      console.log("User-origin control:", control.data);
-    }
-  } finally {
-    await interaction.close();
-  }
-} finally {
-  client.close();
-}
-```
-
-The nullable `desktopControl.get()` selects **user-origin** control. An authorized application can explicitly open a viewing context with `.create({mount:"desk",reason:"Inspect the current task"})`, then call `client.api.desktopAssistance.ref(id).requestControl()` to request safe suspension. Request admission returns metadata, not input authority. Service seals at a complete model boundary and enforces mount permissions, provider support and target fences. A completed Run can allow idle control without creating another Run on handback.
-
-An interactive viewer separately calls `view({session_id,epoch})` for read-only access or `control({session_id,epoch})` for the admitted controller. Here `session_id` is a browser-session token of 20–72 letters/digits/underscore/hyphen, **not** a Service `sess_` resource; epoch is a nonnegative integer. Access responses contain sensitive viewer credentials: retain them only for the viewer, respect `Cache-Control:no-store`, and keep passwords and URLs out of logs. Renewal is an explicit `{query:{renew:true}}` option on view/control, never an SDK timer. `disconnect({session_id,epoch})` revokes that browser's grants without answering a tool or resuming execution.
-
-After the human finishes and explicitly confirms handback, the application calls `complete({session_id,epoch,outcome:"completed",note:"Finished the requested action"})`. Completion revokes grants, confirms cleanup and stores the outcome; it does not start execution. Once user-origin control reports `ready_to_resume`, an explicit desktop-only continuation can use this fragment with the existing client and reviewed Run ID:
-
-```js
-const run = client.runs.ref(runId);
-const snapshot = await run.get();
-const control = await client.api.runs.ref(runId).desktopControl.get();
-if (
-  snapshot.data.status !== "waiting" ||
-  snapshot.data.wait_reason !== "desktop_control" ||
-  snapshot.data.pending === null ||
-  snapshot.data.pending.desktop_control_id !== control.data?.id ||
-  control.data?.state !== "ready_to_resume" ||
-  snapshot.data.pending.approvals.length !== 0 ||
-  snapshot.data.pending.calls.length !== 0
-)
-  throw new Error("Review the stored handback and complete pending batch.");
-const successor = await run.resume({});
-try {
-  console.log((await successor.result()).status);
-} finally {
-  await successor.close();
-}
-```
-
-`resume({})` sends `{approvals:{},calls:{}}`; Service validates idle-last-waiting eligibility and stored completion. Mixed waits still need all ordinary answers. Agent-requested `request_desktop_assistance` is a deferred call instead: read it with `runs.ref(runId).desktopAssistance.ref(callId).get()`, complete its assistance lifecycle, then submit its exact persisted `outcome` with `returned(outcome)` under that tool-call ID alongside every other pending answer. Never fabricate that outcome. Local observation close, browser disconnect, lease expiry or uncertain cleanup does not authorize handback. The SDK never acquires, renews, resumes, retries control or follows a successor automatically.
+Historical sealed Runs can contain `wait_reason:"desktop_control"` and `pending.desktop_control_id`; those records are read-only historical projections. Current pending contains approvals and calls. Do not treat a historical ID as authority to operate or resume desktop control. The SDK does not automatically acquire, renew, hand back, resume, or retry mutations.

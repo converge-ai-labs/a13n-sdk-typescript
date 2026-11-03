@@ -228,7 +228,7 @@ try {
 
 Configuration is proxy-only. Omit mode to use the Service default; null config and native strategy fields are invalid. An empty config is valid. Search, list, describe, groups and call names plus result/byte limits remain Service-validated.
 
-`groups:{}` disables grouping. A named group such as `{policies:{description:"Search approved policy tools",connections:[connectionId]}}` groups tools from an already selected Connection; optional `plugins` and `platform` select their native sources. Grouping grants no source authority. Each group requires a nonblank description, and Service checks duplicate/unknown sources. `tool_search:{}` selects the native defaults; an omitted/null Run override inherits the revision, while a non-null override **replaces the whole block**, including groups. The SDK implements no tool search engine, source selection fallback or provider execution.
+`groups:{}` uses automatic grouping of eligible sources; `exclude_connections` and `exclude_platform` narrow automatic selection. A named group such as `{policies:{description:"Search approved policy tools",connections:[connectionId]}}` groups tools from an already selected Connection; optional `plugins` and `platform` select their native sources. Grouping grants no source authority. Each group requires a nonblank description, and Service checks duplicate/unknown sources. `tool_search:{}` selects the native defaults; an omitted/null Run override inherits the revision, while a non-null override **replaces the whole block**, including groups. The SDK implements no tool search engine, source selection fallback or provider execution.
 
 ## Read the latest completed context contribution
 

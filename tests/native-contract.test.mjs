@@ -331,7 +331,7 @@ test("pinned native surface exposes bounded run discovery and preserves media-po
     Object.values(spec.paths).flatMap((item) =>
       Object.values(item).filter((op) => op.operationId),
     ).length,
-    341,
+    356,
   );
   const schemas = spec.components.schemas;
   assert.equal(schemas.RunOptions?.properties?.configuration, undefined); // Input and output remain distinct.

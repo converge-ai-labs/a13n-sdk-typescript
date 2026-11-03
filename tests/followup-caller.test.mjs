@@ -49,7 +49,38 @@ for (const optional of [false, true])
             "max_results" in body.config.tool_search.config
           )
             return error(400);
-          saved = body.config;
+          assert.deepEqual(
+            body.config.tool_search,
+            revisionNumber === 0
+              ? {
+                  config: {
+                    mode: "proxy",
+                    search_name: "search_proxy_tools",
+                    call_name: "call_proxy_tool",
+                    max_results: 10,
+                    max_search_bytes: 32768,
+                  },
+                  groups: {},
+                }
+              : { config: {}, groups: {} },
+          );
+          saved = {
+            ...body.config,
+            tool_search: {
+              groups: body.config.tool_search.groups,
+              config: {
+                mode: "proxy",
+                search_name: "discover_tools",
+                call_name: "call_tool",
+                max_results: 10,
+                max_search_bytes: 32768,
+                describe_name: "describe_tool",
+                list_name: "list_tools",
+                groups_name: "list_tool_groups",
+                ...body.config.tool_search.config,
+              },
+            },
+          };
           return json({ id: `revision-${++revisionNumber}` }, 201);
         }
         if (path.startsWith("/agents/created/revisions/revision-"))
@@ -61,21 +92,18 @@ for (const optional of [false, true])
           const selector = url.searchParams.get(keys[0]);
           if (selector.startsWith("missing-")) return error(404);
           if (["failure-run", "failure-thread"].includes(selector))
-            return json(null);
+            return json({
+              run_id: "failure-run",
+              record_id: null,
+              input_tokens: null,
+              output_tokens: null,
+              context_window_tokens: null,
+            });
           assert.ok(["run", "record", "thread"].includes(selector));
           return json(contribution);
         }
         if (path === "/runs/run")
           return json({ id: "run", thread_id: "thread" });
-        if (
-          [
-            "/runs/run/desktop-control",
-            "/runs/failure-run/desktop-control",
-          ].includes(path)
-        ) {
-          assert.equal(request.method, "GET");
-          return json(null);
-        }
         if (path === "/threads") {
           const body = await request.json();
           assert.equal(body.agent_id, "original");

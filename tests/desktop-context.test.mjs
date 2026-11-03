@@ -14,117 +14,106 @@ const options = (fetch) => ({
   fetch,
   maxReadRetries: 0,
 });
-const view = {
-  id: "assistance",
-  run_id: "run_one",
-  tool_call_id: null,
-  cause: "user",
-  environment_id: "environment",
-  mount: "desktop",
-  reason: "Inspect",
-  state: "awaiting_user",
-  epoch: 0,
-  controller_id: null,
-  deadline: "2026-10-18T00:00:00Z",
-  lease_expires_at: null,
-  failure: null,
-  outcome: null,
-};
-const control = { session_id: "browser_session_00000001", epoch: 0 };
 const encode = (type, data) =>
   `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
 
-test("nine follow-up operations preserve native selectors, scope, no-store metadata and nullable reads", async () => {
+test("environment desktop operations preserve paths, fences, metadata and no mutation replay", async () => {
   const seen = [];
   const client = createClient(
     options(async (request) => {
-      const url = new URL(request.url);
-      const path = url.pathname;
-      assert.equal(request.headers.get("X-Workspace-ID"), "workspace");
-      const body =
-        request.method === "POST" && request.body
-          ? await request.json()
-          : undefined;
       seen.push({
         method: request.method,
-        path,
-        query: [...url.searchParams],
-        body,
+        path: new URL(request.url).pathname,
+        match: request.headers.get("If-Match"),
+        workspace: request.headers.get("X-Workspace-ID"),
+        body: request.body ? await request.json() : undefined,
       });
-      const data = path.endsWith("/context")
-        ? null
-        : path.endsWith("/desktop-control") && request.method === "GET"
-          ? null
-          : path.endsWith("/control") || path.endsWith("/view")
-            ? {
-                assistance: view,
-                mode: path.endsWith("/view") ? "view" : "control",
-                websocket_url: "wss://desktop.test/direct",
-                password: "test-only",
-                expires_in_seconds: 60,
-              }
-            : view;
-      return Response.json(data, {
-        headers: {
-          "Cache-Control": "no-store",
-          "X-Request-Id": "desktop-read",
+      return Response.json(
+        { ok: true },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Request-Id": "desktop-read",
+          },
         },
-      });
+      );
     }),
   );
   try {
-    const run = client.api.runs.ref("run /雪");
-    assert.equal((await run.desktopControl.get()).data, null);
-    assert.deepEqual(
-      (await run.desktopControl.create({ mount: "desktop", reason: "Inspect" }))
-        .data,
-      view,
+    const environment = client.api.environments.ref("env /雪");
+    const metadata = await environment.desktopControl.get();
+    assert.equal(metadata.response.headers.get("Cache-Control"), "no-store");
+    await environment.desktopControl.takeover(
+      { thread_id: "thread", lease_seconds: 60 },
+      { ifMatch: '"v1"' },
     );
-    await run.desktopAssistance.ref("call /雪").get();
-    const assistance = client.api.desktopAssistance.ref("assist /雪");
-    await assistance.requestControl();
-    const access = await assistance.view(control, { query: { renew: false } });
-    assert.equal(access.response.headers.get("Cache-Control"), "no-store");
-    assert.equal(access.response.headers.get("X-Request-Id"), "desktop-read");
-    assert.equal(access.data.password, "test-only");
-    await assistance.control(control, { query: { renew: true } });
-    await assistance.disconnect(control);
-    await assistance.complete({ ...control, outcome: "abandoned", note: "" });
-    assert.equal(
-      (
-        await client.api.usage.context.get({
-          query: { record_id: "record /雪" },
-        })
-      ).data,
-      null,
-    );
-    assert.equal(seen.length, 9);
-    assert.equal(
-      seen[0].path,
-      "/api/v1/runs/run%20%2F%E9%9B%AA/desktop-control",
-    );
-    assert.ok(seen[2].path.endsWith("/desktop-assistance/call%20%2F%E9%9B%AA"));
-    assert.ok(seen[3].path.endsWith("/assist%20%2F%E9%9B%AA/request-control"));
-    assert.equal(seen[3].body, undefined);
-    assert.deepEqual(seen[4].query, [["renew", "false"]]);
-    assert.deepEqual(seen[5].query, [["renew", "true"]]);
-    for (const index of [4, 5, 6]) assert.deepEqual(seen[index].body, control);
-    assert.deepEqual(seen[7].body, {
-      ...control,
-      outcome: "abandoned",
-      note: "",
+    await environment.desktopControl.renew({
+      episode: 1,
+      generation: 2,
+      lease_seconds: 60,
     });
-    assert.deepEqual(seen[8].query, [["record_id", "record /雪"]]);
+    await environment.desktopViewer({
+      mode: "control",
+      episode: 1,
+      generation: 2,
+    });
+    await environment.desktopControl.handback({ ifMatch: '"v2"' });
+    assert.deepEqual(
+      seen.map(({ method, path, match, body, workspace }) => ({
+        method,
+        path,
+        match,
+        body,
+        workspace,
+      })),
+      [
+        {
+          method: "GET",
+          path: "/api/v1/environments/env%20%2F%E9%9B%AA/desktop-control",
+          match: null,
+          body: undefined,
+          workspace: "workspace",
+        },
+        {
+          method: "POST",
+          path: "/api/v1/environments/env%20%2F%E9%9B%AA/desktop-control/takeover",
+          match: '"v1"',
+          body: { thread_id: "thread", lease_seconds: 60 },
+          workspace: "workspace",
+        },
+        {
+          method: "POST",
+          path: "/api/v1/environments/env%20%2F%E9%9B%AA/desktop-control/renew",
+          match: null,
+          body: { episode: 1, generation: 2, lease_seconds: 60 },
+          workspace: "workspace",
+        },
+        {
+          method: "POST",
+          path: "/api/v1/environments/env%20%2F%E9%9B%AA/desktop-viewer",
+          match: null,
+          body: { mode: "control", episode: 1, generation: 2 },
+          workspace: "workspace",
+        },
+        {
+          method: "POST",
+          path: "/api/v1/environments/env%20%2F%E9%9B%AA/desktop-control/handback",
+          match: '"v2"',
+          body: undefined,
+          workspace: "workspace",
+        },
+      ],
+    );
   } finally {
     client.close();
   }
 });
 
-test("desktop mutation errors retain Service authority evidence without lease retry or implicit resume", async () => {
-  const seen = [];
+test("desktop conflict preserves authority evidence without retry", async () => {
+  let calls = 0;
   const client = createClient(
-    options(async (request) => {
-      seen.push(request.url);
+    options(async () => {
+      calls++;
       return Response.json(
         {
           error: {
@@ -140,14 +129,16 @@ test("desktop mutation errors retain Service authority evidence without lease re
   );
   try {
     await assert.rejects(
-      client.api.desktopAssistance.ref("assistance").control(control),
+      client.api.environments
+        .ref("environment")
+        .desktopControl.takeover({ thread_id: "thread" }, { ifMatch: '"v1"' }),
       (error) =>
         error instanceof ApiError &&
         error.status === 409 &&
         error.details.reason === "desktop_not_ready" &&
         error.requestId === "desktop-conflict",
     );
-    assert.equal(seen.length, 1);
+    assert.equal(calls, 1);
   } finally {
     client.close();
   }
@@ -302,7 +293,7 @@ test("tool_search omission/null/empty/proxy selections pass unchanged through re
 });
 
 for (const raw of [false, true])
-  test(`desktop-only waiting ends finite exact Run and explicit empty resume is preserved (raw=${raw})`, async () => {
+  test(`historical desktop waiting ends finite exact Run without implicit mutation (raw=${raw})`, async () => {
     const waiting = {
       ...sessionRun,
       status: "waiting",
@@ -336,29 +327,6 @@ for (const raw of [false, true])
             { headers: { "Content-Type": "text/event-stream" } },
           );
         }
-        if (path.endsWith("/complete")) {
-          assert.deepEqual(await request.json(), {
-            ...control,
-            outcome: "completed",
-          });
-          return Response.json({
-            ...view,
-            state: "ready_to_resume",
-            outcome: { status: "completed" },
-          });
-        }
-        if (path.endsWith("/resume")) {
-          assert.deepEqual(await request.json(), { approvals: {}, calls: {} });
-          return Response.json(
-            {
-              ...sessionRun,
-              id: "run_successor",
-              parent_run_id: "run_one",
-              status: "accepted",
-            },
-            { status: 201 },
-          );
-        }
         throw new Error(`Unexpected ${path}`);
       }),
     );
@@ -379,27 +347,17 @@ for (const raw of [false, true])
         false,
       );
       if (raw) assert.equal(cancelled, 1);
-      await client.api.desktopAssistance
-        .ref("assistance")
-        .complete({ ...control, outcome: "completed" });
+      await interaction.close();
       assert.equal(
         requests.some((x) => x.endsWith("/resume")),
         false,
       );
-      const next = await outcome.run.resume(
-        {},
-        { idempotencyKey: "explicit-desktop-resume" },
-      );
-      assert.equal(next.identity.runId, "run_successor");
-      await next.close();
-      await interaction.close();
-      assert.equal(requests.filter((x) => x.endsWith("/resume")).length, 1);
     } finally {
       client.close();
     }
   });
 
-test("agent assistance resumes only the caller's exact persisted outcome plus other pending answers", async () => {
+test("explicit deferred call answers preserve caller values alongside other pending answers", async () => {
   const outcome = { status: "completed", note: "Human fixed the screen" };
   let calls = 0;
   const client = createClient(
@@ -434,7 +392,6 @@ test("agent assistance resumes only the caller's exact persisted outcome plus ot
 test("Session validates desktop waiting, optional nullable pending ID and tool_search configuration without changing native data", async () => {
   for (const pending of [
     { approvals: [], calls: [] },
-    { approvals: [], calls: [], desktop_control_id: null },
     { approvals: [], calls: [], desktop_control_id: "assistance" },
   ]) {
     const data = {
@@ -476,6 +433,7 @@ test("Session validates desktop waiting, optional nullable pending ID and tool_s
   }
 });
 for (const invalid of [
+  { pending: { approvals: [], calls: [], desktop_control_id: null } },
   { pending: { approvals: [], calls: [], desktop_control_id: 1 } },
   { pending: { approvals: [], desktop_control_id: "assistance" } },
   {
