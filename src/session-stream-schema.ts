@@ -474,7 +474,12 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "message" | "child_result" | "tool_result" | "browser_handback";
+      kind:
+        | "message"
+        | "child_result"
+        | "tool_result"
+        | "browser_handback"
+        | "desktop_handback";
       options: components["schemas"]["RunOptions"];
       /** Origin Run Id */
       origin_run_id: string | null;
@@ -704,6 +709,18 @@ export interface components {
       run_id: string;
       /** Thread Id */
       thread_id: string;
+    };
+    /**
+     * HistoricalDesktopPending
+     * @description Read-only projection of sealed desktop suspensions predating Computer-scoped control.
+     */
+    HistoricalDesktopPending: {
+      /** Approvals */
+      approvals: components["schemas"]["PendingCall"][];
+      /** Calls */
+      calls: components["schemas"]["PendingCall"][];
+      /** Desktop Control Id */
+      desktop_control_id: string;
     };
     /** InitialRun */
     InitialRun: {
@@ -1102,11 +1119,6 @@ export interface components {
       approvals: components["schemas"]["PendingCall"][];
       /** Calls */
       calls: components["schemas"]["PendingCall"][];
-      /**
-       * Desktop Control Id
-       * @default null
-       */
-      desktop_control_id?: string | null;
     };
     /** PendingCall */
     PendingCall: {
@@ -1323,7 +1335,11 @@ export interface components {
       output: components["schemas"]["JsonValue"] | null;
       /** Parent Run Id */
       parent_run_id: string | null;
-      pending: components["schemas"]["Pending"] | null;
+      /** Pending */
+      pending:
+        | components["schemas"]["Pending"]
+        | components["schemas"]["HistoricalDesktopPending"]
+        | null;
       /** Principal Id */
       principal_id: string;
       resume: components["schemas"]["Resume"] | null;
@@ -1708,6 +1724,7 @@ export interface components {
       | "child_result"
       | "tool_result"
       | "browser_handback"
+      | "desktop_handback"
       | "spawned";
     /** UrlPart */
     UrlPart: {
