@@ -32,7 +32,7 @@ export async function acceptFollowup(client, settings) {
       },
       groups: {},
     },
-    { config: { mode: "native", strategy: null }, groups: {} },
+    { config: {}, groups: {} },
   ]) {
     const current = await agent.get();
     const ifMatch = current.response.headers.get("ETag");
@@ -42,7 +42,20 @@ export async function acceptFollowup(client, settings) {
       { ifMatch },
     );
     const saved = await agent.revisions.ref(revision.data.id).get();
-    assert.deepEqual(saved.data.config.tool_search, tool_search);
+    assert.deepEqual(saved.data.config.tool_search, {
+      config: {
+        mode: "proxy",
+        search_name: "discover_tools",
+        call_name: "call_tool",
+        max_results: 10,
+        max_search_bytes: 32768,
+        describe_name: "describe_tool",
+        list_name: "list_tools",
+        groups_name: "list_tool_groups",
+        ...tool_search.config,
+      },
+      groups: tool_search.groups,
+    });
   }
   const current = await agent.get();
   const ifMatch = current.response.headers.get("ETag");
@@ -61,7 +74,7 @@ export async function acceptFollowup(client, settings) {
   );
   const report = {
     agentId: created.data.id,
-    toolSearch: "passed: proxy/native revision roundtrip and mixed shape 400",
+    toolSearch: "passed: proxy/default revision roundtrip and native shape 400",
     context:
       "not_run: set A13N_MODEL_RECORD to a completed main-Agent contribution",
     failedContext:
@@ -106,9 +119,6 @@ export async function acceptFollowup(client, settings) {
     }
     if (settings.expectUnknownCapacity)
       assert.equal(record.data.context_window_tokens, null);
-    const control = await client.api.runs.ref(run.data.id).desktopControl.get();
-    assert.equal(control.response.status, 200);
-    assert.equal(control.data, null);
     await assert.rejects(
       client.api.usage.context.get({
         query: { run_id: run.data.id, thread_id: run.data.thread_id },
@@ -120,7 +130,6 @@ export async function acceptFollowup(client, settings) {
       runId: run.data.id,
       threadId: run.data.thread_id,
       contribution: record.data,
-      desktopControl: "passed: 200 null",
     };
   }
   if (settings.failurePrompt) {
@@ -139,15 +148,16 @@ export async function acceptFollowup(client, settings) {
       ]) {
         const usage = await client.api.usage.context.get({ query });
         assert.equal(usage.response.status, 200);
-        assert.equal(usage.data, null);
+        assert.deepEqual(usage.data, {
+          run_id: result.runId,
+          record_id: null,
+          input_tokens: null,
+          output_tokens: null,
+          context_window_tokens: null,
+        });
       }
-      const control = await client.api.runs
-        .ref(result.runId)
-        .desktopControl.get();
-      assert.equal(control.response.status, 200);
-      assert.equal(control.data, null);
       report.failedContext = {
-        status: "passed: 200 null",
+        status: "passed: 200 with unknown fixture contribution and capacity",
         runId: result.runId,
         threadId: result.threadId,
       };

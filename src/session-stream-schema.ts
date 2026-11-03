@@ -223,8 +223,57 @@ export interface components {
       url?: never;
       value?: never;
     };
+    /**
+     * AutomaticToolSearch
+     * @description Group Service-owned sources individually, following the agent's selections.
+     */
+    AutomaticToolSearch: {
+      /**
+       * Capabilities
+       * @default [
+       *       "browser",
+       *       "computer"
+       *     ]
+       */
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
+      /**
+       * Connections
+       * @default true
+       */
+      connections?: boolean;
+      /**
+       * Exclude Connections
+       * @default []
+       */
+      exclude_connections?: string[];
+      /**
+       * Exclude Platform
+       * @default false
+       */
+      exclude_platform?: boolean;
+    };
+    /** BrowserBinding */
+    BrowserBinding: {
+      /** Browser Id */
+      browser_id: string;
+      /**
+       * Preparation
+       * @default first_use
+       * @enum {string}
+       */
+      preparation?: "first_use" | "run_start";
+      /**
+       * Tab Access
+       * @default thread
+       * @enum {string}
+       */
+      tab_access?: "global" | "thread";
+    };
     /** @constant */
     BuiltinSkillName: "platform-operations";
+    /** @enum {string} */
+    BuiltinToolsetKey:
+      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /**
@@ -457,7 +506,12 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "message" | "child_result" | "tool_result";
+      kind:
+        | "message"
+        | "child_result"
+        | "tool_result"
+        | "browser_handback"
+        | "desktop_handback";
       options: components["schemas"]["RunOptions"];
       /** Origin Run Id */
       origin_run_id: string | null;
@@ -687,6 +741,18 @@ export interface components {
       run_id: string;
       /** Thread Id */
       thread_id: string;
+    };
+    /**
+     * HistoricalDesktopPending
+     * @description Read-only projection of sealed desktop suspensions predating Computer-scoped control.
+     */
+    HistoricalDesktopPending: {
+      /** Approvals */
+      approvals: components["schemas"]["PendingCall"][];
+      /** Calls */
+      calls: components["schemas"]["PendingCall"][];
+      /** Desktop Control Id */
+      desktop_control_id: string;
     };
     /** InitialRun */
     InitialRun: {
@@ -1085,11 +1151,6 @@ export interface components {
       approvals: components["schemas"]["PendingCall"][];
       /** Calls */
       calls: components["schemas"]["PendingCall"][];
-      /**
-       * Desktop Control Id
-       * @default null
-       */
-      desktop_control_id?: string | null;
     };
     /** PendingCall */
     PendingCall: {
@@ -1267,6 +1328,8 @@ export interface components {
       agent_revision_id: string;
       /** Attempts */
       attempts: number;
+      /** @default null */
+      browser_binding?: components["schemas"]["BrowserBinding"] | null;
       /** Cancel Requested At */
       cancel_requested_at: string | null;
       /**
@@ -1304,7 +1367,11 @@ export interface components {
       output: components["schemas"]["JsonValue"] | null;
       /** Parent Run Id */
       parent_run_id: string | null;
-      pending: components["schemas"]["Pending"] | null;
+      /** Pending */
+      pending:
+        | components["schemas"]["Pending"]
+        | components["schemas"]["HistoricalDesktopPending"]
+        | null;
       /** Principal Id */
       principal_id: string;
       resume: components["schemas"]["Resume"] | null;
@@ -1457,6 +1524,8 @@ export interface components {
       entries: components["schemas"]["EntryView"][];
       last_run: components["schemas"]["RunView"] | null;
       thread: components["schemas"]["ThreadView"];
+      /** Unavailable */
+      unavailable?: components["schemas"]["UnavailableConfiguration"][];
     };
     /** ThreadView */
     ThreadView: {
@@ -1562,6 +1631,8 @@ export interface components {
      * @description Presentation of already-selected sources, composed by Harness once per agent.
      */
     ToolSearch: {
+      /** @default null */
+      automatic?: components["schemas"]["AutomaticToolSearch"] | null;
       config?: components["schemas"]["ToolSearchConfig"];
       /** Groups */
       groups?: {
@@ -1621,7 +1692,7 @@ export interface components {
        * Capabilities
        * @default []
        */
-      capabilities?: ("environment" | "web")[];
+      capabilities?: components["schemas"]["BuiltinToolsetKey"][];
       /**
        * Connections
        * @default []
@@ -1655,7 +1726,7 @@ export interface components {
       permission?: components["schemas"]["ToolPermissionSetting"];
     };
     ToolsetKey:
-      | ("files" | "shell" | "computer" | "web" | "memory" | "assets")
+      | components["schemas"]["BuiltinToolsetKey"]
       | components["schemas"]["PlatformGroup"];
     /** ToolsetSelection */
     ToolsetSelection: {
@@ -1680,7 +1751,25 @@ export interface components {
       | "resume"
       | "child_result"
       | "tool_result"
+      | "browser_handback"
+      | "desktop_handback"
       | "spawned";
+    /**
+     * UnavailableConfiguration
+     * @description A collection member whose stored configuration requires operator repair.
+     */
+    UnavailableConfiguration: {
+      /** Id */
+      id: string;
+      /** Kind */
+      kind: string;
+      /**
+       * Reason
+       * @default configuration_unavailable
+       * @constant
+       */
+      reason?: "configuration_unavailable";
+    };
     /** UrlPart */
     UrlPart: {
       /**

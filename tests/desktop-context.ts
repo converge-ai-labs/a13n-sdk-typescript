@@ -66,42 +66,40 @@ void [
   nullConfig,
   missingDescription,
 ];
-const control: Schema["Control"] = {
-  session_id: "browser_session_00000001",
-  epoch: 0,
-};
-void client.api.runs
-  .ref("run")
-  .desktopControl.create({ mount: "desktop", reason: "Inspect" });
-void client.api.runs
-  .ref("run")
-  .desktopControl.get()
-  .then(({ data }) => {
-    const value: Schema["View"] | null = data;
-    void value;
-  });
-void client.api.runs.ref("run").desktopAssistance.ref("call").get();
-const assistance = client.api.desktopAssistance.ref("assistance");
-void assistance.requestControl();
-void assistance.view(control, { query: { renew: false } });
-void assistance.control(control, { query: { renew: true } });
-void assistance.disconnect(control);
-void assistance.complete({ ...control, outcome: "completed", note: "Done" });
-void assistance.control({
-  session_id: "browser_session_00000001",
-  // @ts-expect-error A fenced epoch is required; null is not an epoch.
-  epoch: null,
+const desktop = client.api.environments.ref("environment");
+void desktop.desktopControl.get();
+void desktop.desktopControl.takeover(
+  { thread_id: "thread", lease_seconds: 60 },
+  { ifMatch: '"v1"' },
+);
+void desktop.desktopControl.renew({
+  episode: 1,
+  generation: 2,
+  lease_seconds: 60,
 });
-// @ts-expect-error Completion is bounded to native outcomes.
-void assistance.complete({ ...control, outcome: "success" });
-// @ts-expect-error Open control has its own Request body, not browser credentials.
-void client.api.runs.ref("run").desktopControl.create(control);
-const wait: Schema["Pending"] = {
+void desktop.desktopControl.handback({ ifMatch: '"v2"' });
+void desktop.desktopViewer({ mode: "view" });
+void desktop.desktopViewer({ mode: "control", episode: 1, generation: 2 });
+void desktop.desktopControl.takeover(
+  // @ts-expect-error Desktop takeover requires a thread, not a browser session.
+  { session_id: "browser" },
+  { ifMatch: '"v1"' },
+);
+// @ts-expect-error Renew requires both fences.
+void desktop.desktopControl.renew({ episode: 1 });
+const wait: Schema["Pending"] = { approvals: [], calls: [] };
+const historical: Schema["HistoricalDesktopPending"] = {
   approvals: [],
   calls: [],
   desktop_control_id: "control",
 };
-void wait;
+const invalidHistorical: Schema["HistoricalDesktopPending"] = {
+  approvals: [],
+  calls: [],
+  // @ts-expect-error Historical identifiers are required strings.
+  desktop_control_id: null,
+};
+void [wait, historical, invalidHistorical];
 void client.runs.ref("waiting").resume({});
 void client.api.usage.context.get({ query: { thread_id: "thread" } });
 void client.api.usage.context.get({ query: { run_id: "run" } });
