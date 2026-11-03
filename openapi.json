@@ -15440,6 +15440,20 @@
           "authentication": {
             "$ref": "#/components/schemas/Authentication"
           },
+          "browser_recipe_schema": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Browser Recipe Schema"
+          },
           "catalog_providers": {
             "anyOf": [
               {
@@ -15626,6 +15640,17 @@
           "supports_test": {
             "title": "Supports Test",
             "type": "boolean"
+          },
+          "supports_viewer": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supports Viewer"
           },
           "type": {
             "title": "Type",
