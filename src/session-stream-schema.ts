@@ -27,8 +27,8 @@ export interface components {
      * AgentOverride
      * @description What one run changes of its revision's configuration; an omitted or null field keeps the revision's.
      *
-     *     `toolsets` replaces whole toolsets; `retries` and each subagent edge replace the fields they set, and a null
-     *     edge removes it; every other field replaces the revision's value.
+     *     `toolsets` replaces whole toolsets; `retries` replaces supplied members.
+     *     Every other field, including `subagents`, replaces the whole value.
      */
     AgentOverride: {
       /**
@@ -100,13 +100,8 @@ export interface components {
        * @default null
        */
       skills?: components["schemas"]["SkillSelection"][] | null;
-      /**
-       * Subagents
-       * @default null
-       */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentOverride"] | null;
-      } | null;
+      /** @default null */
+      subagents?: components["schemas"]["Subagents"] | null;
       /** @default null */
       tool_search?: components["schemas"]["ToolSearch"] | null;
       /**
@@ -179,8 +174,8 @@ export interface components {
     };
     /** AppReference */
     AppReference: {
-      /** Agent Revision Id */
-      agent_revision_id: string;
+      /** Agent Definition Id */
+      agent_definition_id: string;
       /** App Id */
       app_id: string;
       /** Connection Id */
@@ -477,6 +472,29 @@ export interface components {
       /** Run Id */
       run_id: string;
     };
+    /**
+     * DynamicSubagents
+     * @description Root-only task-specific delegation within the parent's capability boundary.
+     */
+    DynamicSubagents: {
+      /** Allowed Models */
+      allowed_models?: string[];
+      /**
+       * Default Model
+       * @default null
+       */
+      default_model?: string | null;
+      /**
+       * Default Thinking
+       * @default null
+       */
+      default_thinking?: string | boolean | null;
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+    };
     /** @enum {string} */
     EntryStatus: "pending" | "assigned" | "consumed" | "failed" | "withdrawn";
     /** EntryView */
@@ -647,6 +665,63 @@ export interface components {
       tools?: components["schemas"]["ToolExecutionOverride"] | null;
     };
     /**
+     * ExistingRunEnvironment
+     * @description Use this exact primary instance for the Run; absence never triggers allocation.
+     */
+    ExistingRunEnvironment: {
+      /** Environment Id */
+      environment_id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "existing";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /**
+       * Working Directory
+       * @default null
+       */
+      working_directory?: string | null;
+      template_id?: never;
+    };
+    /**
      * Failed
      * @description An explicit external tool failure, including an intentional unanswered question.
      */
@@ -705,6 +780,63 @@ export interface components {
       pending?: {
         [key: string]: components["schemas"]["_Assembly"];
       };
+    };
+    /**
+     * FreshRunEnvironment
+     * @description Reserve a primary instance for this accepted Run without changing Thread mounts.
+     */
+    FreshRunEnvironment: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "fresh";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /** Template Id */
+      template_id: string;
+      /**
+       * Working Directory
+       * @default null
+       */
+      working_directory?: string | null;
+      environment_id?: never;
     };
     /**
      * FrozenMemoryMount
@@ -1279,6 +1411,9 @@ export interface components {
         [key: string]: components["schemas"]["JsonValue"];
       };
     };
+    RunEnvironment:
+      | components["schemas"]["FreshRunEnvironment"]
+      | components["schemas"]["ExistingRunEnvironment"];
     /**
      * RunOptions
      * @description What a message may choose for the run it starts. A steer joins a run with the defaults or equal options.
@@ -1288,6 +1423,8 @@ export interface components {
       configuration?: components["schemas"]["RunConfiguration"] | null;
       /** @default null */
       context?: components["schemas"]["RequestContext"] | null;
+      /** @default null */
+      environment?: components["schemas"]["RunEnvironment"] | null;
       /** @default null */
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
@@ -1325,7 +1462,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       /** @default null */
@@ -1381,7 +1518,7 @@ export interface components {
        * Revision Selection
        * @enum {string}
        */
-      revision_selection: "pinned" | "default" | "inherited";
+      revision_selection: "pinned" | "default" | "inherited" | "snapshot";
       /** @default null */
       schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
@@ -1474,25 +1611,17 @@ export interface components {
       /** Sequence */
       sequence: number;
     };
-    /**
-     * SubagentOverride
-     * @description Replaces the fields it sets of an edge; an edge the revision lacks sets at least `agent_id`.
-     */
-    SubagentOverride: {
-      /**
-       * Agent Id
-       * @default null
-       */
-      agent_id?: string | null;
-      /** @default null */
-      context?: components["schemas"]["DelegationContextPolicy"] | null;
+    /** SubagentSelection */
+    SubagentSelection: {
+      /** Agent Id */
+      agent_id: string;
+      context?: components["schemas"]["DelegationContextPolicy"];
       /**
        * Description
        * @default null
        */
       description?: string | null;
-      /** @default null */
-      environment?: components["schemas"]["ChildEnvironmentPolicy"] | null;
+      environment?: components["schemas"]["ChildEnvironmentPolicy"];
       /**
        * Revision Id
        * @default null
@@ -1500,6 +1629,20 @@ export interface components {
       revision_id?: string | null;
       /** @default null */
       usage_limits?: components["schemas"]["UsageLimits"] | null;
+    };
+    /** Subagents */
+    Subagents: {
+      dynamic?: components["schemas"]["DynamicSubagents"];
+      /**
+       * Mode
+       * @default async
+       * @enum {string}
+       */
+      mode?: "inline" | "async";
+      /** Named */
+      named?: {
+        [key: string]: components["schemas"]["SubagentSelection"];
+      };
     };
     /** TextPart */
     TextPart: {
