@@ -1658,6 +1658,16 @@
             "title": "Presets",
             "type": "array"
           },
+          "session_ids": {
+            "items": {
+              "maxLength": 41,
+              "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Session Ids",
+            "type": "array"
+          },
           "started_after": {
             "anyOf": [
               {
@@ -19189,6 +19199,19 @@
             "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
             "title": "Run Id",
             "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "maxLength": 41,
+                "pattern": "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
           },
           "trace_id": {
             "pattern": "^[0-9a-f]{32}$",
