@@ -12120,6 +12120,11 @@ export interface components {
     };
     /** SessionCreate */
     SessionCreate: {
+      /**
+       * Auto Recreate Lost Environment
+       * @default true
+       */
+      auto_recreate_lost_environment?: boolean;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -12195,6 +12200,8 @@ export interface components {
     };
     /** SessionUpdate */
     SessionUpdate: {
+      /** Auto Recreate Lost Environment */
+      auto_recreate_lost_environment?: boolean;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -12206,6 +12213,8 @@ export interface components {
     };
     /** SessionView */
     SessionView: {
+      /** Auto Recreate Lost Environment */
+      auto_recreate_lost_environment: boolean;
       /** Cost */
       cost: string | null;
       /**
