@@ -9153,7 +9153,7 @@ var schema58 = {
       items: {
         anyOf: [
           { $ref: "#/$defs/MemoryMount" },
-          { $ref: "#/$defs/FrozenMemoryMount" },
+          { $ref: "#/$defs/RunMemoryMount" },
         ],
       },
       title: "Memory Mounts",
@@ -10427,90 +10427,101 @@ function validate145(
         ];
         return false;
       } else {
-        const _errs1 = errors;
-        for (const key0 in data) {
-          if (!(
-            key0 === "access" ||
-            key0 === "memory_id" ||
-            key0 === "name" ||
-            key0 === "recall" ||
-            key0 === "roots" ||
-            key0 === "space_id"
-          )) {
-            validate145.errors = [
-              {
-                instancePath,
-                schemaPath: "#/additionalProperties",
-                keyword: "additionalProperties",
-                params: { additionalProperty: key0 },
-                message: "must NOT have additional properties",
-              },
-            ];
-            return false;
-            break;
+        if (data.access !== void 0) {
+          const _errs1 = errors;
+          if (
+            !validate142(data.access, {
+              instancePath: instancePath + "/access",
+              parentData: data,
+              parentDataProperty: "access",
+              rootData,
+              dynamicAnchors,
+            })
+          ) {
+            vErrors =
+              vErrors === null
+                ? validate142.errors
+                : vErrors.concat(validate142.errors);
+            errors = vErrors.length;
           }
+          var valid0 = _errs1 === errors;
+        } else {
+          var valid0 = true;
         }
-        if (_errs1 === errors) {
-          if (data.access !== void 0) {
+        if (valid0) {
+          if (data.memory_id !== void 0) {
+            let data1 = data.memory_id;
             const _errs2 = errors;
-            if (
-              !validate142(data.access, {
-                instancePath: instancePath + "/access",
-                parentData: data,
-                parentDataProperty: "access",
-                rootData,
-                dynamicAnchors,
-              })
-            ) {
-              vErrors =
-                vErrors === null
-                  ? validate142.errors
-                  : vErrors.concat(validate142.errors);
-              errors = vErrors.length;
+            if (errors === _errs2) {
+              if (typeof data1 === "string") {
+                if (func4(data1) > 41) {
+                  validate145.errors = [
+                    {
+                      instancePath: instancePath + "/memory_id",
+                      schemaPath: "#/properties/memory_id/maxLength",
+                      keyword: "maxLength",
+                      params: { limit: 41 },
+                      message: "must NOT have more than 41 characters",
+                    },
+                  ];
+                  return false;
+                } else {
+                  if (!pattern3.test(data1)) {
+                    validate145.errors = [
+                      {
+                        instancePath: instancePath + "/memory_id",
+                        schemaPath: "#/properties/memory_id/pattern",
+                        keyword: "pattern",
+                        params: {
+                          pattern: "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                        },
+                        message:
+                          'must match pattern "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$"',
+                      },
+                    ];
+                    return false;
+                  }
+                }
+              } else {
+                validate145.errors = [
+                  {
+                    instancePath: instancePath + "/memory_id",
+                    schemaPath: "#/properties/memory_id/type",
+                    keyword: "type",
+                    params: { type: "string" },
+                    message: "must be string",
+                  },
+                ];
+                return false;
+              }
             }
             var valid0 = _errs2 === errors;
           } else {
             var valid0 = true;
           }
           if (valid0) {
-            if (data.memory_id !== void 0) {
-              let data1 = data.memory_id;
-              const _errs3 = errors;
-              if (errors === _errs3) {
-                if (typeof data1 === "string") {
-                  if (func4(data1) > 41) {
+            if (data.name !== void 0) {
+              let data2 = data.name;
+              const _errs4 = errors;
+              if (errors === _errs4) {
+                if (typeof data2 === "string") {
+                  if (!pattern5.test(data2)) {
                     validate145.errors = [
                       {
-                        instancePath: instancePath + "/memory_id",
-                        schemaPath: "#/properties/memory_id/maxLength",
-                        keyword: "maxLength",
-                        params: { limit: 41 },
-                        message: "must NOT have more than 41 characters",
+                        instancePath: instancePath + "/name",
+                        schemaPath: "#/properties/name/pattern",
+                        keyword: "pattern",
+                        params: { pattern: "^[a-z][a-z0-9-]{0,62}$" },
+                        message: 'must match pattern "^[a-z][a-z0-9-]{0,62}$"',
                       },
                     ];
                     return false;
-                  } else {
-                    if (!pattern3.test(data1)) {
-                      validate145.errors = [
-                        {
-                          instancePath: instancePath + "/memory_id",
-                          schemaPath: "#/properties/memory_id/pattern",
-                          keyword: "pattern",
-                          params: {
-                            pattern: "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
-                          },
-                          message:
-                            'must match pattern "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$"',
-                        },
-                      ];
-                      return false;
-                    }
                   }
                 } else {
                   validate145.errors = [
                     {
-                      instancePath: instancePath + "/memory_id",
-                      schemaPath: "#/properties/memory_id/type",
+                      instancePath: instancePath + "/name",
+                      schemaPath: "#/properties/name/type",
                       keyword: "type",
                       params: { type: "string" },
                       message: "must be string",
@@ -10519,181 +10530,144 @@ function validate145(
                   return false;
                 }
               }
-              var valid0 = _errs3 === errors;
+              var valid0 = _errs4 === errors;
             } else {
               var valid0 = true;
             }
             if (valid0) {
-              if (data.name !== void 0) {
-                let data2 = data.name;
-                const _errs5 = errors;
-                if (errors === _errs5) {
-                  if (typeof data2 === "string") {
-                    if (!pattern5.test(data2)) {
-                      validate145.errors = [
-                        {
-                          instancePath: instancePath + "/name",
-                          schemaPath: "#/properties/name/pattern",
-                          keyword: "pattern",
-                          params: { pattern: "^[a-z][a-z0-9-]{0,62}$" },
-                          message:
-                            'must match pattern "^[a-z][a-z0-9-]{0,62}$"',
-                        },
-                      ];
-                      return false;
-                    }
-                  } else {
-                    validate145.errors = [
-                      {
-                        instancePath: instancePath + "/name",
-                        schemaPath: "#/properties/name/type",
-                        keyword: "type",
-                        params: { type: "string" },
-                        message: "must be string",
-                      },
-                    ];
-                    return false;
-                  }
+              if (data.recall !== void 0) {
+                const _errs6 = errors;
+                if (typeof data.recall !== "boolean") {
+                  validate145.errors = [
+                    {
+                      instancePath: instancePath + "/recall",
+                      schemaPath: "#/properties/recall/type",
+                      keyword: "type",
+                      params: { type: "boolean" },
+                      message: "must be boolean",
+                    },
+                  ];
+                  return false;
                 }
-                var valid0 = _errs5 === errors;
+                var valid0 = _errs6 === errors;
               } else {
                 var valid0 = true;
               }
               if (valid0) {
-                if (data.recall !== void 0) {
-                  const _errs7 = errors;
-                  if (typeof data.recall !== "boolean") {
-                    validate145.errors = [
-                      {
-                        instancePath: instancePath + "/recall",
-                        schemaPath: "#/properties/recall/type",
-                        keyword: "type",
-                        params: { type: "boolean" },
-                        message: "must be boolean",
-                      },
-                    ];
-                    return false;
+                if (data.roots !== void 0) {
+                  let data4 = data.roots;
+                  const _errs8 = errors;
+                  if (errors === _errs8) {
+                    if (Array.isArray(data4)) {
+                      var valid1 = true;
+                      const len0 = data4.length;
+                      for (let i0 = 0; i0 < len0; i0++) {
+                        const _errs10 = errors;
+                        if (typeof data4[i0] !== "string") {
+                          validate145.errors = [
+                            {
+                              instancePath: instancePath + "/roots/" + i0,
+                              schemaPath: "#/properties/roots/items/type",
+                              keyword: "type",
+                              params: { type: "string" },
+                              message: "must be string",
+                            },
+                          ];
+                          return false;
+                        }
+                        var valid1 = _errs10 === errors;
+                        if (!valid1) {
+                          break;
+                        }
+                      }
+                    } else {
+                      validate145.errors = [
+                        {
+                          instancePath: instancePath + "/roots",
+                          schemaPath: "#/properties/roots/type",
+                          keyword: "type",
+                          params: { type: "array" },
+                          message: "must be array",
+                        },
+                      ];
+                      return false;
+                    }
                   }
-                  var valid0 = _errs7 === errors;
+                  var valid0 = _errs8 === errors;
                 } else {
                   var valid0 = true;
                 }
                 if (valid0) {
-                  if (data.roots !== void 0) {
-                    let data4 = data.roots;
-                    const _errs9 = errors;
-                    if (errors === _errs9) {
-                      if (Array.isArray(data4)) {
-                        var valid1 = true;
-                        const len0 = data4.length;
-                        for (let i0 = 0; i0 < len0; i0++) {
-                          const _errs11 = errors;
-                          if (typeof data4[i0] !== "string") {
-                            validate145.errors = [
-                              {
-                                instancePath: instancePath + "/roots/" + i0,
-                                schemaPath: "#/properties/roots/items/type",
-                                keyword: "type",
-                                params: { type: "string" },
-                                message: "must be string",
-                              },
-                            ];
-                            return false;
-                          }
-                          var valid1 = _errs11 === errors;
-                          if (!valid1) {
-                            break;
-                          }
-                        }
+                  if (data.space_id !== void 0) {
+                    let data6 = data.space_id;
+                    const _errs12 = errors;
+                    const _errs13 = errors;
+                    let valid2 = false;
+                    const _errs14 = errors;
+                    if (typeof data6 !== "string") {
+                      const err0 = {
+                        instancePath: instancePath + "/space_id",
+                        schemaPath: "#/properties/space_id/anyOf/0/type",
+                        keyword: "type",
+                        params: { type: "string" },
+                        message: "must be string",
+                      };
+                      if (vErrors === null) {
+                        vErrors = [err0];
                       } else {
-                        validate145.errors = [
-                          {
-                            instancePath: instancePath + "/roots",
-                            schemaPath: "#/properties/roots/type",
-                            keyword: "type",
-                            params: { type: "array" },
-                            message: "must be array",
-                          },
-                        ];
-                        return false;
+                        vErrors.push(err0);
+                      }
+                      errors++;
+                    }
+                    var _valid0 = _errs14 === errors;
+                    valid2 = valid2 || _valid0;
+                    const _errs16 = errors;
+                    if (data6 !== null) {
+                      const err1 = {
+                        instancePath: instancePath + "/space_id",
+                        schemaPath: "#/properties/space_id/anyOf/1/type",
+                        keyword: "type",
+                        params: { type: "null" },
+                        message: "must be null",
+                      };
+                      if (vErrors === null) {
+                        vErrors = [err1];
+                      } else {
+                        vErrors.push(err1);
+                      }
+                      errors++;
+                    }
+                    var _valid0 = _errs16 === errors;
+                    valid2 = valid2 || _valid0;
+                    if (!valid2) {
+                      const err2 = {
+                        instancePath: instancePath + "/space_id",
+                        schemaPath: "#/properties/space_id/anyOf",
+                        keyword: "anyOf",
+                        params: {},
+                        message: "must match a schema in anyOf",
+                      };
+                      if (vErrors === null) {
+                        vErrors = [err2];
+                      } else {
+                        vErrors.push(err2);
+                      }
+                      errors++;
+                      validate145.errors = vErrors;
+                      return false;
+                    } else {
+                      errors = _errs13;
+                      if (vErrors !== null) {
+                        if (_errs13) {
+                          vErrors.length = _errs13;
+                        } else {
+                          vErrors = null;
+                        }
                       }
                     }
-                    var valid0 = _errs9 === errors;
+                    var valid0 = _errs12 === errors;
                   } else {
                     var valid0 = true;
-                  }
-                  if (valid0) {
-                    if (data.space_id !== void 0) {
-                      let data6 = data.space_id;
-                      const _errs13 = errors;
-                      const _errs14 = errors;
-                      let valid2 = false;
-                      const _errs15 = errors;
-                      if (typeof data6 !== "string") {
-                        const err0 = {
-                          instancePath: instancePath + "/space_id",
-                          schemaPath: "#/properties/space_id/anyOf/0/type",
-                          keyword: "type",
-                          params: { type: "string" },
-                          message: "must be string",
-                        };
-                        if (vErrors === null) {
-                          vErrors = [err0];
-                        } else {
-                          vErrors.push(err0);
-                        }
-                        errors++;
-                      }
-                      var _valid0 = _errs15 === errors;
-                      valid2 = valid2 || _valid0;
-                      const _errs17 = errors;
-                      if (data6 !== null) {
-                        const err1 = {
-                          instancePath: instancePath + "/space_id",
-                          schemaPath: "#/properties/space_id/anyOf/1/type",
-                          keyword: "type",
-                          params: { type: "null" },
-                          message: "must be null",
-                        };
-                        if (vErrors === null) {
-                          vErrors = [err1];
-                        } else {
-                          vErrors.push(err1);
-                        }
-                        errors++;
-                      }
-                      var _valid0 = _errs17 === errors;
-                      valid2 = valid2 || _valid0;
-                      if (!valid2) {
-                        const err2 = {
-                          instancePath: instancePath + "/space_id",
-                          schemaPath: "#/properties/space_id/anyOf",
-                          keyword: "anyOf",
-                          params: {},
-                          message: "must match a schema in anyOf",
-                        };
-                        if (vErrors === null) {
-                          vErrors = [err2];
-                        } else {
-                          vErrors.push(err2);
-                        }
-                        errors++;
-                        validate145.errors = vErrors;
-                        return false;
-                      } else {
-                        errors = _errs14;
-                        if (vErrors !== null) {
-                          if (_errs14) {
-                            vErrors.length = _errs14;
-                          } else {
-                            vErrors = null;
-                          }
-                        }
-                      }
-                      var valid0 = _errs13 === errors;
-                    } else {
-                      var valid0 = true;
-                    }
                   }
                 }
               }
@@ -10718,7 +10692,14 @@ function validate145(
   return errors === 0;
 }
 validate145.evaluated = {
-  props: true,
+  props: {
+    access: true,
+    memory_id: true,
+    name: true,
+    recall: true,
+    roots: true,
+    space_id: true,
+  },
   dynamicProps: false,
   dynamicItems: false,
 };
@@ -27402,7 +27383,13 @@ function validate127(
                                             valid11 = valid11 || _valid6;
                                             if (_valid6) {
                                               if (props3 !== true) {
-                                                props3 = true;
+                                                props3 = props3 || {};
+                                                props3.access = true;
+                                                props3.memory_id = true;
+                                                props3.name = true;
+                                                props3.recall = true;
+                                                props3.roots = true;
+                                                props3.space_id = true;
                                               }
                                             }
                                             if (!valid11) {

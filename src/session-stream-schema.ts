@@ -839,32 +839,6 @@ export interface components {
       environment_id?: never;
     };
     /**
-     * FrozenMemoryMount
-     * @description Host-resolved Space identity and roots, never accepted from a mount request.
-     */
-    FrozenMemoryMount: {
-      access: components["schemas"]["MemoryAccess"];
-      /** Memory Id */
-      memory_id: string;
-      /** Name */
-      name: string;
-      /**
-       * Recall
-       * @default true
-       */
-      recall?: boolean;
-      /**
-       * Roots
-       * @default []
-       */
-      roots?: string[];
-      /**
-       * Space Id
-       * @default null
-       */
-      space_id?: string | null;
-    };
-    /**
      * Gap
      * @description Output of a followed run was lost: its deltas are held until an `items` frame repairs it.
      */
@@ -1415,6 +1389,32 @@ export interface components {
       | components["schemas"]["FreshRunEnvironment"]
       | components["schemas"]["ExistingRunEnvironment"];
     /**
+     * RunMemoryMount
+     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     */
+    RunMemoryMount: {
+      access: components["schemas"]["MemoryAccess"];
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Recall
+       * @default true
+       */
+      recall?: boolean;
+      /**
+       * Roots
+       * @default []
+       */
+      roots?: string[];
+      /**
+       * Space Id
+       * @default null
+       */
+      space_id?: string | null;
+    };
+    /**
      * RunOptions
      * @description What a message may choose for the run it starts. A steer joins a run with the defaults or equal options.
      */
@@ -1498,7 +1498,7 @@ export interface components {
       /** Memory Mounts */
       memory_mounts: (
         | components["schemas"]["MemoryMount"]
-        | components["schemas"]["FrozenMemoryMount"]
+        | components["schemas"]["RunMemoryMount"]
       )[];
       options: components["schemas"]["RunOptions"];
       output: components["schemas"]["JsonValue"] | null;

@@ -128,6 +128,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["PUT", new RegExp("^/api/v1/media-understanding-defaults$")],
   ["GET", new RegExp("^/api/v1/memories$")],
   ["POST", new RegExp("^/api/v1/memories$")],
+  ["GET", new RegExp("^/api/v1/memories/guidance-presets$")],
   ["DELETE", new RegExp("^/api/v1/memories/[^/]+$")],
   ["GET", new RegExp("^/api/v1/memories/[^/]+$")],
   ["PATCH", new RegExp("^/api/v1/memories/[^/]+$")],

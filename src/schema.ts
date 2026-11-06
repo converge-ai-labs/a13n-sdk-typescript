@@ -1822,6 +1822,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/memories/guidance-presets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Memory Guidance Presets */
+    get: operations["list_memory_guidance_presets"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/memories/{memory_id}": {
     parameters: {
       query?: never;
@@ -8066,6 +8083,23 @@ export interface components {
       code: string;
       message: components["schemas"]["Preview"];
     };
+    /** FileMemoryGuidance */
+    FileMemoryGuidance: {
+      /**
+       * Custom
+       * @default
+       */
+      custom?: string;
+      /** System Override */
+      system_override?: string | null;
+      /** @default general */
+      system_preset?: components["schemas"]["SystemPreset"];
+      /**
+       * Timezone
+       * @default UTC
+       */
+      timezone?: string;
+    };
     /** FilesystemInventory */
     FilesystemInventory: {
       /** Filesystems */
@@ -8324,29 +8358,6 @@ export interface components {
       /** Working Directory */
       working_directory?: string | null;
       environment_id?: never;
-    };
-    /**
-     * FrozenMemoryMount
-     * @description Host-resolved Space identity and roots, never accepted from a mount request.
-     */
-    FrozenMemoryMount: {
-      access: components["schemas"]["MemoryAccess"];
-      /** Memory Id */
-      memory_id: string;
-      /** Name */
-      name: string;
-      /**
-       * Recall
-       * @default true
-       */
-      recall?: boolean;
-      /**
-       * Roots
-       * @default []
-       */
-      roots?: string[];
-      /** Space Id */
-      space_id?: string | null;
     };
     /**
      * GitHubSource
@@ -9081,6 +9092,7 @@ export interface components {
       description: string | null;
       /** File Count */
       file_count: number | null;
+      guidance: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide: string | null;
       /** History Bytes */
@@ -9088,7 +9100,7 @@ export interface components {
       /** Id */
       id: string;
       /** Inherited Guide */
-      inherited_guide: string;
+      inherited_guide: string | null;
       kind: components["schemas"]["MemoryKind"];
       /** Labels */
       labels: {
@@ -9131,6 +9143,7 @@ export interface components {
       always_load?: string[];
       /** Description */
       description?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide?: string | null;
       /** Labels */
@@ -9257,6 +9270,21 @@ export interface components {
       file: components["schemas"]["MemoryFile"] | null;
       /** Path */
       path: string;
+    };
+    /** MemoryGuidancePreset */
+    MemoryGuidancePreset: {
+      /** Description */
+      description: string;
+      id: components["schemas"]["SystemPreset"];
+      /** Name */
+      name: string;
+      /** System Guide */
+      system_guide: string;
+    };
+    /** MemoryGuidancePresets */
+    MemoryGuidancePresets: {
+      /** Items */
+      items: components["schemas"]["MemoryGuidancePreset"][];
     };
     /** @enum {string} */
     MemoryKind: "file" | "record";
@@ -9453,8 +9481,7 @@ export interface components {
       enabled: boolean;
       /** File Count */
       file_count: number;
-      /** Guide */
-      guide: string | null;
+      guidance: components["schemas"]["FileMemoryGuidance"];
       /** History Bytes */
       history_bytes: number;
       /** Id */
@@ -9498,8 +9525,7 @@ export interface components {
        * @default true
        */
       enabled?: boolean;
-      /** Guide */
-      guide?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"];
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -9523,8 +9549,7 @@ export interface components {
       description?: string | null;
       /** Enabled */
       enabled?: boolean | null;
-      /** Guide */
-      guide?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -9542,6 +9567,7 @@ export interface components {
       always_load?: string[] | null;
       /** Description */
       description?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide?: string | null;
       /** Labels */
@@ -11573,6 +11599,29 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /**
+     * RunMemoryMount
+     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     */
+    RunMemoryMount: {
+      access: components["schemas"]["MemoryAccess"];
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Recall
+       * @default true
+       */
+      recall?: boolean;
+      /**
+       * Roots
+       * @default []
+       */
+      roots?: string[];
+      /** Space Id */
+      space_id?: string | null;
+    };
     /** RunMetrics */
     RunMetrics: {
       /** Average Duration Seconds */
@@ -11764,7 +11813,7 @@ export interface components {
       /** Memory Mounts */
       memory_mounts: (
         | components["schemas"]["MemoryMount"]
-        | components["schemas"]["FrozenMemoryMount"]
+        | components["schemas"]["RunMemoryMount"]
       )[];
       options: components["schemas"]["RunOptions-Output"];
       output: components["schemas"]["JsonValue"] | null;
@@ -12950,6 +12999,8 @@ export interface components {
       /** Thread Count */
       thread_count?: number | null;
     };
+    /** @enum {string} */
+    SystemPreset: "general" | "journal";
     /** Template */
     Template: {
       config: components["schemas"]["TemplateConfig"];
@@ -17959,6 +18010,31 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["Memory"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_memory_guidance_presets: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryGuidancePresets"];
         };
       };
       400: components["responses"]["Error"];
