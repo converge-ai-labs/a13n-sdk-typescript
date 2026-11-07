@@ -277,6 +277,8 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["DELETE", new RegExp("^/api/v1/threads/[^/]+/memories/[^/]+$")],
   ["PATCH", new RegExp("^/api/v1/threads/[^/]+/memories/[^/]+$")],
   ["GET", new RegExp("^/api/v1/threads/[^/]+/runs$")],
+  ["GET", new RegExp("^/api/v1/threads/[^/]+/session-bindings/[^/]+/[^/]+$")],
+  ["PUT", new RegExp("^/api/v1/threads/[^/]+/session-bindings/[^/]+/[^/]+$")],
   ["GET", new RegExp("^/api/v1/threads/[^/]+/stream$")],
   ["GET", new RegExp("^/api/v1/threads/[^/]+/tool-executions$")],
   ["GET", new RegExp("^/api/v1/threads/[^/]+/tool-executions/[^/]+$")],

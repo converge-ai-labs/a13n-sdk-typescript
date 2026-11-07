@@ -160,6 +160,19 @@ export interface components {
        */
       timeout_seconds?: number;
     };
+    /** AllowlistDestinations */
+    AllowlistDestinations: {
+      /**
+       * Hosts
+       * @default []
+       */
+      hosts?: string[];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "allowlist";
+    };
     /**
      * AppReady
      * @description App originals and references are committed; opening still checks access and fetches current HTML.
@@ -444,6 +457,16 @@ export interface components {
        */
       reason?: string | null;
     };
+    /** DisabledSandbox */
+    DisabledSandbox: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "disabled";
+      full_disk_read?: never;
+      grants?: never;
+    };
     /**
      * DisplayContinuation
      * @description Parsing state at a semantic cut; Host paging may retire only immutable items.
@@ -495,6 +518,14 @@ export interface components {
        */
       enabled?: boolean;
     };
+    EgressDestinations:
+      | components["schemas"]["PublicDestinations"]
+      | components["schemas"]["AllowlistDestinations"];
+    /**
+     * EgressMode
+     * @enum {string}
+     */
+    EgressMode: "inherit" | "deny" | "controlled";
     /** @enum {string} */
     EntryStatus: "pending" | "assigned" | "consumed" | "failed" | "withdrawn";
     /** EntryView */
@@ -545,6 +576,23 @@ export interface components {
       /** Thread Id */
       thread_id: string;
     };
+    /** EnvdEgressConfiguration */
+    EnvdEgressConfiguration: {
+      destinations: components["schemas"]["EgressDestinations"];
+      /**
+       * Secrets
+       * @default []
+       */
+      secrets?: components["schemas"]["EnvdSecretReference"][];
+    };
+    /** EnvdSecretReference */
+    EnvdSecretReference: {
+      /** Env */
+      env: string;
+      /** Inject Hosts */
+      inject_hosts: string[];
+      source: components["schemas"]["EnvironmentCredentialSource"];
+    };
     /**
      * EnvironmentAction
      * @description Exact authorization values in the locked first-party catalog.
@@ -593,6 +641,16 @@ export interface components {
       | "environment.computer.press_keys"
       | "environment.computer.read_clipboard"
       | "environment.computer.write_clipboard";
+    /** EnvironmentCredentialSource */
+    EnvironmentCredentialSource: {
+      /**
+       * Kind
+       * @constant
+       */
+      kind: "environment";
+      /** Name */
+      name: string;
+    };
     /** EnvironmentMount */
     EnvironmentMount: {
       /** Environment Id */
@@ -637,6 +695,17 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?: components["schemas"]["SessionConfiguration"];
+      /**
+       * Session Version
+       * @default 0
+       */
+      session_version?: number;
       /**
        * Working Directory
        * @default null
@@ -714,6 +783,14 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      /** @default null */
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
       /**
        * Working Directory
        * @default null
@@ -829,6 +906,14 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      /** @default null */
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
       /** Template Id */
       template_id: string;
       /**
@@ -848,6 +933,11 @@ export interface components {
       /** Thread Id */
       thread_id: string;
     };
+    /**
+     * GrantAccess
+     * @enum {string}
+     */
+    GrantAccess: "read_only" | "read_write";
     /**
      * HistoricalDesktopPending
      * @description Read-only projection of sealed desktop suspensions predating Computer-scoped control.
@@ -1060,6 +1150,19 @@ export interface components {
     MessagePayload: {
       /** Content */
       content: components["schemas"]["Part"][];
+    };
+    /** NativeIsolation */
+    NativeIsolation: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "native";
+      backend?: never;
+      cpus?: never;
+      image?: never;
+      memory_mib?: never;
+      mounts?: never;
     };
     /**
      * ObserverContinuation
@@ -1308,6 +1411,15 @@ export interface components {
       /** Pending Occurrence Id */
       pending_occurrence_id: string | null;
     };
+    /** PublicDestinations */
+    PublicDestinations: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "public";
+      hosts?: never;
+    };
     /** RecordSource */
     RecordSource: {
       /** Id */
@@ -1324,6 +1436,24 @@ export interface components {
       headers?: {
         [key: string]: string;
       };
+    };
+    /** RestrictedSandbox */
+    RestrictedSandbox: {
+      /**
+       * Full Disk Read
+       * @default false
+       */
+      full_disk_read?: boolean;
+      /**
+       * Grants
+       * @default []
+       */
+      grants?: components["schemas"]["SandboxGrant"][];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "restricted";
     };
     /**
      * Resume
@@ -1548,6 +1678,18 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** SandboxGrant */
+    SandboxGrant: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Path
+       * Format: eip-absolute-path
+       */
+      path: string;
+    };
+    SandboxPolicy:
+      | components["schemas"]["DisabledSandbox"]
+      | components["schemas"]["RestrictedSandbox"];
     /** ScheduleEvent */
     ScheduleEvent: {
       configuration: components["schemas"]["Configuration"];
@@ -1571,6 +1713,45 @@ export interface components {
     ScheduleState: "paused" | "enabled" | "completed" | "archived";
     /** @enum {string} */
     ScheduleTrigger: "scheduled" | "manual";
+    /**
+     * SessionConfiguration
+     * @description Tenant-authored Session policy; Service credentials are not process-environment references.
+     */
+    SessionConfiguration: {
+      /**
+       * Commands
+       * @default null
+       */
+      commands?: boolean | null;
+      /** @default null */
+      egress?: components["schemas"]["EnvdEgressConfiguration"] | null;
+      /** @default null */
+      egress_mode?: components["schemas"]["EgressMode"] | null;
+      /** @default null */
+      isolation?: components["schemas"]["SessionIsolation"] | null;
+      /** @default null */
+      lifecycle?: components["schemas"]["SessionLifecyclePolicy"] | null;
+      /** @default null */
+      sandbox?: components["schemas"]["SandboxPolicy"] | null;
+      /**
+       * Working Directory
+       * @default null
+       */
+      working_directory?: string | null;
+    };
+    SessionIsolation:
+      | components["schemas"]["NativeIsolation"]
+      | components["schemas"]["VmIsolation"];
+    /** SessionLifecyclePolicy */
+    SessionLifecyclePolicy: {
+      /** Idle Timeout Ms */
+      idle_timeout_ms: number;
+      /**
+       * Max Lifetime Ms
+       * @default null
+       */
+      max_lifetime_ms?: number | null;
+    };
     /**
      * SharedSkillSync
      * @description Publish mutable conventional names; the last completed publication wins.
@@ -1981,6 +2162,45 @@ export interface components {
        * @default null
        */
       total_tokens_limit?: number | null;
+    };
+    /**
+     * VmBackend
+     * @enum {string}
+     */
+    VmBackend: "boxlite" | "microsandbox";
+    /** VmIsolation */
+    VmIsolation: {
+      backend: components["schemas"]["VmBackend"];
+      /** Cpus */
+      cpus: number;
+      /** Image */
+      image: string;
+      /** Memory Mib */
+      memory_mib: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "vm";
+      /**
+       * Mounts
+       * @default []
+       */
+      mounts?: components["schemas"]["VmMount"][];
+    };
+    /** VmMount */
+    VmMount: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Source
+       * Format: eip-absolute-path
+       */
+      source: string;
+      /**
+       * Target
+       * Format: eip-absolute-path
+       */
+      target: string;
     };
     /** @enum {string} */
     WaitReason: "approval" | "call" | "multiple" | "desktop_control";
