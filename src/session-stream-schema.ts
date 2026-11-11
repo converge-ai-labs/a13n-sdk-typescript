@@ -518,6 +518,15 @@ export interface components {
        */
       enabled?: boolean;
     };
+    /** EgressConfiguration */
+    EgressConfiguration: {
+      destinations: components["schemas"]["EgressDestinations"];
+      /**
+       * Secrets
+       * @default []
+       */
+      secrets?: components["schemas"]["SecretReference"][];
+    };
     EgressDestinations:
       | components["schemas"]["PublicDestinations"]
       | components["schemas"]["AllowlistDestinations"];
@@ -575,23 +584,6 @@ export interface components {
       status: components["schemas"]["EntryStatus"];
       /** Thread Id */
       thread_id: string;
-    };
-    /** EnvdEgressConfiguration */
-    EnvdEgressConfiguration: {
-      destinations: components["schemas"]["EgressDestinations"];
-      /**
-       * Secrets
-       * @default []
-       */
-      secrets?: components["schemas"]["EnvdSecretReference"][];
-    };
-    /** EnvdSecretReference */
-    EnvdSecretReference: {
-      /** Env */
-      env: string;
-      /** Inject Hosts */
-      inject_hosts: string[];
-      source: components["schemas"]["EnvironmentCredentialSource"];
     };
     /**
      * EnvironmentAction
@@ -729,16 +721,6 @@ export interface components {
       | "environment.computer.atspi_text_selection_remove"
       | "environment.computer.atspi_text_selection_set"
       | "environment.computer.atspi_value_set";
-    /** EnvironmentCredentialSource */
-    EnvironmentCredentialSource: {
-      /**
-       * Kind
-       * @constant
-       */
-      kind: "environment";
-      /** Name */
-      name: string;
-    };
     /** EnvironmentMount */
     EnvironmentMount: {
       /** Environment Id */
@@ -1038,6 +1020,7 @@ export interface components {
       /** Desktop Control Id */
       desktop_control_id: string;
     };
+    Hosts: string[];
     /** InitialRun */
     InitialRun: {
       /** Id */
@@ -1801,6 +1784,14 @@ export interface components {
     ScheduleState: "paused" | "enabled" | "completed" | "archived";
     /** @enum {string} */
     ScheduleTrigger: "scheduled" | "manual";
+    /** SecretReference */
+    SecretReference: {
+      /** Credential Id */
+      credential_id: string;
+      /** Env */
+      env: string;
+      inject_hosts: components["schemas"]["Hosts"];
+    };
     /**
      * SessionConfiguration
      * @description Tenant-authored Session policy; Service credentials are not process-environment references.
@@ -1812,7 +1803,7 @@ export interface components {
        */
       commands?: boolean | null;
       /** @default null */
-      egress?: components["schemas"]["EnvdEgressConfiguration"] | null;
+      egress?: components["schemas"]["EgressConfiguration"] | null;
       /** @default null */
       egress_mode?: components["schemas"]["EgressMode"] | null;
       /** @default null */

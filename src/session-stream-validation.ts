@@ -10247,7 +10247,7 @@ function validate137(
   return errors === 0;
 }
 validate137.evaluated = { dynamicProps: true, dynamicItems: false };
-var pattern4 = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$", "u");
+var pattern5 = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$", "u");
 function validate144(
   data,
   {
@@ -10268,48 +10268,40 @@ function validate144(
     evaluated0.items = void 0;
   }
   if (errors === 0) {
-    if (data && typeof data == "object" && !Array.isArray(data)) {
-      let missing0;
-      if (
-        (data.kind === void 0 && (missing0 = "kind")) ||
-        (data.name === void 0 && (missing0 = "name"))
-      ) {
+    if (Array.isArray(data)) {
+      if (data.length > 256) {
         validate144.errors = [
           {
             instancePath,
-            schemaPath: "#/required",
-            keyword: "required",
-            params: { missingProperty: missing0 },
-            message: "must have required property '" + missing0 + "'",
+            schemaPath: "#/maxItems",
+            keyword: "maxItems",
+            params: { limit: 256 },
+            message: "must NOT have more than 256 items",
           },
         ];
         return false;
       } else {
-        const _errs1 = errors;
-        for (const key0 in data) {
-          if (!(key0 === "kind" || key0 === "name")) {
-            validate144.errors = [
-              {
-                instancePath,
-                schemaPath: "#/additionalProperties",
-                keyword: "additionalProperties",
-                params: { additionalProperty: key0 },
-                message: "must NOT have additional properties",
-              },
-            ];
-            return false;
-            break;
-          }
-        }
-        if (_errs1 === errors) {
-          if (data.kind !== void 0) {
-            let data0 = data.kind;
-            const _errs2 = errors;
-            if (typeof data0 !== "string") {
+        if (data.length < 1) {
+          validate144.errors = [
+            {
+              instancePath,
+              schemaPath: "#/minItems",
+              keyword: "minItems",
+              params: { limit: 1 },
+              message: "must NOT have fewer than 1 items",
+            },
+          ];
+          return false;
+        } else {
+          var valid0 = true;
+          const len0 = data.length;
+          for (let i0 = 0; i0 < len0; i0++) {
+            const _errs1 = errors;
+            if (typeof data[i0] !== "string") {
               validate144.errors = [
                 {
-                  instancePath: instancePath + "/kind",
-                  schemaPath: "#/properties/kind/type",
+                  instancePath: instancePath + "/" + i0,
+                  schemaPath: "#/items/type",
                   keyword: "type",
                   params: { type: "string" },
                   message: "must be string",
@@ -10317,57 +10309,9 @@ function validate144(
               ];
               return false;
             }
-            if ("environment" !== data0) {
-              validate144.errors = [
-                {
-                  instancePath: instancePath + "/kind",
-                  schemaPath: "#/properties/kind/const",
-                  keyword: "const",
-                  params: { allowedValue: "environment" },
-                  message: "must be equal to constant",
-                },
-              ];
-              return false;
-            }
-            var valid0 = _errs2 === errors;
-          } else {
-            var valid0 = true;
-          }
-          if (valid0) {
-            if (data.name !== void 0) {
-              let data1 = data.name;
-              const _errs4 = errors;
-              if (errors === _errs4) {
-                if (typeof data1 === "string") {
-                  if (!pattern4.test(data1)) {
-                    validate144.errors = [
-                      {
-                        instancePath: instancePath + "/name",
-                        schemaPath: "#/properties/name/pattern",
-                        keyword: "pattern",
-                        params: { pattern: "^[A-Za-z_][A-Za-z0-9_]*$" },
-                        message:
-                          'must match pattern "^[A-Za-z_][A-Za-z0-9_]*$"',
-                      },
-                    ];
-                    return false;
-                  }
-                } else {
-                  validate144.errors = [
-                    {
-                      instancePath: instancePath + "/name",
-                      schemaPath: "#/properties/name/type",
-                      keyword: "type",
-                      params: { type: "string" },
-                      message: "must be string",
-                    },
-                  ];
-                  return false;
-                }
-              }
-              var valid0 = _errs4 === errors;
-            } else {
-              var valid0 = true;
+            var valid0 = _errs1 === errors;
+            if (!valid0) {
+              break;
             }
           }
         }
@@ -10378,8 +10322,8 @@ function validate144(
           instancePath,
           schemaPath: "#/type",
           keyword: "type",
-          params: { type: "object" },
-          message: "must be object",
+          params: { type: "array" },
+          message: "must be array",
         },
       ];
       return false;
@@ -10389,7 +10333,7 @@ function validate144(
   return errors === 0;
 }
 validate144.evaluated = {
-  props: true,
+  items: true,
   dynamicProps: false,
   dynamicItems: false,
 };
@@ -10417,7 +10361,7 @@ function validate143(
       let missing0;
       if (
         (data.env === void 0 && (missing0 = "env")) ||
-        (data.source === void 0 && (missing0 = "source")) ||
+        (data.credential_id === void 0 && (missing0 = "credential_id")) ||
         (data.inject_hosts === void 0 && (missing0 = "inject_hosts"))
       ) {
         validate143.errors = [
@@ -10434,9 +10378,9 @@ function validate143(
         const _errs1 = errors;
         for (const key0 in data) {
           if (!(
+            key0 === "credential_id" ||
             key0 === "env" ||
-            key0 === "inject_hosts" ||
-            key0 === "source"
+            key0 === "inject_hosts"
           )) {
             validate143.errors = [
               {
@@ -10452,32 +10396,34 @@ function validate143(
           }
         }
         if (_errs1 === errors) {
-          if (data.env !== void 0) {
-            let data0 = data.env;
+          if (data.credential_id !== void 0) {
+            let data0 = data.credential_id;
             const _errs2 = errors;
             if (errors === _errs2) {
               if (typeof data0 === "string") {
-                if (func4(data0) > 128) {
+                if (func4(data0) > 41) {
                   validate143.errors = [
                     {
-                      instancePath: instancePath + "/env",
-                      schemaPath: "#/properties/env/maxLength",
+                      instancePath: instancePath + "/credential_id",
+                      schemaPath: "#/properties/credential_id/maxLength",
                       keyword: "maxLength",
-                      params: { limit: 128 },
-                      message: "must NOT have more than 128 characters",
+                      params: { limit: 41 },
+                      message: "must NOT have more than 41 characters",
                     },
                   ];
                   return false;
                 } else {
-                  if (!pattern4.test(data0)) {
+                  if (!pattern3.test(data0)) {
                     validate143.errors = [
                       {
-                        instancePath: instancePath + "/env",
-                        schemaPath: "#/properties/env/pattern",
+                        instancePath: instancePath + "/credential_id",
+                        schemaPath: "#/properties/credential_id/pattern",
                         keyword: "pattern",
-                        params: { pattern: "^[A-Za-z_][A-Za-z0-9_]*$" },
+                        params: {
+                          pattern: "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$",
+                        },
                         message:
-                          'must match pattern "^[A-Za-z_][A-Za-z0-9_]*$"',
+                          'must match pattern "^[a-z][a-z0-9]{1,7}_[0-9a-f]{20,32}$"',
                       },
                     ];
                     return false;
@@ -10486,8 +10432,8 @@ function validate143(
               } else {
                 validate143.errors = [
                   {
-                    instancePath: instancePath + "/env",
-                    schemaPath: "#/properties/env/type",
+                    instancePath: instancePath + "/credential_id",
+                    schemaPath: "#/properties/credential_id/type",
                     keyword: "type",
                     params: { type: "string" },
                     message: "must be string",
@@ -10501,68 +10447,45 @@ function validate143(
             var valid0 = true;
           }
           if (valid0) {
-            if (data.inject_hosts !== void 0) {
-              let data1 = data.inject_hosts;
+            if (data.env !== void 0) {
+              let data1 = data.env;
               const _errs4 = errors;
               if (errors === _errs4) {
-                if (Array.isArray(data1)) {
-                  if (data1.length > 256) {
+                if (typeof data1 === "string") {
+                  if (func4(data1) > 128) {
                     validate143.errors = [
                       {
-                        instancePath: instancePath + "/inject_hosts",
-                        schemaPath: "#/properties/inject_hosts/maxItems",
-                        keyword: "maxItems",
-                        params: { limit: 256 },
-                        message: "must NOT have more than 256 items",
+                        instancePath: instancePath + "/env",
+                        schemaPath: "#/properties/env/maxLength",
+                        keyword: "maxLength",
+                        params: { limit: 128 },
+                        message: "must NOT have more than 128 characters",
                       },
                     ];
                     return false;
                   } else {
-                    if (data1.length < 1) {
+                    if (!pattern5.test(data1)) {
                       validate143.errors = [
                         {
-                          instancePath: instancePath + "/inject_hosts",
-                          schemaPath: "#/properties/inject_hosts/minItems",
-                          keyword: "minItems",
-                          params: { limit: 1 },
-                          message: "must NOT have fewer than 1 items",
+                          instancePath: instancePath + "/env",
+                          schemaPath: "#/properties/env/pattern",
+                          keyword: "pattern",
+                          params: { pattern: "^[A-Za-z_][A-Za-z0-9_]*$" },
+                          message:
+                            'must match pattern "^[A-Za-z_][A-Za-z0-9_]*$"',
                         },
                       ];
                       return false;
-                    } else {
-                      var valid1 = true;
-                      const len0 = data1.length;
-                      for (let i0 = 0; i0 < len0; i0++) {
-                        const _errs6 = errors;
-                        if (typeof data1[i0] !== "string") {
-                          validate143.errors = [
-                            {
-                              instancePath:
-                                instancePath + "/inject_hosts/" + i0,
-                              schemaPath:
-                                "#/properties/inject_hosts/items/type",
-                              keyword: "type",
-                              params: { type: "string" },
-                              message: "must be string",
-                            },
-                          ];
-                          return false;
-                        }
-                        var valid1 = _errs6 === errors;
-                        if (!valid1) {
-                          break;
-                        }
-                      }
                     }
                   }
                 } else {
                   validate143.errors = [
                     {
-                      instancePath: instancePath + "/inject_hosts",
-                      schemaPath: "#/properties/inject_hosts/type",
+                      instancePath: instancePath + "/env",
+                      schemaPath: "#/properties/env/type",
                       keyword: "type",
-                      params: { type: "array" },
-                      message: "must be array",
+                      params: { type: "string" },
+                      message: "must be string",
                     },
                   ];
                   return false;
@@ -10573,13 +10496,13 @@ function validate143(
               var valid0 = true;
             }
             if (valid0) {
-              if (data.source !== void 0) {
-                const _errs8 = errors;
+              if (data.inject_hosts !== void 0) {
+                const _errs6 = errors;
                 if (
-                  !validate144(data.source, {
-                    instancePath: instancePath + "/source",
+                  !validate144(data.inject_hosts, {
+                    instancePath: instancePath + "/inject_hosts",
                     parentData: data,
-                    parentDataProperty: "source",
+                    parentDataProperty: "inject_hosts",
                     rootData,
                     dynamicAnchors,
                   })
@@ -10590,7 +10513,7 @@ function validate143(
                       : vErrors.concat(validate144.errors);
                   errors = vErrors.length;
                 }
-                var valid0 = _errs8 === errors;
+                var valid0 = _errs6 === errors;
               } else {
                 var valid0 = true;
               }
