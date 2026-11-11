@@ -5638,6 +5638,11 @@
             "title": "Observed At",
             "type": "string"
           },
+          "profile": {
+            "enum": ["headless", "desktop"],
+            "title": "Profile",
+            "type": "string"
+          },
           "retryable": {
             "default": false,
             "title": "Retryable",
@@ -5661,7 +5666,7 @@
             "type": "string"
           }
         },
-        "required": ["stage", "started_at", "observed_at"],
+        "required": ["profile", "stage", "started_at", "observed_at"],
         "title": "CreationProgress",
         "type": "object"
       },
