@@ -355,9 +355,13 @@
                 "$ref": "#/components/schemas/ToolSearch"
               },
               {
+                "$ref": "#/components/schemas/NativeToolSearch"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Tool Search"
           },
           "toolsets": {
             "additionalProperties": {
@@ -579,9 +583,13 @@
                 "$ref": "#/components/schemas/ToolSearch"
               },
               {
+                "$ref": "#/components/schemas/NativeToolSearch"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Tool Search"
           },
           "toolsets": {
             "additionalProperties": {
@@ -946,9 +954,13 @@
                 "$ref": "#/components/schemas/ToolSearch"
               },
               {
+                "$ref": "#/components/schemas/NativeToolSearch"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Tool Search"
           },
           "toolsets": {
             "anyOf": [
@@ -1190,9 +1202,13 @@
                 "$ref": "#/components/schemas/ToolSearch"
               },
               {
+                "$ref": "#/components/schemas/NativeToolSearch"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Tool Search"
           },
           "toolsets": {
             "anyOf": [
@@ -2826,7 +2842,7 @@
       },
       "AutomaticToolSearch": {
         "additionalProperties": false,
-        "description": "Group Service-owned sources individually, following the agent's selections.",
+        "description": "Select Service-owned sources for on-demand discovery.",
         "properties": {
           "capabilities": {
             "default": ["browser", "computer"],
@@ -15021,6 +15037,23 @@
         },
         "required": ["mode"],
         "title": "NativeIsolation",
+        "type": "object"
+      },
+      "NativeToolSearch": {
+        "additionalProperties": false,
+        "description": "Ungrouped native discovery of selected Service tools; plugins keep their own settings.",
+        "properties": {
+          "mode": {
+            "const": "native",
+            "title": "Mode",
+            "type": "string"
+          },
+          "sources": {
+            "$ref": "#/components/schemas/AutomaticToolSearch"
+          }
+        },
+        "required": ["mode"],
+        "title": "NativeToolSearch",
         "type": "object"
       },
       "NetworkInterfaceMetrics": {

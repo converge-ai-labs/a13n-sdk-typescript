@@ -102,8 +102,14 @@ export interface components {
       skills?: components["schemas"]["SkillSelection"][] | null;
       /** @default null */
       subagents?: components["schemas"]["Subagents"] | null;
-      /** @default null */
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      /**
+       * Tool Search
+       * @default null
+       */
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /**
        * Toolsets
        * @default null
@@ -233,7 +239,7 @@ export interface components {
     };
     /**
      * AutomaticToolSearch
-     * @description Group Service-owned sources individually, following the agent's selections.
+     * @description Select Service-owned sources for on-demand discovery.
      */
     AutomaticToolSearch: {
       /**
@@ -1234,6 +1240,18 @@ export interface components {
       image?: never;
       memory_mib?: never;
       mounts?: never;
+    };
+    /**
+     * NativeToolSearch
+     * @description Ungrouped native discovery of selected Service tools; plugins keep their own settings.
+     */
+    NativeToolSearch: {
+      /**
+       * Mode
+       * @constant
+       */
+      mode: "native";
+      sources?: components["schemas"]["AutomaticToolSearch"];
     };
     /**
      * ObserverContinuation
