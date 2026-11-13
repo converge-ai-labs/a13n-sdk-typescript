@@ -287,7 +287,14 @@ export interface components {
     BuiltinSkillName: "platform-operations";
     /** @enum {string} */
     BuiltinToolsetKey:
-      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
+      | "files"
+      | "shell"
+      | "computer"
+      | "browser"
+      | "web"
+      | "memory"
+      | "assets"
+      | "object_store";
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /**

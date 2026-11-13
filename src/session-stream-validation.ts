@@ -22786,7 +22786,16 @@ validate259.evaluated = {
   dynamicItems: false,
 };
 var schema124 = {
-  enum: ["files", "shell", "computer", "browser", "web", "memory", "assets"],
+  enum: [
+    "files",
+    "shell",
+    "computer",
+    "browser",
+    "web",
+    "memory",
+    "assets",
+    "object_store",
+  ],
   type: "string",
 };
 function validate273(
@@ -22827,7 +22836,8 @@ function validate273(
     data === "browser" ||
     data === "web" ||
     data === "memory" ||
-    data === "assets"
+    data === "assets" ||
+    data === "object_store"
   )) {
     validate273.errors = [
       {
