@@ -9770,6 +9770,8 @@ export interface components {
        */
       headers?: string[];
       oauth?: components["schemas"]["OAuthSettings"] | null;
+      /** @default raise */
+      on_error?: components["schemas"]["StartupErrorPolicy"];
       /** Tools */
       tools?: string[] | null;
       /** Url */
@@ -13999,6 +14001,8 @@ export interface components {
        */
       view?: "compact";
     };
+    /** @enum {string} */
+    StartupErrorPolicy: "skip" | "raise";
     /** @enum {string} */
     State:
       | "reload_requested"
