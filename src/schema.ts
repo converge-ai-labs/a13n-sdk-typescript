@@ -711,6 +711,210 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/client-environments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Register Client Environment */
+    post: operations["register_client_environment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/connect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Connect Client Environment */
+    post: operations["connect_client_environment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create Client Pairing */
+    post: operations["create_client_pairing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings/{pairing_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Client Pairing */
+    get: operations["get_client_pairing"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings/{pairing_id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Approve Client Pairing */
+    post: operations["approve_client_pairing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings/{pairing_id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel Client Pairing */
+    post: operations["cancel_client_pairing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings/{pairing_id}/claim": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Claim Client Pairing */
+    post: operations["claim_client_pairing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/pairings/{pairing_id}/recognize": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Recognize Client Pairing */
+    post: operations["recognize_client_pairing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/{environment_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Client Environment */
+    get: operations["get_client_environment"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/{environment_id}/revoke-credential": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Revoke Client Environment Credential */
+    post: operations["revoke_client_environment_credential"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/{environment_id}/rotate-credential": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Rotate Client Environment Credential */
+    post: operations["rotate_client_environment_credential"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/client-environments/{environment_id}/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change Client Environment Status */
+    patch: operations["change_client_environment_status"];
+    trace?: never;
+  };
   "/api/v1/connections": {
     parameters: {
       query?: never;
@@ -1121,6 +1325,110 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/egress-credentials": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Egress Credentials */
+    get: operations["list_egress_credentials"];
+    put?: never;
+    /** Create Egress Credential */
+    post: operations["create_egress_credential"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/egress-credentials/{credential_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Egress Credential */
+    get: operations["get_egress_credential"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update Egress Credential */
+    patch: operations["update_egress_credential"];
+    trace?: never;
+  };
+  "/api/v1/egress-credentials/{credential_id}/revoke": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Revoke Egress Credential */
+    post: operations["revoke_egress_credential"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/egress-credentials/{credential_id}/sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Credential Sessions */
+    get: operations["list_credential_sessions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/egress-credentials/{credential_id}/sync": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Sync Egress Credential */
+    post: operations["sync_egress_credential"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/egress-credentials/{credential_id}/value": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Rotate Egress Credential */
+    put: operations["rotate_egress_credential"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/environment-provider-options/vercel": {
     parameters: {
       query?: never;
@@ -1328,6 +1636,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/environments/{environment_id}/credential-sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Environment Credential Sessions */
+    get: operations["list_environment_credential_sessions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environments/{environment_id}/debug-hold": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Set Environment Debug Hold */
+    put: operations["set_environment_debug_hold"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/environments/{environment_id}/desktop-control": {
     parameters: {
       query?: never;
@@ -1424,6 +1766,40 @@ export interface paths {
     put?: never;
     /** Open Desktop Viewer */
     post: operations["open_desktop_viewer"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environments/{environment_id}/kubernetes/diagnostics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Kubernetes Environment Diagnostics */
+    get: operations["get_kubernetes_environment_diagnostics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/environments/{environment_id}/kubernetes/logs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Kubernetes Environment Logs */
+    get: operations["get_kubernetes_environment_logs"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -1669,6 +2045,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/memories/guidance-presets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Memory Guidance Presets */
+    get: operations["list_memory_guidance_presets"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/memories/{memory_id}": {
     parameters: {
       query?: never;
@@ -1740,6 +2133,24 @@ export interface paths {
     post?: never;
     /** Delete File */
     delete: operations["delete_file"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memories/{memory_id}/organization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Memory Automation */
+    get: operations["get_memory_automation"];
+    /** Update Memory Automation */
+    put: operations["update_memory_automation"];
+    post?: never;
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -1856,6 +2267,143 @@ export interface paths {
      * @description Set the path back to the content the change replaced; `If-Match` names the file there, if any.
      */
     post: operations["restore_memory_revision"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Memory Organizations */
+    get: operations["list_memory_organizations"];
+    put?: never;
+    /** Create Memory Organization */
+    post: operations["create_memory_organization"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Memory Organization */
+    get: operations["get_memory_organization"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Organization Candidate */
+    get: operations["get_organization_candidate"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate/apply": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Apply Organization Candidate */
+    post: operations["apply_organization_candidate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate/diff": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Organization Candidate Diff */
+    get: operations["get_organization_candidate_diff"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate/discard": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Discard Organization Candidate */
+    post: operations["discard_organization_candidate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate/file": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Organization Candidate File */
+    get: operations["get_organization_candidate_file"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/memory-organizations/{organization_id}/candidate/replacement": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Organization Candidate Replacement */
+    get: operations["get_organization_candidate_replacement"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3671,6 +4219,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/threads/{thread_id}/session-bindings/{environment_id}/{name}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Session Binding */
+    get: operations["get_session_binding"];
+    /** Update Session Binding */
+    put: operations["update_session_binding"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/threads/{thread_id}/stream": {
     parameters: {
       query?: never;
@@ -4757,8 +5323,12 @@ export interface components {
        * @default []
        */
       connection_tools?: components["schemas"]["ConnectionSelection"][];
+      /** Default Environment Id */
+      default_environment_id?: string | null;
       /** Default Environment Template Id */
       default_environment_template_id?: string | null;
+      default_session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /**
        * Instructions
@@ -4801,22 +5371,17 @@ export interface components {
        * @default []
        */
       skills?: components["schemas"]["SkillSelection"][];
-      /**
-       * Subagent Mode
-       * @default inline
-       * @enum {string}
-       */
-      subagent_mode?: "inline" | "async";
-      /** Subagents */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentSelection-Input"];
-      };
+      subagents?: components["schemas"]["Subagents-Input"];
       /**
        * Summarize
        * @default false
        */
       summarize?: boolean;
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      /** Tool Search */
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /** Toolsets */
       toolsets?: {
         [key: string]: components["schemas"]["ToolsetSelection"];
@@ -4845,8 +5410,12 @@ export interface components {
        * @default []
        */
       connection_tools?: components["schemas"]["ConnectionSelection"][];
+      /** Default Environment Id */
+      default_environment_id?: string | null;
       /** Default Environment Template Id */
       default_environment_template_id?: string | null;
+      default_session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /**
        * Instructions
@@ -4889,22 +5458,17 @@ export interface components {
        * @default []
        */
       skills?: components["schemas"]["SkillSelection"][];
-      /**
-       * Subagent Mode
-       * @default inline
-       * @enum {string}
-       */
-      subagent_mode?: "inline" | "async";
-      /** Subagents */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentSelection-Output"];
-      };
+      subagents?: components["schemas"]["Subagents-Output"];
       /**
        * Summarize
        * @default false
        */
       summarize?: boolean;
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      /** Tool Search */
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /** Toolsets */
       toolsets?: {
         [key: string]: components["schemas"]["ToolsetSelection"];
@@ -4971,8 +5535,8 @@ export interface components {
      * AgentOverride
      * @description What one run changes of its revision's configuration; an omitted or null field keeps the revision's.
      *
-     *     `toolsets` replaces whole toolsets; `retries` and each subagent edge replace the fields they set, and a null
-     *     edge removes it; every other field replaces the revision's value.
+     *     `toolsets` replaces whole toolsets; `retries` replaces supplied members.
+     *     Every other field, including `subagents`, replaces the whole value.
      */
     "AgentOverride-Input": {
       /** Builtin Skills */
@@ -5009,11 +5573,12 @@ export interface components {
         | null;
       /** Skills */
       skills?: components["schemas"]["SkillSelection"][] | null;
-      /** Subagents */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentOverride-Input"] | null;
-      } | null;
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      subagents?: components["schemas"]["Subagents-Input"] | null;
+      /** Tool Search */
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /** Toolsets */
       toolsets?: {
         [key: string]: components["schemas"]["ToolsetSelection"];
@@ -5023,8 +5588,8 @@ export interface components {
      * AgentOverride
      * @description What one run changes of its revision's configuration; an omitted or null field keeps the revision's.
      *
-     *     `toolsets` replaces whole toolsets; `retries` and each subagent edge replace the fields they set, and a null
-     *     edge removes it; every other field replaces the revision's value.
+     *     `toolsets` replaces whole toolsets; `retries` replaces supplied members.
+     *     Every other field, including `subagents`, replaces the whole value.
      */
     "AgentOverride-Output": {
       /** Builtin Skills */
@@ -5061,11 +5626,12 @@ export interface components {
         | null;
       /** Skills */
       skills?: components["schemas"]["SkillSelection"][] | null;
-      /** Subagents */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentOverride-Output"] | null;
-      } | null;
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      subagents?: components["schemas"]["Subagents-Output"] | null;
+      /** Tool Search */
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /** Toolsets */
       toolsets?: {
         [key: string]: components["schemas"]["ToolsetSelection"];
@@ -5204,6 +5770,19 @@ export interface components {
       agent_id?: string | null;
       config: components["schemas"]["AgentConfig-Input"];
     };
+    /** AllowlistDestinations */
+    AllowlistDestinations: {
+      /**
+       * Hosts
+       * @default []
+       */
+      hosts?: string[];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "allowlist";
+    };
     /** Analysis */
     Analysis: {
       /** Agent Id */
@@ -5251,6 +5830,8 @@ export interface components {
       max_traces?: number;
       /** Presets */
       presets?: components["schemas"]["Preset"][];
+      /** Session Ids */
+      session_ids?: string[];
       /** Started After */
       started_after?: string | null;
       /** Started Before */
@@ -5309,8 +5890,8 @@ export interface components {
     };
     /** AppReference */
     AppReference: {
-      /** Agent Revision Id */
-      agent_revision_id: string;
+      /** Agent Definition Id */
+      agent_definition_id: string;
       /** App Id */
       app_id: string;
       /** Connection Id */
@@ -5363,6 +5944,9 @@ export interface components {
         [key: string]: components["schemas"]["JsonValue"];
       };
     };
+    /** @enum {string} */
+    ApplicationStatus:
+      "applied" | "pending" | "retry" | "on_next_use" | "on_create" | "unknown";
     ApprovalDecision:
       components["schemas"]["Approve"] | components["schemas"]["Deny"];
     /** Approve */
@@ -5629,8 +6213,25 @@ export interface components {
       subject?: string | null;
     };
     /**
+     * AutomaticOrganizationHistory
+     * @description Automatic history starts only at an explicitly chosen seal time.
+     */
+    AutomaticOrganizationHistory: {
+      /** After */
+      after?: string | null;
+      /** Before */
+      before?: string | null;
+      /**
+       * Max Runs
+       * @default 100
+       */
+      max_runs?: number;
+      /** Session Ids */
+      session_ids: string[];
+    };
+    /**
      * AutomaticToolSearch
-     * @description Group Service-owned sources individually, following the agent's selections.
+     * @description Select Service-owned sources for on-demand discovery.
      */
     AutomaticToolSearch: {
       /**
@@ -5855,7 +6456,14 @@ export interface components {
     BuiltinSkillName: "platform-operations";
     /** @enum {string} */
     BuiltinToolsetKey:
-      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
+      | "files"
+      | "shell"
+      | "computer"
+      | "browser"
+      | "web"
+      | "memory"
+      | "assets"
+      | "object_store";
     /** BusyOccurrence */
     BusyOccurrence: {
       /** Entry Id */
@@ -5881,6 +6489,75 @@ export interface components {
       /** Error */
       error: string | null;
       status: components["schemas"]["ConnectionStatus"];
+    };
+    /** CandidateApplication */
+    CandidateApplication: {
+      /**
+       * Applied At
+       * Format: date-time
+       */
+      applied_at: string;
+      /** Applied By Id */
+      applied_by_id: string;
+      request: components["schemas"]["CandidateApply"];
+      /** Result Seq */
+      result_seq: number;
+    };
+    /** CandidateApply */
+    CandidateApply: {
+      /** Candidate Seq */
+      candidate_seq: number;
+      /**
+       * Mode
+       * @default checked
+       * @enum {string}
+       */
+      mode?: "checked" | "replace_all";
+      /** Target Seq */
+      target_seq: number;
+    };
+    /** CandidateChange */
+    CandidateChange: {
+      /**
+       * Operation
+       * @enum {string}
+       */
+      operation: "create" | "update" | "delete";
+      /** Path */
+      path: string;
+    };
+    /** CandidateDiff */
+    CandidateDiff: {
+      /** Diff */
+      diff: string;
+      /** Path */
+      path: string;
+      /** Truncated */
+      truncated: boolean;
+    };
+    /** CandidateFile */
+    CandidateFile: {
+      /** Baseline */
+      baseline: string | null;
+      /** Candidate */
+      candidate: string | null;
+      /** Candidate Seq */
+      candidate_seq: number;
+      /** Path */
+      path: string;
+    };
+    /** CandidateReplacement */
+    CandidateReplacement: {
+      /** Candidate Seq */
+      candidate_seq: number;
+      /** Deletions */
+      deletions: string[];
+      /** Overwrites */
+      overwrites: string[];
+      /** Restorations */
+      restorations: string[];
+      /** Target Seq */
+      target_seq: number;
     };
     /** Capabilities */
     Capabilities: {
@@ -6018,8 +6695,91 @@ export interface components {
       /** Template Id */
       template_id?: string | null;
     };
+    /** ClaimResult */
+    ClaimResult: {
+      /** Connection Path */
+      connection_path?: string | null;
+      /** Environment Id */
+      environment_id?: string | null;
+      /**
+       * State
+       * @enum {string}
+       */
+      state: "pending" | "approved";
+      /** Verification Code */
+      verification_code: string;
+    };
     /** @enum {string} */
     ClientAuthentication: "none" | "client_secret_post" | "client_secret_basic";
+    /** ClientConnectionObservation */
+    ClientConnectionObservation: {
+      /**
+       * Observed At
+       * Format: date-time
+       */
+      observed_at: string;
+      /**
+       * State
+       * @enum {string}
+       */
+      state: "offline" | "connecting" | "online" | "unknown";
+    };
+    /** ClientEnvironment */
+    ClientEnvironment: {
+      configuration: components["schemas"]["ClientEnvironmentConfiguration"];
+      /** Credential Present */
+      credential_present: boolean;
+      /** Credential Version */
+      credential_version: number;
+      environment: components["schemas"]["EnvironmentView"];
+    };
+    /** ClientEnvironmentConfiguration */
+    ClientEnvironmentConfiguration: {
+      declared_capabilities?:
+        components["schemas"]["EnvironmentPermissionSet-Output"] | null;
+      /** Default Working Directory */
+      default_working_directory: string;
+      /** Description */
+      description?: string | null;
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Output"];
+    };
     /**
      * ClientToolDefinition
      * @description Portable model guidance for one externally executed client tool.
@@ -6119,7 +6879,6 @@ export interface components {
       | "builtin_skills"
       | "client_tools"
       | "user_questions"
-      | "subagent_mode"
       | "subagents"
       | "reviewer"
       | "media_understanding"
@@ -6127,6 +6886,7 @@ export interface components {
       | "output_spec"
       | "retries"
       | "default_environment_template_id"
+      | "default_environment_id"
       | "lazy_environment"
       | "memory_mounts"
       | "memory";
@@ -6254,6 +7014,59 @@ export interface components {
       items: components["schemas"]["Connection"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** ConnectionRequest */
+    ConnectionRequest: {
+      declared_capabilities?:
+        components["schemas"]["EnvironmentPermissionSet-Input"] | null;
+      /** Default Working Directory */
+      default_working_directory: string;
+      /** Description */
+      description?: string | null;
+      /** Device Id */
+      device_id: string;
+      /** Environment Id */
+      environment_id?: string | null;
+      /** Name */
+      name: string;
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Input"];
     };
     /**
      * ConnectionSelection
@@ -6528,6 +7341,11 @@ export interface components {
        */
       observed_at: string;
       /**
+       * Profile
+       * @enum {string}
+       */
+      profile: "headless" | "desktop";
+      /**
        * Retryable
        * @default false
        */
@@ -6544,11 +7362,77 @@ export interface components {
        */
       started_at: string;
     };
+    /** Credential */
+    Credential: {
+      /** Allowed Hosts */
+      allowed_hosts: string[];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Created By Id */
+      created_by_id: string;
+      /** Credential Version */
+      credential_version: number;
+      /** Description */
+      description: string;
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Organization Id */
+      organization_id: string;
+      /** Revoked At */
+      revoked_at: string | null;
+      /**
+       * State
+       * @enum {string}
+       */
+      state: "active" | "revoked";
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Updated By Id */
+      updated_by_id: string;
+      /** Version */
+      version: number;
+      /** Workspace Id */
+      workspace_id: string;
+    };
+    /** CredentialCreate */
+    CredentialCreate: {
+      allowed_hosts: components["schemas"]["Hosts"];
+      /** @default  */
+      description?: components["schemas"]["Description"];
+      name: components["schemas"]["Name"];
+      value: components["schemas"]["CredentialValue"];
+    };
     /**
      * CredentialMode
      * @enum {string}
      */
     CredentialMode: "required" | "optional" | "forbidden";
+    /** CredentialPage */
+    CredentialPage: {
+      /** Items */
+      items: components["schemas"]["Credential"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** CredentialRotation */
+    CredentialRotation: {
+      value: components["schemas"]["CredentialValue"];
+    };
+    /** CredentialUpdate */
+    CredentialUpdate: {
+      description?: components["schemas"]["Description"] | null;
+      name?: components["schemas"]["Name"] | null;
+    };
+    /** Format: password */
+    CredentialValue: string;
     /** Credentials */
     Credentials: {
       /** Headers */
@@ -6735,6 +7619,14 @@ export interface components {
       name?: string | null;
       query_credentials?: components["schemas"]["Credentials"] | null;
     };
+    /**
+     * DebugHold
+     * @description Delay automatic retirement for at most one day; null clears the hold.
+     */
+    DebugHold: {
+      /** Seconds */
+      seconds: number | null;
+    };
     /** Definition */
     Definition: {
       /** Definition */
@@ -6816,6 +7708,7 @@ export interface components {
       /** Revision */
       revision: string;
     };
+    Description: string;
     /** Device */
     Device: {
       /**
@@ -6844,6 +7737,27 @@ export interface components {
       version: number;
       /** Workspace Id */
       workspace_id: string;
+    };
+    /** DeviceClaim */
+    DeviceClaim: {
+      /**
+       * Computer Use
+       * @default false
+       */
+      computer_use?: boolean;
+      /** Default Working Directory */
+      default_working_directory: string;
+      /** Device Id */
+      device_id: string;
+      /** Environment Id */
+      environment_id?: string | null;
+      /**
+       * Full Control
+       * @default false
+       */
+      full_control?: boolean;
+      /** Name */
+      name: string;
     };
     /** DeviceCreate */
     DeviceCreate: {
@@ -6875,6 +7789,57 @@ export interface components {
       metrics_data_source_id?: string | null;
       /** Name */
       name?: string | null;
+    };
+    /** Diagnostics */
+    Diagnostics: {
+      /** Cluster */
+      cluster: string;
+      /** Commands */
+      commands: string[];
+      /** Connection */
+      connection: string;
+      /**
+       * Envd
+       * @enum {string}
+       */
+      envd: "previously_ready" | "not_verified";
+      /** Errors */
+      errors: string[];
+      /** Events */
+      events: components["schemas"]["Event"][];
+      /** Events Truncated */
+      events_truncated: boolean;
+      /** Namespace */
+      namespace: string;
+      /**
+       * Observed At
+       * Format: date-time
+       */
+      observed_at: string;
+      /** Ownership Id */
+      ownership_id: string;
+      /** Pod Name */
+      pod_name: string;
+      /** Pod Uid */
+      pod_uid: string | null;
+      /** Rendered */
+      rendered: {
+        [key: string]: components["schemas"]["JsonValue"];
+      }[];
+      /** Resources */
+      resources: components["schemas"]["ResourceObservation"][];
+      /** Stage */
+      stage: string;
+    };
+    /** DisabledSandbox */
+    DisabledSandbox: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "disabled";
+      full_disk_read?: never;
+      grants?: never;
     };
     /** DiscoverySource */
     DiscoverySource: {
@@ -6924,6 +7889,60 @@ export interface components {
       /** Truncated */
       truncated: boolean;
     };
+    /**
+     * DynamicSubagents
+     * @description Root-only task-specific delegation within the parent's capability boundary.
+     */
+    "DynamicSubagents-Input": {
+      /**
+       * Allowed Models
+       * @default []
+       */
+      allowed_models?: string[];
+      /** Default Model */
+      default_model?: string | null;
+      /** Default Thinking */
+      default_thinking?: string | boolean | null;
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+    };
+    /**
+     * DynamicSubagents
+     * @description Root-only task-specific delegation within the parent's capability boundary.
+     */
+    "DynamicSubagents-Output": {
+      /** Allowed Models */
+      allowed_models?: string[];
+      /** Default Model */
+      default_model?: string | null;
+      /** Default Thinking */
+      default_thinking?: string | boolean | null;
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+    };
+    /** EgressConfiguration */
+    EgressConfiguration: {
+      destinations: components["schemas"]["EgressDestinations"];
+      /**
+       * Secrets
+       * @default []
+       */
+      secrets?: components["schemas"]["SecretReference"][];
+    };
+    EgressDestinations:
+      | components["schemas"]["PublicDestinations"]
+      | components["schemas"]["AllowlistDestinations"];
+    /**
+     * EgressMode
+     * @enum {string}
+     */
+    EgressMode: "inherit" | "deny" | "controlled";
     /** EmailChangeConfirm */
     EmailChangeConfirm: {
       /** Token */
@@ -7113,7 +8132,95 @@ export interface components {
       | "environment.computer.type_text"
       | "environment.computer.press_keys"
       | "environment.computer.read_clipboard"
-      | "environment.computer.write_clipboard";
+      | "environment.computer.write_clipboard"
+      | "environment.computer.a11y_describe"
+      | "environment.computer.a11y_roots"
+      | "environment.computer.a11y_inspect"
+      | "environment.computer.a11y_find"
+      | "environment.computer.a11y_read"
+      | "environment.computer.a11y_range"
+      | "environment.computer.a11y_range_read"
+      | "environment.computer.ax_disclosing_set"
+      | "environment.computer.ax_expanded_set"
+      | "environment.computer.ax_focus"
+      | "environment.computer.ax_focused_window_set"
+      | "environment.computer.ax_main_set"
+      | "environment.computer.ax_minimized_set"
+      | "environment.computer.ax_perform_action"
+      | "environment.computer.ax_position_set"
+      | "environment.computer.ax_selected_children_set"
+      | "environment.computer.ax_selected_columns_set"
+      | "environment.computer.ax_selected_rows_set"
+      | "environment.computer.ax_selected_set"
+      | "environment.computer.ax_selected_text_set"
+      | "environment.computer.ax_size_set"
+      | "environment.computer.ax_text_range_select"
+      | "environment.computer.ax_text_ranges_select"
+      | "environment.computer.ax_value_number_set"
+      | "environment.computer.ax_value_string_set"
+      | "environment.computer.ax_visible_text_range_set"
+      | "environment.computer.uia_collapse"
+      | "environment.computer.uia_dock_set"
+      | "environment.computer.uia_expand"
+      | "environment.computer.uia_focus"
+      | "environment.computer.uia_invoke"
+      | "environment.computer.uia_legacy_default_action"
+      | "environment.computer.uia_legacy_select"
+      | "environment.computer.uia_legacy_value_set"
+      | "environment.computer.uia_range_add_selection"
+      | "environment.computer.uia_range_remove_selection"
+      | "environment.computer.uia_range_scroll_into_view"
+      | "environment.computer.uia_range_select"
+      | "environment.computer.uia_range_show_context_menu"
+      | "environment.computer.uia_range_value_set"
+      | "environment.computer.uia_realize"
+      | "environment.computer.uia_scroll_amount"
+      | "environment.computer.uia_scroll_into_view"
+      | "environment.computer.uia_scroll_percent"
+      | "environment.computer.uia_selection_add"
+      | "environment.computer.uia_selection_remove"
+      | "environment.computer.uia_selection_select"
+      | "environment.computer.uia_show_context_menu"
+      | "environment.computer.uia_toggle"
+      | "environment.computer.uia_transform_move"
+      | "environment.computer.uia_transform_resize"
+      | "environment.computer.uia_transform_rotate"
+      | "environment.computer.uia_transform_zoom"
+      | "environment.computer.uia_transform_zoom_unit"
+      | "environment.computer.uia_value_set"
+      | "environment.computer.uia_view_set"
+      | "environment.computer.uia_window_close"
+      | "environment.computer.uia_window_state_set"
+      | "environment.computer.atspi_caret_set"
+      | "environment.computer.atspi_component_extents_set"
+      | "environment.computer.atspi_component_position_set"
+      | "environment.computer.atspi_component_size_set"
+      | "environment.computer.atspi_do_action"
+      | "environment.computer.atspi_document_selections_set"
+      | "environment.computer.atspi_focus"
+      | "environment.computer.atspi_range_scroll_to"
+      | "environment.computer.atspi_range_scroll_to_point"
+      | "environment.computer.atspi_scroll_to"
+      | "environment.computer.atspi_scroll_to_point"
+      | "environment.computer.atspi_selection_add_child"
+      | "environment.computer.atspi_selection_all"
+      | "environment.computer.atspi_selection_clear"
+      | "environment.computer.atspi_selection_remove_child"
+      | "environment.computer.atspi_selection_remove_selected"
+      | "environment.computer.atspi_table_column_select"
+      | "environment.computer.atspi_table_column_unselect"
+      | "environment.computer.atspi_table_row_select"
+      | "environment.computer.atspi_table_row_unselect"
+      | "environment.computer.atspi_text_contents_set"
+      | "environment.computer.atspi_text_copy"
+      | "environment.computer.atspi_text_cut"
+      | "environment.computer.atspi_text_delete"
+      | "environment.computer.atspi_text_insert"
+      | "environment.computer.atspi_text_paste"
+      | "environment.computer.atspi_text_selection_add"
+      | "environment.computer.atspi_text_selection_remove"
+      | "environment.computer.atspi_text_selection_set"
+      | "environment.computer.atspi_value_set";
     /**
      * EnvironmentFailure
      * @description The last error of the outstanding operation or, on a ready instance, of its last renewal.
@@ -7182,6 +8289,17 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Output"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?: components["schemas"]["SessionConfiguration"];
+      /**
+       * Session Version
+       * @default 0
+       */
+      session_version?: number;
       /** Working Directory */
       working_directory?: string | null;
     };
@@ -7276,6 +8394,17 @@ export interface components {
       step: number;
     };
     /**
+     * EnvironmentState
+     * @description Provider-owned portable semantic soft reference for one target.
+     */
+    EnvironmentState: {
+      /** Provider Key */
+      provider_key: string;
+      state: components["schemas"]["JsonValue"];
+      /** State Version */
+      state_version: string;
+    };
+    /**
      * EnvironmentUpdate
      * @description Fields left out stay unchanged. Only an external target has an endpoint and token; a new endpoint comes with
      *     its token, so a stored token never reaches an endpoint it was not entered for.
@@ -7294,6 +8423,8 @@ export interface components {
     };
     /** EnvironmentView */
     EnvironmentView: {
+      client_connection?:
+        components["schemas"]["ClientConnectionObservation"] | null;
       /**
        * Created At
        * Format: date-time
@@ -7301,6 +8432,15 @@ export interface components {
       created_at: string;
       /** Created By Id */
       created_by_id: string;
+      /** Debug Hold Until */
+      debug_hold_until?: string | null;
+      /**
+       * Desktop Preview
+       * @default not_configured
+       * @enum {string}
+       */
+      desktop_preview?:
+        "supported" | "connection_unsupported" | "not_configured";
       /** Device Id */
       device_id: string | null;
       /** Endpoint */
@@ -7308,6 +8448,11 @@ export interface components {
       failure: components["schemas"]["EnvironmentFailure"] | null;
       /** Id */
       id: string;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "managed" | "external_http" | "external";
       /** Last Used At */
       last_used_at: string | null;
       metrics_application?: components["schemas"]["MetricsApplication"] | null;
@@ -7327,8 +8472,14 @@ export interface components {
       organization_id: string;
       /** Owner Principal Id */
       owner_principal_id: string | null;
+      /** Preparation Deadline */
+      preparation_deadline?: string | null;
+      /** Preparation Failed At */
+      preparation_failed_at?: string | null;
       /** Provider Id */
       provider_id: string | null;
+      reclamation?: components["schemas"]["Reclamation"] | null;
+      retirement_state?: components["schemas"]["EnvironmentState"] | null;
       /** Status */
       status: string;
       /** Template Id */
@@ -7379,6 +8530,23 @@ export interface components {
     ErrorEnvelope: {
       error: components["schemas"]["ErrorBody"];
     };
+    /** Event */
+    Event: {
+      /** Count */
+      count?: number | null;
+      /** First Timestamp */
+      first_timestamp?: string | null;
+      /** Last Timestamp */
+      last_timestamp?: string | null;
+      /** Message */
+      message?: string | null;
+      /** Reason */
+      reason?: string | null;
+      /** Resource Uid */
+      resource_uid: string;
+      /** Type */
+      type?: string | null;
+    };
     /** Evidence */
     Evidence: {
       /** Run Id */
@@ -7421,6 +8589,11 @@ export interface components {
     ExecutionView: {
       /** Attempt Id */
       attempt_id: string;
+      /**
+       * Cancel Requested
+       * @default false
+       */
+      cancel_requested?: boolean;
       /** Cancel Requested At */
       cancel_requested_at: string | null;
       /** Completed At */
@@ -7470,6 +8643,128 @@ export interface components {
       tool_name: string;
       /** Worker Id */
       worker_id: string;
+    };
+    /**
+     * ExistingRunEnvironment
+     * @description Use this exact primary instance for the Run; absence never triggers allocation.
+     */
+    "ExistingRunEnvironment-Input": {
+      /** Environment Id */
+      environment_id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "existing";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Input"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /** Working Directory */
+      working_directory?: string | null;
+      template_id?: never;
+    };
+    /**
+     * ExistingRunEnvironment
+     * @description Use this exact primary instance for the Run; absence never triggers allocation.
+     */
+    "ExistingRunEnvironment-Output": {
+      /** Environment Id */
+      environment_id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "existing";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Output"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /** Working Directory */
+      working_directory?: string | null;
+      template_id?: never;
     };
     /** Export */
     Export: {
@@ -7560,6 +8855,35 @@ export interface components {
       code: string;
       message: components["schemas"]["Preview"];
     };
+    /** FileMemoryGuidance */
+    FileMemoryGuidance: {
+      /**
+       * Custom
+       * @default
+       */
+      custom?: string;
+      /** Modules */
+      modules?: components["schemas"]["GuideModule"][] | null;
+      /** System Override */
+      system_override?: string | null;
+      /** @default general */
+      system_preset?: components["schemas"]["SystemPreset"];
+      /**
+       * Timezone
+       * @default UTC
+       */
+      timezone?: string;
+    };
+    /** FileMemoryTarget */
+    FileMemoryTarget: {
+      /** Id */
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "memory";
+    };
     /** FilesystemInventory */
     FilesystemInventory: {
       /** Filesystems */
@@ -7593,7 +8917,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Analysis Id */
       analysis_id: string | null;
       assessment: components["schemas"]["Assessment"];
@@ -7646,7 +8970,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** @description One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories. */
       category: components["schemas"]["Category"];
       /** Evidence */
@@ -7712,27 +9036,126 @@ export interface components {
       payload: components["schemas"]["MessagePayload"];
     };
     /**
-     * FrozenMemoryMount
-     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     * FreshRunEnvironment
+     * @description Reserve a primary instance for this accepted Run without changing Thread mounts.
      */
-    FrozenMemoryMount: {
-      access: components["schemas"]["MemoryAccess"];
-      /** Memory Id */
-      memory_id: string;
-      /** Name */
-      name: string;
+    "FreshRunEnvironment-Input": {
       /**
-       * Recall
-       * @default true
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
        */
-      recall?: boolean;
+      mode: "fresh";
       /**
-       * Roots
-       * @default []
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
        */
-      roots?: string[];
-      /** Space Id */
-      space_id?: string | null;
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Input"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /** Template Id */
+      template_id: string;
+      /** Working Directory */
+      working_directory?: string | null;
+      environment_id?: never;
+    };
+    /**
+     * FreshRunEnvironment
+     * @description Reserve a primary instance for this accepted Run without changing Thread mounts.
+     */
+    "FreshRunEnvironment-Output": {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "fresh";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Output"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /** Template Id */
+      template_id: string;
+      /** Working Directory */
+      working_directory?: string | null;
+      environment_id?: never;
     };
     /**
      * GitHubSource
@@ -7759,6 +9182,11 @@ export interface components {
       /** Repository */
       repository: string;
     };
+    /**
+     * GrantAccess
+     * @enum {string}
+     */
+    GrantAccess: "read_only" | "read_write";
     /** GrantCreate */
     GrantCreate: {
       /** Principal Id */
@@ -7797,6 +9225,8 @@ export interface components {
       /** Workspace Id */
       workspace_id: string | null;
     };
+    /** @enum {string} */
+    GuideModule: "topics" | "journal" | "session_notes";
     /**
      * HarnessModelCharacteristics
      * @description Resolved Harness characteristics of the active Agent model.
@@ -7903,6 +9333,7 @@ export interface components {
       /** Purged */
       purged: number;
     };
+    Hosts: string[];
     /**
      * ImageInputPolicy
      * @description Preparation limits for one model's image input, not native ModelSettings.
@@ -7964,6 +9395,11 @@ export interface components {
       /** Id */
       id: string;
       status: components["schemas"]["RunStatus"];
+    };
+    /** InstanceDiagnostics */
+    InstanceDiagnostics: {
+      environment: components["schemas"]["EnvironmentView"];
+      native: components["schemas"]["Diagnostics"];
     };
     /** InstantQuery */
     InstantQuery: {
@@ -8297,6 +9733,22 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    /** Logs */
+    Logs: {
+      /** Container */
+      container: string;
+      /**
+       * Limit Bytes
+       * @default 65536
+       */
+      limit_bytes?: number;
+      /** Pod Uid */
+      pod_uid: string;
+      /** Previous */
+      previous: boolean;
+      /** Text */
+      text: string;
+    };
     /**
      * ManagedEnvironmentCreate
      * @description A workspace-managed sandbox reserved from a template, for threads to mount; maintenance creates it.
@@ -8325,6 +9777,15 @@ export interface components {
        */
       headers?: string[];
       oauth?: components["schemas"]["OAuthSettings"] | null;
+      /**
+       * Object Ref Tools
+       * @description Object Reference Transport rules by original tool name; '*' matches any characters. Exact names win, then more literal characters, with false winning equally specific patterns. Use {'*': true} to enable all tools; unmatched tools retain native metadata, defaulting to false.
+       */
+      object_ref_tools?: {
+        [key: string]: boolean;
+      };
+      /** @default raise */
+      on_error?: components["schemas"]["StartupErrorPolicy"];
       /** Tools */
       tools?: string[] | null;
       /** Url */
@@ -8446,6 +9907,7 @@ export interface components {
       description: string | null;
       /** File Count */
       file_count: number | null;
+      guidance: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide: string | null;
       /** History Bytes */
@@ -8453,7 +9915,7 @@ export interface components {
       /** Id */
       id: string;
       /** Inherited Guide */
-      inherited_guide: string;
+      inherited_guide: string | null;
       kind: components["schemas"]["MemoryKind"];
       /** Labels */
       labels: {
@@ -8483,6 +9945,17 @@ export interface components {
     };
     /** @enum {string} */
     MemoryAccess: "read" | "write";
+    /** MemoryAutomation */
+    MemoryAutomation: {
+      /** Id */
+      id: string;
+      policy: components["schemas"]["OrganizationPolicy"];
+      /** Processed History Runs */
+      processed_history_runs: number;
+      status: components["schemas"]["SpaceOrganizationStatus"];
+      /** Version */
+      version: number;
+    };
     /**
      * MemoryCreate
      * @description `postgres` makes a file memory the Service stores; a Memory Provider's type makes a record memory in that
@@ -8496,6 +9969,7 @@ export interface components {
       always_load?: string[];
       /** Description */
       description?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide?: string | null;
       /** Labels */
@@ -8623,6 +10097,33 @@ export interface components {
       /** Path */
       path: string;
     };
+    /** MemoryGuidanceModule */
+    MemoryGuidanceModule: {
+      /** Description */
+      description: string;
+      /** Guide */
+      guide: string;
+      id: components["schemas"]["GuideModule"];
+      /** Name */
+      name: string;
+    };
+    /** MemoryGuidancePreset */
+    MemoryGuidancePreset: {
+      /** Description */
+      description: string;
+      id: components["schemas"]["SystemPreset"];
+      /** Name */
+      name: string;
+      /** System Guide */
+      system_guide: string;
+    };
+    /** MemoryGuidancePresets */
+    MemoryGuidancePresets: {
+      /** Items */
+      items: components["schemas"]["MemoryGuidancePreset"][];
+      /** Modules */
+      modules: components["schemas"]["MemoryGuidanceModule"][];
+    };
     /** @enum {string} */
     MemoryKind: "file" | "record";
     MemoryLimit:
@@ -8660,6 +10161,38 @@ export interface components {
       access?: components["schemas"]["MemoryAccess"] | null;
       /** Recall */
       recall?: boolean | null;
+    };
+    /** MemoryOrganization */
+    MemoryOrganization: {
+      /** Candidate Memory Id */
+      candidate_memory_id?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Created By Id */
+      created_by_id: string;
+      /** Id */
+      id: string;
+      request: components["schemas"]["OrganizationRequest"];
+      /** Run Id */
+      run_id: string;
+      /** Session Id */
+      session_id: string;
+      /** Sources */
+      sources: components["schemas"]["OrganizationSource"][];
+      /** Thread Id */
+      thread_id: string;
+      /** Workspace Id */
+      workspace_id: string;
+    };
+    /** MemoryOrganizationPage */
+    MemoryOrganizationPage: {
+      /** Items */
+      items: components["schemas"]["MemoryOrganization"][];
+      /** Next Cursor */
+      next_cursor?: string | null;
     };
     /** MemoryPage */
     MemoryPage: {
@@ -8818,8 +10351,7 @@ export interface components {
       enabled: boolean;
       /** File Count */
       file_count: number;
-      /** Guide */
-      guide: string | null;
+      guidance: components["schemas"]["FileMemoryGuidance"];
       /** History Bytes */
       history_bytes: number;
       /** Id */
@@ -8863,8 +10395,7 @@ export interface components {
        * @default true
        */
       enabled?: boolean;
-      /** Guide */
-      guide?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"];
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -8888,8 +10419,7 @@ export interface components {
       description?: string | null;
       /** Enabled */
       enabled?: boolean | null;
-      /** Guide */
-      guide?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -8907,6 +10437,7 @@ export interface components {
       always_load?: string[] | null;
       /** Description */
       description?: string | null;
+      guidance?: components["schemas"]["FileMemoryGuidance"] | null;
       /** Guide */
       guide?: string | null;
       /** Labels */
@@ -9376,6 +10907,13 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Input"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
       /** Working Directory */
       working_directory?: string | null;
     };
@@ -9439,8 +10977,36 @@ export interface components {
        *     }
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Output"];
+      /** Session Binding */
+      session_binding: string;
       /** Working Directory */
       working_directory: string | null;
+    };
+    Name: string;
+    /** NativeIsolation */
+    NativeIsolation: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "native";
+      backend?: never;
+      cpus?: never;
+      image?: never;
+      memory_mib?: never;
+      mounts?: never;
+    };
+    /**
+     * NativeToolSearch
+     * @description Ungrouped native discovery of selected Service tools; plugins keep their own settings.
+     */
+    NativeToolSearch: {
+      /**
+       * Mode
+       * @constant
+       */
+      mode: "native";
+      sources?: components["schemas"]["AutomaticToolSearch"];
     };
     /** NetworkInterfaceMetrics */
     NetworkInterfaceMetrics: {
@@ -9774,6 +11340,54 @@ export interface components {
       /** Version */
       version: number;
     };
+    /** OrganizationCandidate */
+    OrganizationCandidate: {
+      application?: components["schemas"]["CandidateApplication"] | null;
+      /** Baseline Seq */
+      baseline_seq: number;
+      /** Candidate Seq */
+      candidate_seq: number | null;
+      /** Changes */
+      changes: components["schemas"]["CandidateChange"][];
+      /** Files */
+      files: string[];
+      /** Memory Id */
+      memory_id: string;
+      /** Organization Id */
+      organization_id: string;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status:
+        | "generating"
+        | "ready"
+        | "failed"
+        | "applied"
+        | "discarded"
+        | "unavailable";
+      /** Target Memory Id */
+      target_memory_id: string;
+      /** Target Seq */
+      target_seq: number | null;
+    };
+    /**
+     * OrganizationHistory
+     * @description Explicit Sessions and a bounded, inclusive seal-time window.
+     */
+    OrganizationHistory: {
+      /** After */
+      after?: string | null;
+      /** Before */
+      before?: string | null;
+      /**
+       * Max Runs
+       * @default 100
+       */
+      max_runs?: number;
+      /** Session Ids */
+      session_ids: string[];
+    };
     /** OrganizationPage */
     OrganizationPage: {
       /** Items */
@@ -9798,6 +11412,9 @@ export interface components {
        * @default false
        */
       enabled?: boolean;
+      history?: components["schemas"]["AutomaticOrganizationHistory"] | null;
+      /** Instructions */
+      instructions?: string | null;
       /** Model */
       model?: string | null;
       /** Trigger */
@@ -9805,6 +11422,41 @@ export interface components {
         | components["schemas"]["AnyChangeTrigger"]
         | components["schemas"]["ChangeCountTrigger"];
     };
+    /** OrganizationRequest */
+    OrganizationRequest: {
+      history?: components["schemas"]["OrganizationHistory"] | null;
+      /**
+       * Instructions
+       * @default Organize the saved memory files.
+       */
+      instructions?: string;
+      /** Model */
+      model: string;
+      /**
+       * Output
+       * @default direct
+       * @enum {string}
+       */
+      output?: "direct" | "candidate";
+      target: components["schemas"]["OrganizationTarget"];
+    };
+    /** OrganizationSource */
+    OrganizationSource: {
+      /** Run Id */
+      run_id: string;
+      /**
+       * Sealed At
+       * Format: date-time
+       */
+      sealed_at: string;
+      /** Session Id */
+      session_id: string;
+      /** Thread Id */
+      thread_id: string;
+    };
+    OrganizationTarget:
+      | components["schemas"]["FileMemoryTarget"]
+      | components["schemas"]["SpaceTarget"];
     /** OrganizationUpdate */
     OrganizationUpdate: {
       /** Name */
@@ -9861,6 +11513,81 @@ export interface components {
       schema: {
         [key: string]: components["schemas"]["JsonValue"];
       };
+    };
+    /** Pairing */
+    Pairing: {
+      device?: components["schemas"]["DeviceClaim"] | null;
+      /** Environment Id */
+      environment_id?: string | null;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Host Name */
+      host_name: string;
+      /** Id */
+      id: string;
+      /** Owner Id */
+      owner_id: string;
+      /**
+       * Reused
+       * @default false
+       */
+      reused?: boolean;
+      /** Service Url */
+      service_url: string;
+      /**
+       * State
+       * @default waiting
+       * @enum {string}
+       */
+      state?: "waiting" | "claimed" | "approving" | "approved" | "cancelled";
+      /** Verification Code */
+      verification_code?: string | null;
+      /** Workspace Id */
+      workspace_id: string;
+    };
+    /** PairingApproval */
+    PairingApproval: {
+      /** Verification Code */
+      verification_code: string;
+    };
+    /** PairingCreated */
+    PairingCreated: {
+      device?: components["schemas"]["DeviceClaim"] | null;
+      /** Environment Id */
+      environment_id?: string | null;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Host Name */
+      host_name: string;
+      /** Id */
+      id: string;
+      /** Launcher Url */
+      launcher_url: string;
+      /** Owner Id */
+      owner_id: string;
+      /**
+       * Reused
+       * @default false
+       */
+      reused?: boolean;
+      /** Service Url */
+      service_url: string;
+      /**
+       * State
+       * @default waiting
+       * @enum {string}
+       */
+      state?: "waiting" | "claimed" | "approving" | "approved" | "cancelled";
+      /** Verification Code */
+      verification_code?: string | null;
+      /** Workspace Id */
+      workspace_id: string;
     };
     /** Panel */
     Panel: {
@@ -10403,6 +12130,15 @@ export interface components {
       /** Name */
       name?: string | null;
     };
+    /** PublicDestinations */
+    PublicDestinations: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "public";
+      hosts?: never;
+    };
     /** Query */
     Query: {
       /** Endpoint */
@@ -10453,6 +12189,93 @@ export interface components {
     };
     /** @enum {string} */
     ReadView: "detailed" | "compact";
+    /**
+     * Reclamation
+     * @description Instance-scoped reclamation settings copied at reservation; no stop/resume semantics.
+     */
+    Reclamation: {
+      /**
+       * Failed Retention Seconds
+       * @default 3600
+       */
+      failed_retention_seconds?: number;
+      /**
+       * Idle Delete Seconds
+       * @default 1800
+       */
+      idle_delete_seconds?: number | null;
+      /**
+       * Preparation Seconds
+       * @default 600
+       */
+      preparation_seconds?: number;
+    };
+    /** Recognition */
+    Recognition: {
+      /** Device Id */
+      device_id: string;
+      /** Environment Id */
+      environment_id: string;
+    };
+    /** Registered */
+    Registered: {
+      client: components["schemas"]["ClientEnvironment"];
+      /** Connection Path */
+      connection_path: string;
+      /** Token */
+      token?: string | null;
+    };
+    /** Registration */
+    Registration: {
+      declared_capabilities?:
+        components["schemas"]["EnvironmentPermissionSet-Input"] | null;
+      /** Default Working Directory */
+      default_working_directory: string;
+      /** Description */
+      description?: string | null;
+      /** Device Id */
+      device_id: string;
+      /** Name */
+      name: string;
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet-Input"];
+    };
     /** Renew */
     Renew: {
       /** Episode */
@@ -10480,6 +12303,73 @@ export interface components {
       headers?: {
         [key: string]: string;
       };
+    };
+    /** Resource */
+    Resource: {
+      /**
+       * Disposition
+       * @default delete
+       * @enum {string}
+       */
+      disposition?: "delete" | "retain" | "borrowed";
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind:
+        | "Pod"
+        | "Secret"
+        | "ConfigMap"
+        | "PersistentVolumeClaim"
+        | "NetworkPolicy";
+      /** Name */
+      name: string;
+      /**
+       * Sub Paths
+       * @default []
+       */
+      sub_paths?: string[];
+      /** Uid */
+      uid?: string | null;
+    };
+    /** ResourceObservation */
+    ResourceObservation: {
+      /** Created At */
+      created_at?: string | null;
+      /** Deleting At */
+      deleting_at?: string | null;
+      /** Finalizers */
+      finalizers?: string[];
+      /**
+       * Observation
+       * @enum {string}
+       */
+      observation: "present" | "absent" | "unknown" | "conflict";
+      /** Reason */
+      reason?: string | null;
+      reference: components["schemas"]["Resource"];
+      /** Status */
+      status?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+    };
+    /** RestrictedSandbox */
+    RestrictedSandbox: {
+      /**
+       * Full Disk Read
+       * @default false
+       */
+      full_disk_read?: boolean;
+      /**
+       * Grants
+       * @default []
+       */
+      grants?: components["schemas"]["SandboxGrant"][];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "restricted";
     };
     /**
      * Resume
@@ -10628,7 +12518,14 @@ export interface components {
      */
     RunAgent: {
       config: components["schemas"]["AgentConfig-Output"];
-      revision: components["schemas"]["AgentRevision"];
+      /** Definition Id */
+      definition_id: string;
+      revision: components["schemas"]["AgentRevision"] | null;
+      /**
+       * Source
+       * @enum {string}
+       */
+      source: "revision" | "thread_snapshot";
     };
     /** RunAgentSummary */
     RunAgentSummary: {
@@ -10649,7 +12546,7 @@ export interface components {
       /** References Truncated */
       references_truncated: boolean;
       /** Revision Id */
-      revision_id: string;
+      revision_id: string | null;
       /** Skill Ids */
       skill_ids: string[];
       /** Subagent Ids */
@@ -10716,6 +12613,12 @@ export interface components {
       truncated?: boolean;
       value: components["schemas"]["JsonValue"];
     };
+    "RunEnvironment-Input":
+      | components["schemas"]["FreshRunEnvironment-Input"]
+      | components["schemas"]["ExistingRunEnvironment-Input"];
+    "RunEnvironment-Output":
+      | components["schemas"]["FreshRunEnvironment-Output"]
+      | components["schemas"]["ExistingRunEnvironment-Output"];
     /** RunInputPreview */
     RunInputPreview: {
       /**
@@ -10753,7 +12656,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       /**
@@ -10796,6 +12699,29 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /**
+     * RunMemoryMount
+     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     */
+    RunMemoryMount: {
+      access: components["schemas"]["MemoryAccess"];
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Recall
+       * @default true
+       */
+      recall?: boolean;
+      /**
+       * Roots
+       * @default []
+       */
+      roots?: string[];
+      /** Space Id */
+      space_id?: string | null;
+    };
     /** RunMetrics */
     RunMetrics: {
       /** Average Duration Seconds */
@@ -10810,6 +12736,7 @@ export interface components {
     "RunOptions-Input": {
       configuration?: components["schemas"]["RunConfiguration-Input"] | null;
       context?: components["schemas"]["RequestContext"] | null;
+      environment?: components["schemas"]["RunEnvironment-Input"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
@@ -10825,6 +12752,7 @@ export interface components {
     "RunOptions-Output": {
       configuration?: components["schemas"]["RunConfiguration-Output"] | null;
       context?: components["schemas"]["RequestContext"] | null;
+      environment?: components["schemas"]["RunEnvironment-Output"] | null;
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
       labels?: {
@@ -10850,7 +12778,7 @@ export interface components {
       /** Agent Name */
       agent_name: string | null;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       /**
@@ -10895,7 +12823,7 @@ export interface components {
        * Revision Selection
        * @enum {string}
        */
-      revision_selection: "pinned" | "default" | "inherited";
+      revision_selection: "pinned" | "default" | "inherited" | "snapshot";
       schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
       sealed_at: string | null;
@@ -10953,7 +12881,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       browser_binding?: components["schemas"]["BrowserBinding"] | null;
@@ -10985,7 +12913,7 @@ export interface components {
       /** Memory Mounts */
       memory_mounts: (
         | components["schemas"]["MemoryMount"]
-        | components["schemas"]["FrozenMemoryMount"]
+        | components["schemas"]["RunMemoryMount"]
       )[];
       options: components["schemas"]["RunOptions-Output"];
       output: components["schemas"]["JsonValue"] | null;
@@ -11005,7 +12933,7 @@ export interface components {
        * Revision Selection
        * @enum {string}
        */
-      revision_selection: "pinned" | "default" | "inherited";
+      revision_selection: "pinned" | "default" | "inherited" | "snapshot";
       schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
       sealed_at: string | null;
@@ -11034,6 +12962,18 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** SandboxGrant */
+    SandboxGrant: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Path
+       * Format: eip-absolute-path
+       */
+      path: string;
+    };
+    SandboxPolicy:
+      | components["schemas"]["DisabledSandbox"]
+      | components["schemas"]["RestrictedSandbox"];
     /** Schedule */
     Schedule: {
       /** Archived At */
@@ -11250,10 +13190,20 @@ export interface components {
       schedule?: components["schemas"]["ScheduleRule"] | null;
       target?: components["schemas"]["ScheduleTarget"] | null;
     };
+    /** SecretReference */
+    SecretReference: {
+      /** Credential Id */
+      credential_id: string;
+      /** Env */
+      env: string;
+      inject_hosts: components["schemas"]["Hosts"];
+    };
     /** SelectedTrace */
     SelectedTrace: {
       /** Run Id */
       run_id: string;
+      /** Session Id */
+      session_id?: string | null;
       /** Trace Id */
       trace_id: string;
     };
@@ -11342,8 +13292,60 @@ export interface components {
       /** Status */
       status?: ("active" | "disabled") | null;
     };
+    /**
+     * SessionApplicationSummary
+     * @description All matching binding versions, counted once each independently of page size and cursor.
+     */
+    SessionApplicationSummary: {
+      /** Applied */
+      applied: number;
+      /** On Create */
+      on_create: number;
+      /** On Next Use */
+      on_next_use: number;
+      /** Pending */
+      pending: number;
+      /** Retry */
+      retry: number;
+      /** Unknown */
+      unknown: number;
+    };
+    /** SessionBindingUpdate */
+    SessionBindingUpdate: {
+      configuration: components["schemas"]["SessionConfiguration"];
+    };
+    /** SessionBindingView */
+    SessionBindingView: {
+      configuration: components["schemas"]["SessionConfiguration"];
+      /** Environment Id */
+      environment_id: string;
+      /** Name */
+      name: string;
+      /** Version */
+      version: number;
+    };
+    /**
+     * SessionConfiguration
+     * @description Tenant-authored Session policy; Service credentials are not process-environment references.
+     */
+    SessionConfiguration: {
+      /** Commands */
+      commands?: boolean | null;
+      egress?: components["schemas"]["EgressConfiguration"] | null;
+      egress_mode?: components["schemas"]["EgressMode"] | null;
+      isolation?: components["schemas"]["SessionIsolation"] | null;
+      lifecycle?: components["schemas"]["SessionLifecyclePolicy"] | null;
+      sandbox?: components["schemas"]["SandboxPolicy"] | null;
+      /** Working Directory */
+      working_directory?: string | null;
+    };
     /** SessionCreate */
     SessionCreate: {
+      /**
+       * Auto Recreate Lost Environment
+       * @default true
+       */
+      auto_recreate_lost_environment?: boolean;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -11352,6 +13354,69 @@ export interface components {
       origin?: components["schemas"]["SessionOrigin"] | null;
       /** Title */
       title?: string | null;
+    };
+    /** SessionCredential */
+    SessionCredential: {
+      /** Applied At */
+      applied_at: string | null;
+      /** Applied Credential Version */
+      applied_credential_version: number | null;
+      /** Applied Device Generation */
+      applied_device_generation: string | null;
+      /** Applied Session Id */
+      applied_session_id: string | null;
+      /** Binding Name */
+      binding_name: string;
+      /** Credential Id */
+      credential_id: string;
+      /** Credential Name */
+      credential_name: string;
+      /**
+       * Credential State
+       * @enum {string}
+       */
+      credential_state: "active" | "revoked";
+      /** Credential Version */
+      credential_version: number;
+      /** Env */
+      env: string;
+      /** Environment Id */
+      environment_id: string;
+      /** Environment Name */
+      environment_name: string;
+      /** Error Code */
+      error_code?: string | null;
+      /** Execution Active */
+      execution_active: boolean;
+      /** Inject Hosts */
+      inject_hosts: string[];
+      /** Native Session Id */
+      native_session_id: string | null;
+      /** Retry At */
+      retry_at?: string | null;
+      /** Session Version */
+      session_version: number;
+      status: components["schemas"]["ApplicationStatus"];
+      /** Thread Id */
+      thread_id: string;
+    };
+    /** SessionCredentialPage */
+    SessionCredentialPage: {
+      /** Items */
+      items: components["schemas"]["SessionCredential"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+      summary: components["schemas"]["SessionApplicationSummary"];
+    };
+    SessionIsolation:
+      | components["schemas"]["NativeIsolation"]
+      | components["schemas"]["VmIsolation"];
+    /** SessionLifecyclePolicy */
+    SessionLifecyclePolicy: {
+      /** Idle Timeout Ms */
+      idle_timeout_ms: number;
+      /** Max Lifetime Ms */
+      max_lifetime_ms?: number | null;
     };
     /**
      * SessionMemorySettings
@@ -11419,6 +13484,8 @@ export interface components {
     };
     /** SessionUpdate */
     SessionUpdate: {
+      /** Auto Recreate Lost Environment */
+      auto_recreate_lost_environment?: boolean;
       /** Labels */
       labels?: {
         [key: string]: string;
@@ -11430,6 +13497,8 @@ export interface components {
     };
     /** SessionView */
     SessionView: {
+      /** Auto Recreate Lost Environment */
+      auto_recreate_lost_environment: boolean;
       /** Cost */
       cost: string | null;
       /**
@@ -11728,6 +13797,16 @@ export interface components {
       /** Session Id */
       session_id?: string | null;
     };
+    /** SpaceTarget */
+    SpaceTarget: {
+      /** Id */
+      id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "space";
+    };
     /**
      * Span
      * @description One span as the backend stored it; `attributes` are its OpenTelemetry attributes.
@@ -11937,6 +14016,8 @@ export interface components {
       view?: "compact";
     };
     /** @enum {string} */
+    StartupErrorPolicy: "skip" | "raise";
+    /** @enum {string} */
     State:
       | "reload_requested"
       | "not_ready"
@@ -11954,38 +14035,16 @@ export interface components {
       | "unsupported"
       | "not_ready"
       | "capacity";
+    /** StatusChange */
+    StatusChange: {
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "ready" | "disabled";
+    };
     /** @enum {string} */
     Steering: "boundary" | "immediate";
-    /**
-     * SubagentOverride
-     * @description Replaces the fields it sets of an edge; an edge the revision lacks sets at least `agent_id`.
-     */
-    "SubagentOverride-Input": {
-      /** Agent Id */
-      agent_id?: string | null;
-      context?: components["schemas"]["DelegationContextPolicy"] | null;
-      /** Description */
-      description?: string | null;
-      environment?: components["schemas"]["ChildEnvironmentPolicy"] | null;
-      /** Revision Id */
-      revision_id?: string | null;
-      usage_limits?: components["schemas"]["UsageLimits-Input"] | null;
-    };
-    /**
-     * SubagentOverride
-     * @description Replaces the fields it sets of an edge; an edge the revision lacks sets at least `agent_id`.
-     */
-    "SubagentOverride-Output": {
-      /** Agent Id */
-      agent_id?: string | null;
-      context?: components["schemas"]["DelegationContextPolicy"] | null;
-      /** Description */
-      description?: string | null;
-      environment?: components["schemas"]["ChildEnvironmentPolicy"] | null;
-      /** Revision Id */
-      revision_id?: string | null;
-      usage_limits?: components["schemas"]["UsageLimits-Output"] | null;
-    };
     /** SubagentSelection */
     "SubagentSelection-Input": {
       /** Agent Id */
@@ -12009,6 +14068,34 @@ export interface components {
       /** Revision Id */
       revision_id?: string | null;
       usage_limits?: components["schemas"]["UsageLimits-Output"] | null;
+    };
+    /** Subagents */
+    "Subagents-Input": {
+      dynamic?: components["schemas"]["DynamicSubagents-Input"];
+      /**
+       * Mode
+       * @default async
+       * @enum {string}
+       */
+      mode?: "inline" | "async";
+      /** Named */
+      named?: {
+        [key: string]: components["schemas"]["SubagentSelection-Input"];
+      };
+    };
+    /** Subagents */
+    "Subagents-Output": {
+      dynamic?: components["schemas"]["DynamicSubagents-Output"];
+      /**
+       * Mode
+       * @default async
+       * @enum {string}
+       */
+      mode?: "inline" | "async";
+      /** Named */
+      named?: {
+        [key: string]: components["schemas"]["SubagentSelection-Output"];
+      };
     };
     /**
      * Submitted
@@ -12154,6 +14241,8 @@ export interface components {
       /** Thread Count */
       thread_count?: number | null;
     };
+    /** @enum {string} */
+    SystemPreset: "general" | "journal";
     /** Template */
     Template: {
       config: components["schemas"]["TemplateConfig"];
@@ -12200,6 +14289,7 @@ export interface components {
       recipe?: {
         [key: string]: components["schemas"]["JsonValue"];
       };
+      reclamation?: components["schemas"]["Reclamation"] | null;
       /**
        * Stop After Seconds
        * @default 1800
@@ -12368,7 +14458,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       /** Cost */
@@ -13093,6 +15183,45 @@ export interface components {
      * @enum {string}
      */
     VideoUrlType: "youtube";
+    /**
+     * VmBackend
+     * @enum {string}
+     */
+    VmBackend: "boxlite" | "microsandbox";
+    /** VmIsolation */
+    VmIsolation: {
+      backend: components["schemas"]["VmBackend"];
+      /** Cpus */
+      cpus: number;
+      /** Image */
+      image: string;
+      /** Memory Mib */
+      memory_mib: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "vm";
+      /**
+       * Mounts
+       * @default []
+       */
+      mounts?: components["schemas"]["VmMount"][];
+    };
+    /** VmMount */
+    VmMount: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Source
+       * Format: eip-absolute-path
+       */
+      source: string;
+      /**
+       * Target
+       * Format: eip-absolute-path
+       */
+      target: string;
+    };
     /** @enum {string} */
     WaitReason: "approval" | "call" | "multiple" | "desktop_control";
     /** @enum {string} */
@@ -13724,7 +15853,6 @@ export interface operations {
           | "builtin_skills"
           | "client_tools"
           | "user_questions"
-          | "subagent_mode"
           | "subagents"
           | "reviewer"
           | "media_understanding"
@@ -13732,6 +15860,7 @@ export interface operations {
           | "output_spec"
           | "retries"
           | "default_environment_template_id"
+          | "default_environment_id"
           | "lazy_environment"
           | "memory_mounts"
           | "memory";
@@ -14732,6 +16861,366 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  register_client_environment: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["Registration"];
+      };
+    };
+    responses: {
+      /** @description Existing registration; no token is returned */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  connect_client_environment: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ConnectionRequest"];
+      };
+    };
+    responses: {
+      /** @description Existing registration; no token is returned */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PairingCreated"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        pairing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Pairing"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  approve_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        pairing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PairingApproval"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Pairing"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  cancel_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        pairing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Pairing"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  claim_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pairing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeviceClaim"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClaimResult"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  recognize_client_pairing: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pairing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["Recognition"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Pairing"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_client_environment: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClientEnvironment"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  revoke_client_environment_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  rotate_client_environment_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Registered"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  change_client_environment_status: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["StatusChange"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClientEnvironment"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_connections: {
     parameters: {
       query?: {
@@ -15630,6 +18119,242 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_egress_credentials: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CredentialPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CredentialCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CredentialUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  revoke_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_credential_sessions: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionCredentialPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  sync_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  rotate_egress_credential: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        credential_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CredentialRotation"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Credential"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   vercel_provider_options: {
     parameters: {
       query?: never;
@@ -16178,6 +18903,69 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_environment_credential_sessions: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionCredentialPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  set_environment_debug_hold: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DebugHold"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnvironmentView"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   get_desktop_control: {
     parameters: {
       query?: never;
@@ -16351,6 +19139,64 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["a13n_service__runs__environments__desktop__schemas__Viewer"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_kubernetes_environment_diagnostics: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstanceDiagnostics"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_kubernetes_environment_logs: {
+    parameters: {
+      query?: {
+        container?: string | null;
+        previous?: boolean;
+        tail_lines?: number;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        environment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Logs"];
         };
       };
       400: components["responses"]["Error"];
@@ -16883,6 +19729,31 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_memory_guidance_presets: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryGuidancePresets"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   get_memory: {
     parameters: {
       query?: never;
@@ -17156,6 +20027,66 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  get_memory_automation: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        memory_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryAutomation"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_memory_automation: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        memory_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["OrganizationPolicy"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryAutomation"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_records: {
     parameters: {
       query?: {
@@ -17420,6 +20351,264 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["MemoryFileState"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_memory_organizations: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryOrganizationPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_memory_organization: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["OrganizationRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryOrganization"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_memory_organization: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryOrganization"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_organization_candidate: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OrganizationCandidate"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  apply_organization_candidate: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CandidateApply"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OrganizationCandidate"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_organization_candidate_diff: {
+    parameters: {
+      query: {
+        path: string;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CandidateDiff"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  discard_organization_candidate: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OrganizationCandidate"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_organization_candidate_file: {
+    parameters: {
+      query: {
+        path: string;
+        candidate_seq: number;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CandidateFile"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_organization_candidate_replacement: {
+    parameters: {
+      query: {
+        candidate_seq: number;
+        target_seq: number;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CandidateReplacement"];
         };
       };
       400: components["responses"]["Error"];
@@ -19427,7 +22616,6 @@ export interface operations {
           | "builtin_skills"
           | "client_tools"
           | "user_questions"
-          | "subagent_mode"
           | "subagents"
           | "reviewer"
           | "media_understanding"
@@ -19435,6 +22623,7 @@ export interface operations {
           | "output_spec"
           | "retries"
           | "default_environment_template_id"
+          | "default_environment_id"
           | "lazy_environment"
           | "memory_mounts"
           | "memory";
@@ -21844,6 +25033,70 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ThreadRunPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_session_binding: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        thread_id: string;
+        environment_id: string;
+        name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionBindingView"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_session_binding: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        thread_id: string;
+        environment_id: string;
+        name: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SessionBindingUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionBindingView"];
         };
       };
       400: components["responses"]["Error"];

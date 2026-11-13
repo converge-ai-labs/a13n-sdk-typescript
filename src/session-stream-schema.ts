@@ -27,8 +27,8 @@ export interface components {
      * AgentOverride
      * @description What one run changes of its revision's configuration; an omitted or null field keeps the revision's.
      *
-     *     `toolsets` replaces whole toolsets; `retries` and each subagent edge replace the fields they set, and a null
-     *     edge removes it; every other field replaces the revision's value.
+     *     `toolsets` replaces whole toolsets; `retries` replaces supplied members.
+     *     Every other field, including `subagents`, replaces the whole value.
      */
     AgentOverride: {
       /**
@@ -100,15 +100,16 @@ export interface components {
        * @default null
        */
       skills?: components["schemas"]["SkillSelection"][] | null;
+      /** @default null */
+      subagents?: components["schemas"]["Subagents"] | null;
       /**
-       * Subagents
+       * Tool Search
        * @default null
        */
-      subagents?: {
-        [key: string]: components["schemas"]["SubagentOverride"] | null;
-      } | null;
-      /** @default null */
-      tool_search?: components["schemas"]["ToolSearch"] | null;
+      tool_search?:
+        | components["schemas"]["ToolSearch"]
+        | components["schemas"]["NativeToolSearch"]
+        | null;
       /**
        * Toolsets
        * @default null
@@ -165,6 +166,19 @@ export interface components {
        */
       timeout_seconds?: number;
     };
+    /** AllowlistDestinations */
+    AllowlistDestinations: {
+      /**
+       * Hosts
+       * @default []
+       */
+      hosts?: string[];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "allowlist";
+    };
     /**
      * AppReady
      * @description App originals and references are committed; opening still checks access and fetches current HTML.
@@ -179,8 +193,8 @@ export interface components {
     };
     /** AppReference */
     AppReference: {
-      /** Agent Revision Id */
-      agent_revision_id: string;
+      /** Agent Definition Id */
+      agent_definition_id: string;
       /** App Id */
       app_id: string;
       /** Connection Id */
@@ -225,7 +239,7 @@ export interface components {
     };
     /**
      * AutomaticToolSearch
-     * @description Group Service-owned sources individually, following the agent's selections.
+     * @description Select Service-owned sources for on-demand discovery.
      */
     AutomaticToolSearch: {
       /**
@@ -273,7 +287,14 @@ export interface components {
     BuiltinSkillName: "platform-operations";
     /** @enum {string} */
     BuiltinToolsetKey:
-      "files" | "shell" | "computer" | "browser" | "web" | "memory" | "assets";
+      | "files"
+      | "shell"
+      | "computer"
+      | "browser"
+      | "web"
+      | "memory"
+      | "assets"
+      | "object_store";
     CallResult:
       components["schemas"]["Returned"] | components["schemas"]["Failed"];
     /**
@@ -449,6 +470,16 @@ export interface components {
        */
       reason?: string | null;
     };
+    /** DisabledSandbox */
+    DisabledSandbox: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "disabled";
+      full_disk_read?: never;
+      grants?: never;
+    };
     /**
      * DisplayContinuation
      * @description Parsing state at a semantic cut; Host paging may retire only immutable items.
@@ -477,6 +508,46 @@ export interface components {
       /** Run Id */
       run_id: string;
     };
+    /**
+     * DynamicSubagents
+     * @description Root-only task-specific delegation within the parent's capability boundary.
+     */
+    DynamicSubagents: {
+      /** Allowed Models */
+      allowed_models?: string[];
+      /**
+       * Default Model
+       * @default null
+       */
+      default_model?: string | null;
+      /**
+       * Default Thinking
+       * @default null
+       */
+      default_thinking?: string | boolean | null;
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled?: boolean;
+    };
+    /** EgressConfiguration */
+    EgressConfiguration: {
+      destinations: components["schemas"]["EgressDestinations"];
+      /**
+       * Secrets
+       * @default []
+       */
+      secrets?: components["schemas"]["SecretReference"][];
+    };
+    EgressDestinations:
+      | components["schemas"]["PublicDestinations"]
+      | components["schemas"]["AllowlistDestinations"];
+    /**
+     * EgressMode
+     * @enum {string}
+     */
+    EgressMode: "inherit" | "deny" | "controlled";
     /** @enum {string} */
     EntryStatus: "pending" | "assigned" | "consumed" | "failed" | "withdrawn";
     /** EntryView */
@@ -574,7 +645,95 @@ export interface components {
       | "environment.computer.type_text"
       | "environment.computer.press_keys"
       | "environment.computer.read_clipboard"
-      | "environment.computer.write_clipboard";
+      | "environment.computer.write_clipboard"
+      | "environment.computer.a11y_describe"
+      | "environment.computer.a11y_roots"
+      | "environment.computer.a11y_inspect"
+      | "environment.computer.a11y_find"
+      | "environment.computer.a11y_read"
+      | "environment.computer.a11y_range"
+      | "environment.computer.a11y_range_read"
+      | "environment.computer.ax_disclosing_set"
+      | "environment.computer.ax_expanded_set"
+      | "environment.computer.ax_focus"
+      | "environment.computer.ax_focused_window_set"
+      | "environment.computer.ax_main_set"
+      | "environment.computer.ax_minimized_set"
+      | "environment.computer.ax_perform_action"
+      | "environment.computer.ax_position_set"
+      | "environment.computer.ax_selected_children_set"
+      | "environment.computer.ax_selected_columns_set"
+      | "environment.computer.ax_selected_rows_set"
+      | "environment.computer.ax_selected_set"
+      | "environment.computer.ax_selected_text_set"
+      | "environment.computer.ax_size_set"
+      | "environment.computer.ax_text_range_select"
+      | "environment.computer.ax_text_ranges_select"
+      | "environment.computer.ax_value_number_set"
+      | "environment.computer.ax_value_string_set"
+      | "environment.computer.ax_visible_text_range_set"
+      | "environment.computer.uia_collapse"
+      | "environment.computer.uia_dock_set"
+      | "environment.computer.uia_expand"
+      | "environment.computer.uia_focus"
+      | "environment.computer.uia_invoke"
+      | "environment.computer.uia_legacy_default_action"
+      | "environment.computer.uia_legacy_select"
+      | "environment.computer.uia_legacy_value_set"
+      | "environment.computer.uia_range_add_selection"
+      | "environment.computer.uia_range_remove_selection"
+      | "environment.computer.uia_range_scroll_into_view"
+      | "environment.computer.uia_range_select"
+      | "environment.computer.uia_range_show_context_menu"
+      | "environment.computer.uia_range_value_set"
+      | "environment.computer.uia_realize"
+      | "environment.computer.uia_scroll_amount"
+      | "environment.computer.uia_scroll_into_view"
+      | "environment.computer.uia_scroll_percent"
+      | "environment.computer.uia_selection_add"
+      | "environment.computer.uia_selection_remove"
+      | "environment.computer.uia_selection_select"
+      | "environment.computer.uia_show_context_menu"
+      | "environment.computer.uia_toggle"
+      | "environment.computer.uia_transform_move"
+      | "environment.computer.uia_transform_resize"
+      | "environment.computer.uia_transform_rotate"
+      | "environment.computer.uia_transform_zoom"
+      | "environment.computer.uia_transform_zoom_unit"
+      | "environment.computer.uia_value_set"
+      | "environment.computer.uia_view_set"
+      | "environment.computer.uia_window_close"
+      | "environment.computer.uia_window_state_set"
+      | "environment.computer.atspi_caret_set"
+      | "environment.computer.atspi_component_extents_set"
+      | "environment.computer.atspi_component_position_set"
+      | "environment.computer.atspi_component_size_set"
+      | "environment.computer.atspi_do_action"
+      | "environment.computer.atspi_document_selections_set"
+      | "environment.computer.atspi_focus"
+      | "environment.computer.atspi_range_scroll_to"
+      | "environment.computer.atspi_range_scroll_to_point"
+      | "environment.computer.atspi_scroll_to"
+      | "environment.computer.atspi_scroll_to_point"
+      | "environment.computer.atspi_selection_add_child"
+      | "environment.computer.atspi_selection_all"
+      | "environment.computer.atspi_selection_clear"
+      | "environment.computer.atspi_selection_remove_child"
+      | "environment.computer.atspi_selection_remove_selected"
+      | "environment.computer.atspi_table_column_select"
+      | "environment.computer.atspi_table_column_unselect"
+      | "environment.computer.atspi_table_row_select"
+      | "environment.computer.atspi_table_row_unselect"
+      | "environment.computer.atspi_text_contents_set"
+      | "environment.computer.atspi_text_copy"
+      | "environment.computer.atspi_text_cut"
+      | "environment.computer.atspi_text_delete"
+      | "environment.computer.atspi_text_insert"
+      | "environment.computer.atspi_text_paste"
+      | "environment.computer.atspi_text_selection_add"
+      | "environment.computer.atspi_text_selection_remove"
+      | "environment.computer.atspi_text_selection_set"
+      | "environment.computer.atspi_value_set";
     /** EnvironmentMount */
     EnvironmentMount: {
       /** Environment Id */
@@ -620,6 +779,17 @@ export interface components {
        */
       permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
       /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      session_configuration?: components["schemas"]["SessionConfiguration"];
+      /**
+       * Session Version
+       * @default 0
+       */
+      session_version?: number;
+      /**
        * Working Directory
        * @default null
        */
@@ -645,6 +815,71 @@ export interface components {
       steering?: components["schemas"]["Steering"] | null;
       /** @default null */
       tools?: components["schemas"]["ToolExecutionOverride"] | null;
+    };
+    /**
+     * ExistingRunEnvironment
+     * @description Use this exact primary instance for the Run; absence never triggers allocation.
+     */
+    ExistingRunEnvironment: {
+      /** Environment Id */
+      environment_id: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "existing";
+      /**
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
+       */
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
+      /**
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      /** @default null */
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /**
+       * Working Directory
+       * @default null
+       */
+      working_directory?: string | null;
+      template_id?: never;
     };
     /**
      * Failed
@@ -707,30 +942,69 @@ export interface components {
       };
     };
     /**
-     * FrozenMemoryMount
-     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     * FreshRunEnvironment
+     * @description Reserve a primary instance for this accepted Run without changing Thread mounts.
      */
-    FrozenMemoryMount: {
-      access: components["schemas"]["MemoryAccess"];
-      /** Memory Id */
-      memory_id: string;
-      /** Name */
-      name: string;
+    FreshRunEnvironment: {
       /**
-       * Recall
-       * @default true
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
        */
-      recall?: boolean;
+      mode: "fresh";
       /**
-       * Roots
-       * @default []
+       * @default {
+       *       "operations": [
+       *         "environment.file.copy_destination",
+       *         "environment.file.copy_source",
+       *         "environment.file.list",
+       *         "environment.file.mkdir",
+       *         "environment.file.move",
+       *         "environment.file.patch_text",
+       *         "environment.file.query",
+       *         "environment.file.read_bytes",
+       *         "environment.file.read_text",
+       *         "environment.file.remove",
+       *         "environment.file.search_text",
+       *         "environment.file.stat",
+       *         "environment.file.write_bytes",
+       *         "environment.file.write_text",
+       *         "environment.output.read",
+       *         "environment.output.release",
+       *         "environment.port.inspect",
+       *         "environment.port.wait",
+       *         "environment.process.close_stdin",
+       *         "environment.process.inspect",
+       *         "environment.process.kill",
+       *         "environment.process.list",
+       *         "environment.process.read_output",
+       *         "environment.process.release",
+       *         "environment.process.signal",
+       *         "environment.process.start",
+       *         "environment.process.wait",
+       *         "environment.process.write_stdin",
+       *         "environment.shell.exec",
+       *         "environment.state.export",
+       *         "environment.state.restore"
+       *       ]
+       *     }
        */
-      roots?: string[];
+      permission_ceiling?: components["schemas"]["EnvironmentPermissionSet"];
       /**
-       * Space Id
+       * Session Binding
+       * @default default
+       */
+      session_binding?: string;
+      /** @default null */
+      session_configuration?:
+        components["schemas"]["SessionConfiguration"] | null;
+      /** Template Id */
+      template_id: string;
+      /**
+       * Working Directory
        * @default null
        */
-      space_id?: string | null;
+      working_directory?: string | null;
+      environment_id?: never;
     };
     /**
      * Gap
@@ -743,6 +1017,11 @@ export interface components {
       thread_id: string;
     };
     /**
+     * GrantAccess
+     * @enum {string}
+     */
+    GrantAccess: "read_only" | "read_write";
+    /**
      * HistoricalDesktopPending
      * @description Read-only projection of sealed desktop suspensions predating Computer-scoped control.
      */
@@ -754,6 +1033,7 @@ export interface components {
       /** Desktop Control Id */
       desktop_control_id: string;
     };
+    Hosts: string[];
     /** InitialRun */
     InitialRun: {
       /** Id */
@@ -954,6 +1234,31 @@ export interface components {
     MessagePayload: {
       /** Content */
       content: components["schemas"]["Part"][];
+    };
+    /** NativeIsolation */
+    NativeIsolation: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "native";
+      backend?: never;
+      cpus?: never;
+      image?: never;
+      memory_mib?: never;
+      mounts?: never;
+    };
+    /**
+     * NativeToolSearch
+     * @description Ungrouped native discovery of selected Service tools; plugins keep their own settings.
+     */
+    NativeToolSearch: {
+      /**
+       * Mode
+       * @constant
+       */
+      mode: "native";
+      sources?: components["schemas"]["AutomaticToolSearch"];
     };
     /**
      * ObserverContinuation
@@ -1202,6 +1507,15 @@ export interface components {
       /** Pending Occurrence Id */
       pending_occurrence_id: string | null;
     };
+    /** PublicDestinations */
+    PublicDestinations: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "public";
+      hosts?: never;
+    };
     /** RecordSource */
     RecordSource: {
       /** Id */
@@ -1218,6 +1532,24 @@ export interface components {
       headers?: {
         [key: string]: string;
       };
+    };
+    /** RestrictedSandbox */
+    RestrictedSandbox: {
+      /**
+       * Full Disk Read
+       * @default false
+       */
+      full_disk_read?: boolean;
+      /**
+       * Grants
+       * @default []
+       */
+      grants?: components["schemas"]["SandboxGrant"][];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "restricted";
     };
     /**
      * Resume
@@ -1279,6 +1611,35 @@ export interface components {
         [key: string]: components["schemas"]["JsonValue"];
       };
     };
+    RunEnvironment:
+      | components["schemas"]["FreshRunEnvironment"]
+      | components["schemas"]["ExistingRunEnvironment"];
+    /**
+     * RunMemoryMount
+     * @description Host-resolved Space identity and roots, never accepted from a mount request.
+     */
+    RunMemoryMount: {
+      access: components["schemas"]["MemoryAccess"];
+      /** Memory Id */
+      memory_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Recall
+       * @default true
+       */
+      recall?: boolean;
+      /**
+       * Roots
+       * @default []
+       */
+      roots?: string[];
+      /**
+       * Space Id
+       * @default null
+       */
+      space_id?: string | null;
+    };
     /**
      * RunOptions
      * @description What a message may choose for the run it starts. A steer joins a run with the defaults or equal options.
@@ -1288,6 +1649,8 @@ export interface components {
       configuration?: components["schemas"]["RunConfiguration"] | null;
       /** @default null */
       context?: components["schemas"]["RequestContext"] | null;
+      /** @default null */
+      environment?: components["schemas"]["RunEnvironment"] | null;
       /** @default null */
       execution?: components["schemas"]["ExecutionOverride"] | null;
       /** Labels */
@@ -1325,7 +1688,7 @@ export interface components {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
-      agent_revision_id: string;
+      agent_revision_id: string | null;
       /** Attempts */
       attempts: number;
       /** @default null */
@@ -1361,7 +1724,7 @@ export interface components {
       /** Memory Mounts */
       memory_mounts: (
         | components["schemas"]["MemoryMount"]
-        | components["schemas"]["FrozenMemoryMount"]
+        | components["schemas"]["RunMemoryMount"]
       )[];
       options: components["schemas"]["RunOptions"];
       output: components["schemas"]["JsonValue"] | null;
@@ -1381,7 +1744,7 @@ export interface components {
        * Revision Selection
        * @enum {string}
        */
-      revision_selection: "pinned" | "default" | "inherited";
+      revision_selection: "pinned" | "default" | "inherited" | "snapshot";
       /** @default null */
       schedule_origin?: components["schemas"]["ScheduleOrigin"] | null;
       /** Sealed At */
@@ -1411,6 +1774,18 @@ export interface components {
       /** Workspace Id */
       workspace_id: string;
     };
+    /** SandboxGrant */
+    SandboxGrant: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Path
+       * Format: eip-absolute-path
+       */
+      path: string;
+    };
+    SandboxPolicy:
+      | components["schemas"]["DisabledSandbox"]
+      | components["schemas"]["RestrictedSandbox"];
     /** ScheduleEvent */
     ScheduleEvent: {
       configuration: components["schemas"]["Configuration"];
@@ -1434,6 +1809,53 @@ export interface components {
     ScheduleState: "paused" | "enabled" | "completed" | "archived";
     /** @enum {string} */
     ScheduleTrigger: "scheduled" | "manual";
+    /** SecretReference */
+    SecretReference: {
+      /** Credential Id */
+      credential_id: string;
+      /** Env */
+      env: string;
+      inject_hosts: components["schemas"]["Hosts"];
+    };
+    /**
+     * SessionConfiguration
+     * @description Tenant-authored Session policy; Service credentials are not process-environment references.
+     */
+    SessionConfiguration: {
+      /**
+       * Commands
+       * @default null
+       */
+      commands?: boolean | null;
+      /** @default null */
+      egress?: components["schemas"]["EgressConfiguration"] | null;
+      /** @default null */
+      egress_mode?: components["schemas"]["EgressMode"] | null;
+      /** @default null */
+      isolation?: components["schemas"]["SessionIsolation"] | null;
+      /** @default null */
+      lifecycle?: components["schemas"]["SessionLifecyclePolicy"] | null;
+      /** @default null */
+      sandbox?: components["schemas"]["SandboxPolicy"] | null;
+      /**
+       * Working Directory
+       * @default null
+       */
+      working_directory?: string | null;
+    };
+    SessionIsolation:
+      | components["schemas"]["NativeIsolation"]
+      | components["schemas"]["VmIsolation"];
+    /** SessionLifecyclePolicy */
+    SessionLifecyclePolicy: {
+      /** Idle Timeout Ms */
+      idle_timeout_ms: number;
+      /**
+       * Max Lifetime Ms
+       * @default null
+       */
+      max_lifetime_ms?: number | null;
+    };
     /**
      * SharedSkillSync
      * @description Publish mutable conventional names; the last completed publication wins.
@@ -1474,25 +1896,17 @@ export interface components {
       /** Sequence */
       sequence: number;
     };
-    /**
-     * SubagentOverride
-     * @description Replaces the fields it sets of an edge; an edge the revision lacks sets at least `agent_id`.
-     */
-    SubagentOverride: {
-      /**
-       * Agent Id
-       * @default null
-       */
-      agent_id?: string | null;
-      /** @default null */
-      context?: components["schemas"]["DelegationContextPolicy"] | null;
+    /** SubagentSelection */
+    SubagentSelection: {
+      /** Agent Id */
+      agent_id: string;
+      context?: components["schemas"]["DelegationContextPolicy"];
       /**
        * Description
        * @default null
        */
       description?: string | null;
-      /** @default null */
-      environment?: components["schemas"]["ChildEnvironmentPolicy"] | null;
+      environment?: components["schemas"]["ChildEnvironmentPolicy"];
       /**
        * Revision Id
        * @default null
@@ -1500,6 +1914,20 @@ export interface components {
       revision_id?: string | null;
       /** @default null */
       usage_limits?: components["schemas"]["UsageLimits"] | null;
+    };
+    /** Subagents */
+    Subagents: {
+      dynamic?: components["schemas"]["DynamicSubagents"];
+      /**
+       * Mode
+       * @default async
+       * @enum {string}
+       */
+      mode?: "inline" | "async";
+      /** Named */
+      named?: {
+        [key: string]: components["schemas"]["SubagentSelection"];
+      };
     };
     /** TextPart */
     TextPart: {
@@ -1838,6 +2266,45 @@ export interface components {
        * @default null
        */
       total_tokens_limit?: number | null;
+    };
+    /**
+     * VmBackend
+     * @enum {string}
+     */
+    VmBackend: "boxlite" | "microsandbox";
+    /** VmIsolation */
+    VmIsolation: {
+      backend: components["schemas"]["VmBackend"];
+      /** Cpus */
+      cpus: number;
+      /** Image */
+      image: string;
+      /** Memory Mib */
+      memory_mib: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "vm";
+      /**
+       * Mounts
+       * @default []
+       */
+      mounts?: components["schemas"]["VmMount"][];
+    };
+    /** VmMount */
+    VmMount: {
+      access: components["schemas"]["GrantAccess"];
+      /**
+       * Source
+       * Format: eip-absolute-path
+       */
+      source: string;
+      /**
+       * Target
+       * Format: eip-absolute-path
+       */
+      target: string;
     };
     /** @enum {string} */
     WaitReason: "approval" | "call" | "multiple" | "desktop_control";
