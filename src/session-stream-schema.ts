@@ -1705,6 +1705,11 @@ export interface components {
       /** Environment Mounts */
       environment_mounts: components["schemas"]["EnvironmentMount"][];
       failure: components["schemas"]["Failure"] | null;
+      /**
+       * Finding Analysis Id
+       * @default null
+       */
+      finding_analysis_id?: string | null;
       /** Id */
       id: string;
       /**

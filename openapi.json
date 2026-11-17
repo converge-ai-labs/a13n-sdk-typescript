@@ -20443,6 +20443,17 @@
               }
             ]
           },
+          "finding_analysis_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finding Analysis Id"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -38528,7 +38539,7 @@
         }
       },
       "post": {
-        "description": "Record an unconfirmed finding with evidence and a suggestion; a stable source_key makes a retry safe.\nA Run's own submission names that Run as its source; an analysis cites only selected traces it has read.",
+        "description": "Record an unconfirmed finding with evidence and a suggestion; a stable source_key makes a retry safe.\nA Run's own submission names that Run as its source; an analysis cites traces it has read.",
         "operationId": "create_finding",
         "parameters": [
           {
