@@ -23,6 +23,26 @@ import {
 import { threadStream } from "../src/streams/thread-stream.js";
 
 type Schema = components["schemas"];
+const appPolicy: Schema["AppUpdate"] = { enabled: false };
+void appPolicy;
+// @ts-expect-error App activation is a boolean, not a string.
+const invalidAppPolicy: Schema["AppUpdate"] = { enabled: "false" };
+void invalidAppPolicy;
+const analysisID: Schema["RunView"]["finding_analysis_id"] = null;
+void analysisID;
+const objectRefConfig: Schema["McpConfig"] = {
+  url: "https://mcp.example.test",
+  object_ref_tools: { "*": true, private_read: false },
+};
+void objectRefConfig;
+const invalidObjectRefConfig: Schema["McpConfig"] = {
+  url: "https://mcp.example.test",
+  // @ts-expect-error Object reference rule values must be booleans.
+  object_ref_tools: { read: "yes" },
+};
+void invalidObjectRefConfig;
+const objectStoreCapability: Schema["BuiltinToolsetKey"] = "object_store";
+void objectStoreCapability;
 // @ts-expect-error The account-specific discovery model name is retired.
 type RetiredDiscoveryModel = Schema["ChatGPTModel"];
 void (null as unknown as RetiredDiscoveryModel);
@@ -36,6 +56,9 @@ const catchupOverride: AgentOverride = {
   skill_sync: isolatedSkillSync,
 };
 void catchupOverride;
+// @ts-expect-error The retired platform_tools field is not a Service override.
+const retiredPlatformTools: AgentOverride = { platform_tools: null };
+void retiredPlatformTools;
 void sharedSkillSync;
 const wrongIsolated: Schema["IsolatedSkillSync"] = {
   mode: "isolated",
@@ -691,12 +714,16 @@ export async function publicWorkflowTypes() {
     retries: null,
     reviewer: null,
     skills: [],
-    subagents: { optional_child: null },
+    subagents: { mode: "async", named: {} },
     toolsets: {},
   };
   const options: RunOptions = {
     configuration,
     overrides,
+    environment: {
+      mode: "existing",
+      environment_id: "env_01234567890123456789",
+    },
     labels: { purpose: "test" },
     max_usage: { requests: 3 },
   };

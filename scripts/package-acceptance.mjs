@@ -379,7 +379,7 @@ async function example() {
   const followup = await agent.send(outcome.threadId, "Next", { idempotencyKey: "next-1", options: { configuration: {} } });
   await followup.close();
   const configuration: RunConfiguration = { allowed_hosts: [], extensions: { native: { zero: 0, flag: false } } };
-  const overrides: AgentOverride = { instructions: null, model: null, model_settings: { custom: [null, false, 0] }, model_characteristics: null, media_understanding: null, output_spec: null, client_tools: [], connection_tools: [], plugins: [], retries: null, reviewer: null, skills: [], subagents: { removed: null }, toolsets: {} };
+  const overrides: AgentOverride = { instructions: null, model: null, model_settings: { custom: [null, false, 0] }, model_characteristics: null, media_understanding: null, output_spec: null, client_tools: [], connection_tools: [], plugins: [], retries: null, reviewer: null, skills: [], subagents: { mode: "async", named: { child: { agent_id: "agt_01234567890123456789" } }, dynamic: { enabled: true } }, toolsets: {} };
   const options: RunOptions = { configuration, overrides, labels: { purpose: "installed" }, max_usage: { requests: 2 } };
   const messageHistory: MessageHistory = [];
   const publicInput = await agent.start([text("Hi"), json(0), url("https://example.test/a"), asset("asset")], { options, messageHistory, sessionId: null, agentRevisionId: null, mcpHeaders: {}, environments: [], memories: [] });

@@ -8,6 +8,7 @@ for (const optional of [false, true]) {
     const calls = [];
     let instructions;
     let memory;
+    let guidance = { custom: "" };
     const client = createClient({
       baseUrl: "https://service.example.test",
       auth: { type: "bearer", token: "caller-test" },
@@ -27,9 +28,13 @@ for (const optional of [false, true]) {
         if (path === "/memory-spaces/space") {
           if (request.method === "PATCH") {
             assert.equal(request.headers.get("If-Match"), '"v1"');
-            assert.deepEqual(await request.json(), { guide: null });
+            const body = await request.json();
+            assert.deepEqual(body, {
+              guidance: { custom: "SDK acceptance guidance" },
+            });
+            guidance = body.guidance;
           }
-          return json({ id: "space", memory_id: "memory" });
+          return json({ id: "space", memory_id: "memory", guidance });
         }
         if (path === "/sessions") {
           memory = (await request.json()).memory;
@@ -47,6 +52,11 @@ for (const optional of [false, true]) {
         if (path === "/threads") {
           const body = await request.json();
           instructions = body.options.overrides.instructions;
+          assert.deepEqual(body.options.overrides, {
+            instructions,
+            builtin_skills: [],
+          });
+          assert.equal("platform_tools" in body.options.overrides, false);
           assert.equal(body.session_id, "session");
           assert.equal("memories" in body, false);
           return json(
@@ -84,6 +94,7 @@ for (const optional of [false, true]) {
           });
         if (path === "/runs/run/agent")
           return json({
+            source: "revision",
             revision: { id: "revision" },
             config: { instructions, builtin_skills: [] },
           });
@@ -105,7 +116,15 @@ for (const optional of [false, true]) {
                 output_tokens_per_second: 0,
               },
             ],
-            runs: [],
+          });
+        }
+        if (path === "/usage/runs") {
+          assert.equal(url.searchParams.get("run_id"), "run");
+          return json({
+            items: [
+              { run_id: "run", thread_id: "thread", run_number: 1, models: [] },
+            ],
+            next_cursor: null,
           });
         }
         if (path === "/memory-spaces/space/organizations") {
