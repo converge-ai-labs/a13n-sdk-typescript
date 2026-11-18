@@ -31,8 +31,10 @@ test("all added Memory, provider and bootstrap operations are reachable through 
         );
       },
     );
-    assert.equal(candidates.length, 1, `${request.method} ${actual}`);
-    const [path, operations] = candidates[0];
+    const exact = candidates.find(([path]) => path === actual);
+    const selected = exact ? [exact] : candidates;
+    assert.equal(selected.length, 1, `${request.method} ${actual}`);
+    const [path, operations] = selected[0];
     seen.add(`${request.method} ${path}`);
     const status = Number(
       Object.keys(operations[request.method.toLowerCase()].responses).find(
@@ -46,9 +48,12 @@ test("all added Memory, provider and bootstrap operations are reachable through 
   try {
     const memories = client.api.memories;
     await memories.list();
+    await memories.guidancePresets.list();
     await memories.create({ key: "notes", name: "Notes" });
     const memory = memories.ref("mem_one");
     await memory.get();
+    await memory.organization.get();
+    await memory.organization.replace({}, match);
     await memory.update({ guide: null }, match);
     await memory.delete(match);
     await memory.files.list();
@@ -104,7 +109,7 @@ test("all added Memory, provider and bootstrap operations are reachable through 
             )
           : [],
     );
-    assert.equal(expected.length, 31);
+    assert.equal(expected.length, 34);
     assert.deepEqual([...seen].sort(), expected.sort());
   } finally {
     client.close();

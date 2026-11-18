@@ -23,7 +23,7 @@ const memory: Schema["SessionMemorySettings"] = {
 };
 const minimalMemory: Schema["SessionMemorySettings"] = {};
 const defaultComputerCheck: Schema["ComputerCheck"] = { status: "not_ready" };
-const hostMount: Schema["FrozenMemoryMount"] = {
+const hostMount: Schema["RunMemoryMount"] = {
   name: "shared",
   memory_id: "memory",
   access: "read",
@@ -58,7 +58,7 @@ const badRequest: MemoryMount = {
   // @ts-expect-error Frozen host roots are not accepted request MemoryMount fields.
   roots: [],
 };
-const nullRoots: Schema["FrozenMemoryMount"] = {
+const nullRoots: Schema["RunMemoryMount"] = {
   name: "shared",
   memory_id: "memory",
   access: "read",
@@ -104,7 +104,7 @@ export async function refreshTypes() {
   });
   const ref = client.api.memorySpaces.ref(space.data.id);
   await ref.update(
-    { enabled: false, guide: null, always_load: [] },
+    { enabled: false, guidance: null, always_load: [] },
     { ifMatch: "etag" },
   );
   await ref.delete({ ifMatch: "etag" });
