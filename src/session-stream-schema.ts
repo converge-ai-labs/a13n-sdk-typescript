@@ -580,6 +580,7 @@ export interface components {
       kind:
         | "message"
         | "child_result"
+        | "child_message"
         | "tool_result"
         | "browser_handback"
         | "desktop_handback";
@@ -2183,6 +2184,7 @@ export interface components {
       | "queued"
       | "resume"
       | "child_result"
+      | "child_message"
       | "tool_result"
       | "browser_handback"
       | "desktop_handback"

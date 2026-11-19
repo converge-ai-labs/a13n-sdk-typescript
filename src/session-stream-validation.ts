@@ -30040,6 +30040,7 @@ var schema150 = {
     "queued",
     "resume",
     "child_result",
+    "child_message",
     "tool_result",
     "browser_handback",
     "desktop_handback",
@@ -30083,6 +30084,7 @@ function validate346(
     data === "queued" ||
     data === "resume" ||
     data === "child_result" ||
+    data === "child_message" ||
     data === "tool_result" ||
     data === "browser_handback" ||
     data === "desktop_handback" ||
@@ -33241,6 +33243,7 @@ var schema152 = {
       enum: [
         "message",
         "child_result",
+        "child_message",
         "tool_result",
         "browser_handback",
         "desktop_handback",
@@ -34021,6 +34024,7 @@ function validate352(
                               if (!(
                                 data10 === "message" ||
                                 data10 === "child_result" ||
+                                data10 === "child_message" ||
                                 data10 === "tool_result" ||
                                 data10 === "browser_handback" ||
                                 data10 === "desktop_handback"
