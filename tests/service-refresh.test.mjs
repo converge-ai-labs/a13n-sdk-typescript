@@ -31,7 +31,7 @@ const space = {
   name: "Shared notes",
   memory_id: "memory",
   organization: policy,
-  guide: null,
+  guidance: { custom: "Shared notes" },
   always_load: [],
   enabled: false,
   labels: {},
@@ -103,7 +103,7 @@ test("all 18 added operations use native selectors, bodies, metadata and respons
       }
       assert.deepEqual(await request.json(), {
         name: space.name,
-        guide: null,
+        guidance: { custom: "Shared notes" },
         always_load: [],
         enabled: false,
         organization: policy,
@@ -114,7 +114,7 @@ test("all 18 added operations use native selectors, bodies, metadata and respons
       if (request.method === "PATCH") {
         assert.equal(request.headers.get("If-Match"), '"v1"');
         assert.deepEqual(await request.json(), {
-          guide: null,
+          guidance: { custom: "Shared notes" },
           enabled: false,
           always_load: [],
           organization: policy,
@@ -164,16 +164,13 @@ test("all 18 added operations use native selectors, bodies, metadata and respons
     }
     if (path === "/runs/run/agent")
       return Response.json({
+        definition_id: "agent",
+        source: "revision",
         revision: { id: "revision" },
         config: {
           model: "frozen-model",
           instructions: "Accepted override",
           builtin_skills: [],
-          platform_tools: {
-            groups: [],
-            read_permission: "deny",
-            write_permission: "deny",
-          },
           memory: { enabled: false, spaces: [] },
         },
       });
@@ -226,7 +223,7 @@ test("all 18 added operations use native selectors, bodies, metadata and respons
     const spaces = client.api.memorySpaces;
     const created = await spaces.create({
       name: space.name,
-      guide: null,
+      guidance: { custom: "Shared notes" },
       enabled: false,
       always_load: [],
       organization: policy,
@@ -240,7 +237,12 @@ test("all 18 added operations use native selectors, bodies, metadata and respons
     const ref = spaces.ref(created.data.id);
     assert.deepEqual((await ref.get()).data, space);
     await ref.update(
-      { guide: null, enabled: false, always_load: [], organization: policy },
+      {
+        guidance: { custom: "Shared notes" },
+        enabled: false,
+        always_load: [],
+        organization: policy,
+      },
       { ifMatch: '"v1"' },
     );
     assert.deepEqual((await ref.organization.get()).data, status);
@@ -372,7 +374,7 @@ test("retained image canonical rejection remains ApiError and computer check is 
   }
 });
 
-test("authored start/send forward platform, builtin and permission options without policy injection", async () => {
+test("authored start/send forward builtin, toolset and permission options without policy injection", async () => {
   const bodies = [];
   const client = clientWith(async (request) => {
     bodies.push(await request.json());
@@ -388,21 +390,10 @@ test("authored start/send forward platform, builtin and permission options witho
   try {
     for (const overrides of [
       {},
-      { builtin_skills: null, platform_tools: null },
-      {
-        builtin_skills: [],
-        platform_tools: {
-          groups: [],
-          read_permission: "deny",
-          write_permission: "deny",
-        },
-      },
+      { builtin_skills: null, toolsets: null },
+      { builtin_skills: [], toolsets: {} },
       {
         builtin_skills: ["platform-operations"],
-        platform_tools: {
-          groups: ["execution", "models"],
-          write_permission: "ask",
-        },
         toolsets: { computer: { enabled: true } },
       },
     ]) {
@@ -444,11 +435,20 @@ test("session Memory settings, usage metrics and case-sensitive catalog filters 
       assert.equal(url.searchParams.get("model"), "Provider/ExactCase");
       return Response.json({ providers: [] });
     }
-    if (url.pathname.endsWith("/usage"))
+    if (url.pathname.endsWith("/usage/runs"))
       return Response.json({
-        models: [modelUsage],
-        runs: [{ run_id: "run", thread_id: "thread", models: [modelUsage] }],
+        items: [
+          {
+            run_id: "run",
+            thread_id: "thread",
+            run_number: 1,
+            models: [modelUsage],
+          },
+        ],
+        next_cursor: null,
       });
+    if (url.pathname.endsWith("/usage"))
+      return Response.json({ models: [modelUsage] });
     assert.deepEqual(await request.json(), { memory });
     return Response.json(
       { id: "session", memory, purpose: "conversation" },
@@ -470,7 +470,8 @@ test("session Memory settings, usage metrics and case-sensitive catalog filters 
     );
     const usage = (await client.api.usage.get()).data;
     assert.equal(usage.models[0].average_time_to_first_chunk_seconds, null);
-    assert.equal(usage.runs[0].models[0].output_tokens_per_second, 0);
+    const runUsage = (await client.api.usage.runs.list()).data;
+    assert.equal(runUsage.items[0].models[0].output_tokens_per_second, 0);
     await client.api.modelCatalog.list({
       query: { provider: "openrouter", model: "Provider/ExactCase" },
     });

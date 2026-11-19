@@ -438,7 +438,7 @@ test("App readiness is typed, repeatable, and rejects malformed payloads and SSE
       {
         app_id: "app",
         connection_id: "con",
-        agent_revision_id: "rev",
+        agent_definition_id: "agent",
         source_run_id: "run",
         tool_call_id: "call",
         tool_name: "chart",

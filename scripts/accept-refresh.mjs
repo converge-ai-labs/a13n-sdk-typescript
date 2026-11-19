@@ -21,7 +21,13 @@ export async function acceptRefresh(client, settings) {
   const storedSpace = await spaceRef.get();
   const spaceETag = storedSpace.response.headers.get("ETag");
   assert.ok(spaceETag);
-  await spaceRef.update({ guide: null }, { ifMatch: spaceETag });
+  const guidance = { custom: "SDK acceptance guidance" };
+  const updatedSpace = await spaceRef.update(
+    { guidance },
+    { ifMatch: spaceETag },
+  );
+  assert.equal(updatedSpace.data.guidance.custom, guidance.custom);
+  assert.equal((await spaceRef.get()).data.guidance.custom, guidance.custom);
   const binding = { name: "team", space_id: space.data.id, access: "read" };
   const session = await client.api.sessions.create({
     memory: { enabled: false, spaces: [binding] },
@@ -46,7 +52,7 @@ export async function acceptRefresh(client, settings) {
       sessionId: session.data.id,
       idempotencyKey: `typescript-refresh-${randomUUID()}`,
       options: {
-        overrides: { instructions, builtin_skills: [], platform_tools: null },
+        overrides: { instructions, builtin_skills: [] },
       },
     });
   let result;
@@ -62,6 +68,11 @@ export async function acceptRefresh(client, settings) {
     assert.deepEqual(frozen.roots, ["global/", `sessions/${session.data.id}/`]);
     const run = client.api.runs.ref(result.runId);
     const executed = await run.agent.get();
+    assert.equal(executed.data.source, "revision");
+    assert.ok(
+      executed.data.revision,
+      "new Agent Thread uses a published revision",
+    );
     assert.equal(
       executed.data.revision.id,
       result.snapshot.data.agent_revision_id,
@@ -79,7 +90,14 @@ export async function acceptRefresh(client, settings) {
     const usage = await client.api.usage.get({
       query: { run_id: result.runId },
     });
-    assert.ok(Array.isArray(usage.data.runs));
+    assert.ok(Array.isArray(usage.data.models));
+    const usageRuns = await client.api.usage.runs.list({
+      query: { run_id: result.runId },
+    });
+    assert.ok(Array.isArray(usageRuns.data.items));
+    assert.ok(
+      usageRuns.data.items.some((item) => item.run_id === result.runId),
+    );
     for (const model of usage.data.models) {
       for (const key of [
         "average_time_to_first_chunk_seconds",
