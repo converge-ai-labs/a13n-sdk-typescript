@@ -15578,6 +15578,16 @@
             ],
             "title": "Agent Revision Id"
           },
+          "browser_binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "delivery": {
             "$ref": "#/components/schemas/Delivery",
             "default": "steer"
@@ -21256,6 +21266,20 @@
             ],
             "title": "Agent Revision Id"
           },
+          "browser_binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "environments": {
+            "$ref": "#/components/schemas/InitialMounts",
+            "default": []
+          },
           "memories": {
             "default": [],
             "items": {
@@ -21297,6 +21321,20 @@
               }
             ],
             "title": "Agent Revision Id"
+          },
+          "browser_binding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserBinding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "environments": {
+            "$ref": "#/components/schemas/InitialMounts",
+            "default": []
           },
           "memories": {
             "default": [],
