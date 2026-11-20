@@ -331,7 +331,7 @@ test("pinned native surface exposes bounded run discovery and preserves media-po
     Object.values(spec.paths).flatMap((item) =>
       Object.values(item).filter((op) => op.operationId),
     ).length,
-    396,
+    401,
   );
   const schemas = spec.components.schemas;
   assert.equal(schemas.RunOptions?.properties?.configuration, undefined); // Input and output remain distinct.
@@ -344,4 +344,36 @@ test("pinned native surface exposes bounded run discovery and preserves media-po
   );
   assert.deepEqual(schemas.VideoUrlType.enum, ["youtube"]);
   assert.ok(schemas.ProviderType.properties.oauth_scheme);
+});
+
+test("Cloudflare deployment retry preserves the selector, body and conditional version", async () => {
+  const requests = [];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: "key" },
+    fetch: async (request) => {
+      requests.push({
+        method: request.method,
+        path: new URL(request.url).pathname,
+        ifMatch: request.headers.get("If-Match"),
+        body: await request.json(),
+      });
+      return Response.json({ id: "dep_one" }, { status: 202 });
+    },
+  });
+  try {
+    await client.api.cloudflareDeployments
+      .ref("dep one")
+      .retry({ api_token: null }, { ifMatch: '"dep:3"' });
+    assert.deepEqual(requests, [
+      {
+        method: "POST",
+        path: "/api/v1/cloudflare-deployments/dep%20one/retry",
+        ifMatch: '"dep:3"',
+        body: { api_token: null },
+      },
+    ]);
+  } finally {
+    client.close();
+  }
 });
