@@ -314,6 +314,31 @@ export interface components {
        */
       template_id?: string | null;
     };
+    /** ClientOutputAlternative */
+    ClientOutputAlternative: {
+      /**
+       * Description
+       * @default null
+       */
+      description?: string | null;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "client_tool";
+      /** Name */
+      name: string;
+      /** Resources */
+      resources?: {
+        [key: string]: {
+          [key: string]: components["schemas"]["JsonValue"];
+        };
+      };
+      /** Schema */
+      schema: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+    };
     /**
      * ClientToolDefinition
      * @description Portable model guidance for one externally executed client tool.
@@ -580,6 +605,7 @@ export interface components {
       kind:
         | "message"
         | "child_result"
+        | "child_message"
         | "tool_result"
         | "browser_handback"
         | "desktop_handback";
@@ -1386,6 +1412,13 @@ export interface components {
        */
       type: "once";
     };
+    OutputAlternative:
+      | components["schemas"]["OutputReference"]
+      | components["schemas"]["OutputDefinition"];
+    OutputDefinition:
+      | components["schemas"]["StructuredOutputAlternative"]
+      | components["schemas"]["ClientOutputAlternative"];
+    OutputReference: string;
     /**
      * OutputSpec
      * @description Plain text without a schema, one structured output, or at least two named variants.
@@ -1393,6 +1426,11 @@ export interface components {
      *     `resources` are the schemas `$ref`s may name besides the schema's own definitions.
      */
     OutputSpec: {
+      /**
+       * Alternatives
+       * @default null
+       */
+      alternatives?: components["schemas"]["OutputAlternative"][] | null;
       /**
        * Description
        * @default null
@@ -1470,6 +1508,11 @@ export interface components {
       presentation?: {
         [key: string]: components["schemas"]["JsonValue"];
       } | null;
+      /**
+       * Terminal
+       * @default false
+       */
+      terminal?: boolean;
       tool_call_id: components["schemas"]["ToolCallId"];
       /** Tool Name */
       tool_name: string;
@@ -1901,6 +1944,31 @@ export interface components {
       /** Sequence */
       sequence: number;
     };
+    /** StructuredOutputAlternative */
+    StructuredOutputAlternative: {
+      /**
+       * Description
+       * @default null
+       */
+      description?: string | null;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "structured";
+      /** Name */
+      name: string;
+      /** Resources */
+      resources?: {
+        [key: string]: {
+          [key: string]: components["schemas"]["JsonValue"];
+        };
+      };
+      /** Schema */
+      schema: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+    };
     /** SubagentSelection */
     SubagentSelection: {
       /** Agent Id */
@@ -2183,6 +2251,7 @@ export interface components {
       | "queued"
       | "resume"
       | "child_result"
+      | "child_message"
       | "tool_result"
       | "browser_handback"
       | "desktop_handback"
