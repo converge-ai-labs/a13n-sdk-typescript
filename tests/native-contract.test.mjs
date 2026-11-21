@@ -331,7 +331,7 @@ test("pinned native surface exposes bounded run discovery and preserves media-po
     Object.values(spec.paths).flatMap((item) =>
       Object.values(item).filter((op) => op.operationId),
     ).length,
-    401,
+    402,
   );
   const schemas = spec.components.schemas;
   assert.equal(schemas.RunOptions?.properties?.configuration, undefined); // Input and output remain distinct.
@@ -373,6 +373,88 @@ test("Cloudflare deployment retry preserves the selector, body and conditional v
         body: { api_token: null },
       },
     ]);
+  } finally {
+    client.close();
+  }
+});
+
+test("start preserves omitted, null and authored browser binding", async () => {
+  const bodies = [];
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: "key" },
+    fetch: async (request) => {
+      bodies.push(await request.json());
+      return Response.json(submitted, { status: 201 });
+    },
+  });
+  try {
+    (await client.agents.ref("agent_one").start("omitted")).close();
+    (
+      await client.agents
+        .ref("agent_one")
+        .start("null", { browserBinding: null })
+    ).close();
+    (
+      await client.agents.ref("agent_one").start("bound", {
+        browserBinding: { browser_id: "brw_123", tab_access: "global" },
+      })
+    ).close();
+    assert.equal(Object.hasOwn(bodies[0], "browser_binding"), false);
+    assert.equal(bodies[1].browser_binding, null);
+    assert.deepEqual(bodies[2].browser_binding, {
+      browser_id: "brw_123",
+      tab_access: "global",
+    });
+  } finally {
+    client.close();
+  }
+});
+
+test("session usage sends selectors and decodes the typed page", async () => {
+  const client = createClient({
+    baseUrl,
+    auth: { type: "bearer", token: "key" },
+    fetch: async (request) => {
+      const url = new URL(request.url);
+      assert.equal(url.pathname, "/api/v1/usage/sessions");
+      assert.equal(url.searchParams.get("agent_id"), "agt_123");
+      assert.equal(url.searchParams.get("cursor"), "next +/");
+      assert.equal(url.searchParams.get("limit"), "7");
+      return Response.json({
+        items: [
+          {
+            session_id: "ses_123",
+            title: null,
+            usage: {
+              requests: 2,
+              input_tokens: 12,
+              output_tokens: 4,
+              cache_read_tokens: 0,
+              cache_hit_rate: null,
+              cost: null,
+              unpriced_requests: 1,
+            },
+            runs: { runs: 3, average_duration_seconds: null },
+          },
+        ],
+        next_cursor: "later",
+      });
+    },
+  });
+  try {
+    const page = await client.api.usage.sessions.list({
+      query: {
+        start: "2026-01-01T00:00:00Z",
+        end: "2026-01-02T00:00:00Z",
+        agent_id: "agt_123",
+        cursor: "next +/",
+        limit: 7,
+      },
+    });
+    assert.equal(page.data.items[0].session_id, "ses_123");
+    assert.equal(page.data.items[0].usage.input_tokens, 12);
+    assert.equal(page.data.next_cursor, "later");
   } finally {
     client.close();
   }

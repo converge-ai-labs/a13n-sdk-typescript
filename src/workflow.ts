@@ -74,6 +74,7 @@ export interface SendOptions extends SubmissionOptions {
   options?: RunOptions;
 }
 export interface StartOptions extends SendOptions {
+  browserBinding?: Schema["BrowserBinding"] | null;
   execution?: ExecutionOverride | null;
   sessionId?: string | null;
   session?: Schema["SessionCreate"] | null;
@@ -122,6 +123,9 @@ export function sendFields(options: SendOptions) {
 export function startFields(options: StartOptions) {
   return {
     ...sendFields(options),
+    ...(options.browserBinding !== undefined
+      ? { browser_binding: options.browserBinding }
+      : {}),
     ...(options.session !== undefined ? { session: options.session } : {}),
     ...(options.execution !== undefined
       ? { execution: options.execution }
