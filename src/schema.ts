@@ -4810,6 +4810,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/usage/sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Session Usage
+     * @description Sessions ranked by recorded cost for one Agent within the selected window.
+     */
+    get: operations["list_session_usage"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/users/me": {
     parameters: {
       query?: never;
@@ -11281,6 +11301,7 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id?: string | null;
+      browser_binding?: components["schemas"]["BrowserBinding"] | null;
       /** @default steer */
       delivery?: components["schemas"]["Delivery"];
       /** @default [] */
@@ -13318,6 +13339,9 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      browser_binding?: components["schemas"]["BrowserBinding"] | null;
+      /** @default [] */
+      environments?: components["schemas"]["InitialMounts"];
       /**
        * Memories
        * @default []
@@ -13332,6 +13356,9 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      browser_binding?: components["schemas"]["BrowserBinding"] | null;
+      /** @default [] */
+      environments?: components["schemas"]["InitialMounts"];
       /**
        * Memories
        * @default []
@@ -13752,6 +13779,22 @@ export interface components {
       origin?: components["schemas"]["SessionOrigin"] | null;
       /** Title */
       title?: string | null;
+    };
+    /** SessionUsage */
+    SessionUsage: {
+      runs: components["schemas"]["RunMetrics"];
+      /** Session Id */
+      session_id: string;
+      /** Title */
+      title: string | null;
+      usage: components["schemas"]["ModelMetrics"];
+    };
+    /** SessionUsagePage */
+    SessionUsagePage: {
+      /** Items */
+      items: components["schemas"]["SessionUsage"][];
+      /** Next Cursor */
+      next_cursor: string | null;
     };
     /** SessionView */
     SessionView: {
@@ -26402,6 +26445,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["RunUsagePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_session_usage: {
+    parameters: {
+      query: {
+        start: string;
+        end: string;
+        /** @description Filter by Run execution identity; requires workspace admin. */
+        principal_id?: string | null;
+        limit?: number;
+        cursor?: string | null;
+        agent_id: string;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SessionUsagePage"];
         };
       };
       400: components["responses"]["Error"];

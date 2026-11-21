@@ -342,6 +342,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["GET", new RegExp("^/api/v1/usage/overview$")],
   ["GET", new RegExp("^/api/v1/usage/records/[^/]+/metrics$")],
   ["GET", new RegExp("^/api/v1/usage/runs$")],
+  ["GET", new RegExp("^/api/v1/usage/sessions$")],
   ["GET", new RegExp("^/api/v1/web-providers$")],
   ["POST", new RegExp("^/api/v1/web-providers$")],
   ["DELETE", new RegExp("^/api/v1/web-providers/[^/]+$")],
