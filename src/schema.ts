@@ -3175,6 +3175,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/organizations/{organization_id}/members/{user_id}/password-reset": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reset Member Password */
+    post: operations["reset_member_password"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/organizations/{organization_id}/workspaces": {
     parameters: {
       query?: never;
@@ -6270,6 +6287,12 @@ export interface components {
       email_delivery: boolean;
       /** Initialized */
       initialized: boolean;
+      /** Manual Password Reset */
+      manual_password_reset: boolean;
+      /** Oidc Providers */
+      oidc_providers: components["schemas"]["OIDCSignIn"][];
+      /** Password Enabled */
+      password_enabled: boolean;
     };
     /** Authentication */
     Authentication: {
@@ -7563,6 +7586,8 @@ export interface components {
       name: string;
       /** Organization Id */
       organization_id: string;
+      /** Owner App Id */
+      owner_app_id?: string | null;
       /** Revoked At */
       revoked_at: string | null;
       /**
@@ -9182,7 +9207,10 @@ export interface components {
       created_at: string;
       /** Created By Id */
       created_by_id: string;
-      /** Evidence */
+      /**
+       * Evidence
+       * @description Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.
+       */
       evidence: components["schemas"]["Evidence"][];
       /** Explanation */
       explanation: string;
@@ -9221,7 +9249,10 @@ export interface components {
       agent_revision_id: string | null;
       /** @description One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories. */
       category: components["schemas"]["Category"];
-      /** Evidence */
+      /**
+       * Evidence
+       * @description Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.
+       */
       evidence: components["schemas"]["Evidence"][];
       /** Explanation */
       explanation: string;
@@ -9476,9 +9507,21 @@ export interface components {
       id: string;
       /** Organization Id */
       organization_id: string;
+      /**
+       * Overrides Sso
+       * @description The manual grant overrides an SSO default at this scope.
+       * @default false
+       */
+      overrides_sso?: boolean;
       principal: components["schemas"]["PrincipalSummary"];
       /** Role */
       role: string;
+      /**
+       * Source
+       * @default manual
+       * @enum {string}
+       */
+      source?: "manual" | "oidc";
       /** Workspace Id */
       workspace_id: string | null;
     };
@@ -11104,6 +11147,8 @@ export interface components {
       output_tokens_per_second: number | null;
       /** Requests */
       requests: number;
+      /** Unpriced Requests */
+      unpriced_requests: number;
     };
     /** ModelUsageGroup */
     ModelUsageGroup: {
@@ -11326,6 +11371,23 @@ export interface components {
       /** Session Id */
       session_id?: string | null;
     };
+    /**
+     * NoPrimaryEnvironment
+     * @description Skip the primary mount for this Run. Named mounts remain available.
+     */
+    NoPrimaryEnvironment: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "none";
+      permission_ceiling?: never;
+      session_binding?: never;
+      session_configuration?: never;
+      template_id?: never;
+      working_directory?: never;
+      environment_id?: never;
+    };
     /** @enum {string} */
     OAuthGrant: "authorization_code" | "client_credentials";
     /** OAuthRedirect */
@@ -11346,6 +11408,16 @@ export interface components {
       scopes?: string[];
       /** @default none */
       token_endpoint_auth_method?: components["schemas"]["ClientAuthentication"];
+    };
+    /** @enum {string} */
+    OIDCBrand: "generic" | "google" | "microsoft";
+    /** OIDCSignIn */
+    OIDCSignIn: {
+      brand: components["schemas"]["OIDCBrand"];
+      /** Id */
+      id: string;
+      /** Label */
+      label: string;
     };
     /** Observation */
     Observation: {
@@ -11934,6 +12006,13 @@ export interface components {
       /** Token */
       token: string;
     };
+    /** PasswordResetReceipt */
+    PasswordResetReceipt: {
+      /** Email Queued */
+      email_queued: boolean;
+      /** Reset Url */
+      reset_url?: string | null;
+    };
     /**
      * Pending
      * @description Public projection; complete native requests and private metadata stay in the checkpoint.
@@ -11972,7 +12051,10 @@ export interface components {
       | "environment_templates"
       | "providers"
       | "execution"
-      | "schedules";
+      | "schedules"
+      | "usage"
+      | "subscriptions"
+      | "egress_credentials";
     /** PluginCatalog */
     PluginCatalog: {
       /** Items */
@@ -12136,6 +12218,8 @@ export interface components {
       kind: string;
       /** Name */
       name: string;
+      /** Oidc Email */
+      oidc_email?: string | null;
       /** Status */
       status: string;
     };
@@ -12169,6 +12253,8 @@ export interface components {
       kind: string;
       /** Name */
       name: string;
+      /** Oidc Email */
+      oidc_email?: string | null;
       /** Status */
       status: string;
       /**
@@ -12892,10 +12978,12 @@ export interface components {
     };
     "RunEnvironment-Input":
       | components["schemas"]["FreshRunEnvironment-Input"]
-      | components["schemas"]["ExistingRunEnvironment-Input"];
+      | components["schemas"]["ExistingRunEnvironment-Input"]
+      | components["schemas"]["NoPrimaryEnvironment"];
     "RunEnvironment-Output":
       | components["schemas"]["FreshRunEnvironment-Output"]
-      | components["schemas"]["ExistingRunEnvironment-Output"];
+      | components["schemas"]["ExistingRunEnvironment-Output"]
+      | components["schemas"]["NoPrimaryEnvironment"];
     /** RunInputPreview */
     RunInputPreview: {
       /**
@@ -14463,7 +14551,7 @@ export interface components {
     };
     /**
      * SubscriptionCreate
-     * @description Without `signing_secret` the service generates one; either way it is returned only by this request.
+     * @description The supplied or generated signing secret is returned only at creation.
      */
     SubscriptionCreate: {
       /**
@@ -14504,7 +14592,7 @@ export interface components {
     };
     /**
      * SubscriptionUpdate
-     * @description `signing_secret` replaces the secret for deliveries queued after this change.
+     * @description Secret replacement applies only to newly queued deliveries.
      */
     SubscriptionUpdate: {
       /** Enabled */
@@ -22879,6 +22967,31 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  reset_member_password: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        organization_id: string;
+        user_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetReceipt"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_organization_workspaces: {
     parameters: {
       query?: {
@@ -25972,6 +26085,7 @@ export interface operations {
   search_traces: {
     parameters: {
       query: {
+        /** @description Scope a comparison across Threads to this Session. */
         session_id?: string | null;
         thread_id?: string | null;
         run_id?: string | null;
@@ -25980,6 +26094,7 @@ export interface operations {
         started_before: string;
         order_by?: "started" | "duration" | "cost";
         direction?: "asc" | "desc";
+        /** @description Inclusive lower bound on trace duration in seconds, applied before ranking. */
         min_duration_seconds?: number | string | null;
         max_duration_seconds?: number | string | null;
         min_cost_usd?: number | string | null;

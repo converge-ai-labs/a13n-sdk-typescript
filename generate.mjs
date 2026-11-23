@@ -55,11 +55,39 @@ function closedUnionTransform(schemas = {}) {
   };
 }
 
+/** Exclude browser navigation from callable SDK bindings, retaining all schemas. */
+export function projectOperations(document) {
+  const projected = structuredClone(document);
+  const excluded = new Set(["start_oidc_sign_in", "finish_oidc_sign_in"]);
+  const methods = [
+    "get",
+    "put",
+    "post",
+    "delete",
+    "options",
+    "head",
+    "patch",
+    "trace",
+  ];
+  for (const [path, item] of Object.entries(projected.paths)) {
+    let removed = false;
+    for (const method of methods) {
+      if (excluded.has(item[method]?.operationId)) {
+        delete item[method];
+        removed = true;
+      }
+    }
+    if (removed && !methods.some((method) => method in item))
+      delete projected.paths[path];
+  }
+  return projected;
+}
+
 /** Generate only from this repository's pinned input; never execute Service. */
 export async function generate({ root = new URL("./", import.meta.url) } = {}) {
   const source = new URL("contract/openapi.json", root);
   const upstream = await fs.readFile(source, "utf8");
-  const document = JSON.parse(upstream);
+  const document = projectOperations(JSON.parse(upstream));
   const ast = await openapiTS(document, {
     defaultNonNullable: false,
     postTransform: closedUnionTransform(document.components?.schemas),

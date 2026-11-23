@@ -3,11 +3,12 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { createClient, ProtocolError, ApiError } from "../dist/index.js";
 import { resourceModel } from "../resources.mjs";
+import { projectOperations } from "../generate.mjs";
 
 const document = JSON.parse(
   await readFile(new URL("../contract/openapi.json", import.meta.url), "utf8"),
 );
-const model = resourceModel(document);
+const model = resourceModel(projectOperations(document));
 const camel = (value) =>
   value.replace(/[-_]([a-z])/g, (_, letter) => letter.toUpperCase());
 const selection = (name) =>
@@ -27,10 +28,16 @@ function bound(client, segments) {
   return resource;
 }
 
-test("every pinned operation and successful status is callable through static resources", async () => {
+test("every supported operation and successful status is callable through static resources", async () => {
   const expected = Object.entries(document.paths).flatMap(([path, item]) =>
     Object.entries(item)
-      .filter(([, op]) => op.operationId)
+      .filter(
+        ([, op]) =>
+          op.operationId &&
+          !["start_oidc_sign_in", "finish_oidc_sign_in"].includes(
+            op.operationId,
+          ),
+      )
       .map(([verb]) => `${verb} ${path}`),
   );
   assert.deepEqual(

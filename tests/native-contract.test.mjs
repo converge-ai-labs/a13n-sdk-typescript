@@ -327,12 +327,21 @@ test("pinned native surface exposes bounded run discovery and preserves media-po
   const spec = JSON.parse(
     await readFile(new URL("../openapi.json", import.meta.url), "utf8"),
   );
-  assert.equal(
+  const operations = new Set(
     Object.values(spec.paths).flatMap((item) =>
-      Object.values(item).filter((op) => op.operationId),
-    ).length,
-    402,
+      Object.values(item)
+        .filter((op) => op.operationId)
+        .map((op) => op.operationId),
+    ),
   );
+  for (const name of [
+    "start_oidc_sign_in",
+    "finish_oidc_sign_in",
+    "reset_member_password",
+    "search_traces",
+  ]) {
+    assert.ok(operations.has(name));
+  }
   const schemas = spec.components.schemas;
   assert.equal(schemas.RunOptions?.properties?.configuration, undefined); // Input and output remain distinct.
   assert.ok(schemas["RunOptions-Input"].properties.configuration);

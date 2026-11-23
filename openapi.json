@@ -2629,9 +2629,30 @@
           "initialized": {
             "title": "Initialized",
             "type": "boolean"
+          },
+          "manual_password_reset": {
+            "title": "Manual Password Reset",
+            "type": "boolean"
+          },
+          "oidc_providers": {
+            "items": {
+              "$ref": "#/components/schemas/OIDCSignIn"
+            },
+            "title": "Oidc Providers",
+            "type": "array"
+          },
+          "password_enabled": {
+            "title": "Password Enabled",
+            "type": "boolean"
           }
         },
-        "required": ["email_delivery", "initialized"],
+        "required": [
+          "password_enabled",
+          "oidc_providers",
+          "email_delivery",
+          "manual_password_reset",
+          "initialized"
+        ],
         "title": "AuthConfiguration",
         "type": "object"
       },
@@ -5898,6 +5919,17 @@
           "organization_id": {
             "title": "Organization Id",
             "type": "string"
+          },
+          "owner_app_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner App Id"
           },
           "revoked_at": {
             "anyOf": [
@@ -9836,6 +9868,7 @@
             "type": "string"
           },
           "evidence": {
+            "description": "Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.",
             "items": {
               "$ref": "#/components/schemas/Evidence"
             },
@@ -9958,6 +9991,7 @@
             "description": "One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories."
           },
           "evidence": {
+            "description": "Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.",
             "items": {
               "$ref": "#/components/schemas/Evidence"
             },
@@ -10464,11 +10498,23 @@
             "title": "Organization Id",
             "type": "string"
           },
+          "overrides_sso": {
+            "default": false,
+            "description": "The manual grant overrides an SSO default at this scope.",
+            "title": "Overrides Sso",
+            "type": "boolean"
+          },
           "principal": {
             "$ref": "#/components/schemas/PrincipalSummary"
           },
           "role": {
             "title": "Role",
+            "type": "string"
+          },
+          "source": {
+            "default": "manual",
+            "enum": ["manual", "oidc"],
+            "title": "Source",
             "type": "string"
           },
           "workspace_id": {
@@ -15112,9 +15158,14 @@
           "requests": {
             "title": "Requests",
             "type": "integer"
+          },
+          "unpriced_requests": {
+            "title": "Unpriced Requests",
+            "type": "integer"
           }
         },
         "required": [
+          "unpriced_requests",
           "model",
           "requests",
           "input_tokens",
@@ -15661,6 +15712,20 @@
         "title": "NewThread",
         "type": "object"
       },
+      "NoPrimaryEnvironment": {
+        "additionalProperties": false,
+        "description": "Skip the primary mount for this Run. Named mounts remain available.",
+        "properties": {
+          "mode": {
+            "const": "none",
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": ["mode"],
+        "title": "NoPrimaryEnvironment",
+        "type": "object"
+      },
       "OAuthGrant": {
         "enum": ["authorization_code", "client_credentials"],
         "type": "string"
@@ -15712,6 +15777,28 @@
           }
         },
         "title": "OAuthSettings",
+        "type": "object"
+      },
+      "OIDCBrand": {
+        "enum": ["generic", "google", "microsoft"],
+        "type": "string"
+      },
+      "OIDCSignIn": {
+        "properties": {
+          "brand": {
+            "$ref": "#/components/schemas/OIDCBrand"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": ["id", "label", "brand"],
+        "title": "OIDCSignIn",
         "type": "object"
       },
       "Observation": {
@@ -17441,6 +17528,28 @@
         "title": "PasswordResetConfirm",
         "type": "object"
       },
+      "PasswordResetReceipt": {
+        "properties": {
+          "email_queued": {
+            "title": "Email Queued",
+            "type": "boolean"
+          },
+          "reset_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reset Url"
+          }
+        },
+        "required": ["email_queued"],
+        "title": "PasswordResetReceipt",
+        "type": "object"
+      },
       "Pending": {
         "additionalProperties": false,
         "description": "Public projection; complete native requests and private metadata stay in the checkpoint.",
@@ -17514,7 +17623,10 @@
           "environment_templates",
           "providers",
           "execution",
-          "schedules"
+          "schedules",
+          "usage",
+          "subscriptions",
+          "egress_credentials"
         ],
         "type": "string"
       },
@@ -17985,6 +18097,17 @@
             "title": "Name",
             "type": "string"
           },
+          "oidc_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oidc Email"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -18095,6 +18218,17 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "oidc_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oidc Email"
           },
           "status": {
             "title": "Status",
@@ -19850,7 +19984,8 @@
         "discriminator": {
           "mapping": {
             "existing": "#/components/schemas/ExistingRunEnvironment-Input",
-            "fresh": "#/components/schemas/FreshRunEnvironment-Input"
+            "fresh": "#/components/schemas/FreshRunEnvironment-Input",
+            "none": "#/components/schemas/NoPrimaryEnvironment"
           },
           "propertyName": "mode"
         },
@@ -19860,6 +19995,9 @@
           },
           {
             "$ref": "#/components/schemas/ExistingRunEnvironment-Input"
+          },
+          {
+            "$ref": "#/components/schemas/NoPrimaryEnvironment"
           }
         ]
       },
@@ -19867,7 +20005,8 @@
         "discriminator": {
           "mapping": {
             "existing": "#/components/schemas/ExistingRunEnvironment-Output",
-            "fresh": "#/components/schemas/FreshRunEnvironment-Output"
+            "fresh": "#/components/schemas/FreshRunEnvironment-Output",
+            "none": "#/components/schemas/NoPrimaryEnvironment"
           },
           "propertyName": "mode"
         },
@@ -19877,6 +20016,9 @@
           },
           {
             "$ref": "#/components/schemas/ExistingRunEnvironment-Output"
+          },
+          {
+            "$ref": "#/components/schemas/NoPrimaryEnvironment"
           }
         ]
       },
@@ -24478,7 +24620,7 @@
       },
       "SubscriptionCreate": {
         "additionalProperties": false,
-        "description": "Without `signing_secret` the service generates one; either way it is returned only by this request.",
+        "description": "The supplied or generated signing secret is returned only at creation.",
         "properties": {
           "enabled": {
             "default": true,
@@ -24616,7 +24758,7 @@
       },
       "SubscriptionUpdate": {
         "additionalProperties": false,
-        "description": "`signing_secret` replaces the secret for deliveries queued after this change.",
+        "description": "Secret replacement applies only to newly queued deliveries.",
         "properties": {
           "enabled": {
             "anyOf": [
@@ -30084,6 +30226,66 @@
           }
         ],
         "summary": "Logout",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/oidc/{provider_id}/callback": {
+      "get": {
+        "description": "Consume a browser-bound OIDC callback and establish an ordinary Service browser session.",
+        "operationId": "finish_oidc_sign_in",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "summary": "Finish Oidc Sign In",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/oidc/{provider_id}/start": {
+      "get": {
+        "description": "Start sign-in at the configured identity provider in the top-level browser window.",
+        "operationId": "start_oidc_sign_in",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "summary": "Start Oidc Sign In",
         "tags": ["auth"]
       }
     },
@@ -47252,6 +47454,60 @@
         "tags": ["tenancy"]
       }
     },
+    "/api/v1/organizations/{organization_id}/members/{user_id}/password-reset": {
+      "post": {
+        "operationId": "reset_member_password",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "title": "Organization Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetReceipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          },
+          {
+            "csrf": [],
+            "loginSession": []
+          }
+        ],
+        "summary": "Reset Member Password",
+        "tags": ["tenancy"]
+      }
+    },
     "/api/v1/organizations/{organization_id}/workspaces": {
       "get": {
         "operationId": "list_organization_workspaces",
@@ -57270,6 +57526,7 @@
         "operationId": "search_traces",
         "parameters": [
           {
+            "description": "Scope a comparison across Threads to this Session.",
             "in": "query",
             "name": "session_id",
             "required": false,
@@ -57284,6 +57541,7 @@
                   "type": "null"
                 }
               ],
+              "description": "Scope a comparison across Threads to this Session.",
               "title": "Session Id"
             }
           },
@@ -57379,6 +57637,7 @@
             }
           },
           {
+            "description": "Inclusive lower bound on trace duration in seconds, applied before ranking.",
             "in": "query",
             "name": "min_duration_seconds",
             "required": false,
@@ -57396,6 +57655,7 @@
                   "type": "null"
                 }
               ],
+              "description": "Inclusive lower bound on trace duration in seconds, applied before ranking.",
               "title": "Min Duration Seconds"
             }
           },

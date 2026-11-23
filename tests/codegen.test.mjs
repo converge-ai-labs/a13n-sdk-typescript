@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
-import { generate } from "../generate.mjs";
+import { generate, projectOperations } from "../generate.mjs";
 
 test("changed HTTP contract regenerates types and published snapshot", async () => {
   const directory = await mkdtemp(join(tmpdir(), "a13n-autogen-test-"));
@@ -211,4 +211,58 @@ test("closed discriminated unions exclude sibling fields in HTTP and Session wit
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("browser navigation projection preserves the contract and all other operations", async () => {
+  const document = JSON.parse(
+    await readFile(
+      new URL("../contract/openapi.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const original = structuredClone(document);
+  const projected = projectOperations(document);
+  const methods = new Set([
+    "get",
+    "put",
+    "post",
+    "delete",
+    "options",
+    "head",
+    "patch",
+    "trace",
+  ]);
+  const operations = (value) =>
+    Object.entries(value.paths).flatMap(([path, item]) =>
+      Object.entries(item)
+        .filter(([method]) => methods.has(method))
+        .map(([method, operation]) =>
+          JSON.stringify([path, method, operation.operationId]),
+        ),
+    );
+  const before = new Set(operations(document));
+  const after = new Set(operations(projected));
+  const removed = [...before].filter((operation) => !after.has(operation));
+  assert.deepEqual(
+    new Set(removed.map((operation) => JSON.parse(operation)[2])),
+    new Set(["start_oidc_sign_in", "finish_oidc_sign_in"]),
+  );
+  assert.equal(removed.length, 2);
+  assert.ok([...after].every((operation) => before.has(operation)));
+  assert.deepEqual(projected.components, document.components);
+  assert.deepEqual(document, original);
+  const schema = await readFile(
+    new URL("../src/schema.ts", import.meta.url),
+    "utf8",
+  );
+  const resources = await readFile(
+    new URL("../src/resources/generated.ts", import.meta.url),
+    "utf8",
+  );
+  for (const name of ["start_oidc_sign_in", "finish_oidc_sign_in"]) {
+    assert.ok(!schema.includes(name));
+    assert.ok(!resources.includes(name));
+  }
+  assert.ok(schema.includes("OIDCSignIn"));
+  assert.ok(schema.includes("AuthConfiguration"));
 });
