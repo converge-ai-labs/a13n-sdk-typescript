@@ -136,7 +136,7 @@ Top-level submission selectors are camelCase; nested native options stay grouped
 
 ## Native Service API
 
-Use `client.api.agents.ref(agentId).get()` to read a stored Agent with its HTTP metadata, and `client.agents.ref(agentId).start(input)` to run it. Both layers share the same client, authentication and lifetime; the complete generated API is available under `client.api`.
+Use `client.api.agents.ref(agentId).get()` to read a stored Agent with its HTTP metadata, and `client.agents.ref(agentId).start(input)` to run it. Both layers share the same client, authentication and lifetime; the generated API is available under `client.api`, except browser-navigation OIDC start and callback.
 
 The pinned native graph includes Memory Spaces and Session bindings, explicit organization status/action, Computer permission/probe and retained PNG/JPEG reads, executed Agent/attempt readback, per-Run usage and model-request metrics, Findings/analyses, explicit Run content reads, and Session message-author lookup. Use the [Memory Space guide](docs/04-files-and-memory.md#share-memory-through-a-session-space-binding) and [native execution/Computer readback](docs/06-generated-resources.md#read-executed-configuration-and-request-metrics) for their distinct authority and completion boundaries. `Item.content_refs` provides bounded previews; load saved values explicitly with `client.api.runs.ref(runId).contents.ref(contentId).get()`. Raw stream memory sources and Memory record provenance retain their native evidence. See [generated resources](docs/06-generated-resources.md#findings-and-analyses).
 

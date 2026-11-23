@@ -87,3 +87,53 @@ test("new operation families preserve route, body, query, status, CAS and no mut
     client.close();
   }
 });
+
+test("scoped password reset and trace filters retain native wire values", async () => {
+  const calls = [];
+  const client = createClient({
+    baseUrl: "https://service.example.test",
+    auth: { type: "bearer", token: "test" },
+    fetch: async (request) => {
+      calls.push(request);
+      return Response.json(
+        request.method === "POST"
+          ? { email_queued: false, reset_url: null }
+          : {
+              items: [],
+              next_cursor: null,
+              total: 0,
+              collected_at: "2026-01-01T00:00:00Z",
+            },
+      );
+    },
+  });
+  try {
+    const receipt = await client.api.organizations
+      .ref("org /1")
+      .members.ref("user /2")
+      .passwordReset();
+    assert.equal(receipt.data.email_queued, false);
+    const query = {
+      started_after: "2026-01-01T00:00:00Z",
+      started_before: "2026-01-02T00:00:00Z",
+      order_by: "cost",
+      direction: "asc",
+      min_duration_seconds: 0,
+      max_duration_seconds: 10,
+      min_cost_usd: "0.000000000000001",
+      max_cost_usd: 1,
+    };
+    await client.api.traces.search.list({ query });
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].method, "POST");
+    assert.equal(
+      new URL(calls[0].url).pathname,
+      "/api/v1/organizations/org%20%2F1/members/user%20%2F2/password-reset",
+    );
+    const params = new URL(calls[1].url).searchParams;
+    for (const [key, value] of Object.entries(query))
+      assert.equal(params.get(key), String(value));
+  } finally {
+    client.close();
+  }
+});

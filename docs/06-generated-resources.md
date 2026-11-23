@@ -1,6 +1,6 @@
 # Manage resources with ETags and pages
 
-The Agent workflow handles ordinary conversations; `client.api` exposes the complete typed Service API for administration, files, providers and specialized actions. Business collections such as `agents`, `threads`, `models` and `memories` live directly under `client.api`. `client.api.agents.ref(id)` manages a stored Agent; `client.agents.ref(id)` runs the authored workflow using the same authentication and lifetime. Replace obsolete `client.resources` access with `client.api`; no compatibility alias is provided. `workspaces.ref(id)` and `organizations.ref(id)` manage those entities specifically—they do not wrap every business request. Each call still needs suitable Service grants.
+The Agent workflow handles ordinary conversations; `client.api` exposes the typed Service API for administration, files, providers and specialized actions. Browser-navigation OIDC start and callback are not SDK calls. Business collections such as `agents`, `threads`, `models` and `memories` live directly under `client.api`. `client.api.agents.ref(id)` manages a stored Agent; `client.agents.ref(id)` runs the authored workflow using the same authentication and lifetime. Replace obsolete `client.resources` access with `client.api`; no compatibility alias is provided. `workspaces.ref(id)` and `organizations.ref(id)` manage those entities specifically—they do not wrap every business request. Each call still needs suitable Service grants.
 
 ## Create an Agent
 

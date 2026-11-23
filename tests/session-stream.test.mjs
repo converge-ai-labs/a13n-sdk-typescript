@@ -477,3 +477,20 @@ test("App readiness is typed, repeatable, and rejects malformed payloads and SSE
     }
   }
 });
+
+test("Session thread snapshot preserves none environment and new platform groups", async () => {
+  const data = structuredClone(frames[0].data);
+  data.current_run.options.environment = { mode: "none" };
+  data.current_run.options.overrides = {
+    toolsets: { usage: {}, subscriptions: {}, egress_credentials: {} },
+  };
+  const f = fixture(encode("thread", data));
+  try {
+    const raw = await f.client.api.sessions.ref("session_one").stream.get();
+    assert.deepEqual(await Array.fromAsync(sessionStream(raw)), [
+      { type: "thread", data },
+    ]);
+  } finally {
+    f.client.close();
+  }
+});

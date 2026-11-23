@@ -3175,6 +3175,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/organizations/{organization_id}/members/{user_id}/password-reset": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reset Member Password */
+    post: operations["reset_member_password"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/organizations/{organization_id}/workspaces": {
     parameters: {
       query?: never;
@@ -6270,6 +6287,12 @@ export interface components {
       email_delivery: boolean;
       /** Initialized */
       initialized: boolean;
+      /** Manual Password Reset */
+      manual_password_reset: boolean;
+      /** Oidc Providers */
+      oidc_providers: components["schemas"]["OIDCSignIn"][];
+      /** Password Enabled */
+      password_enabled: boolean;
     };
     /** Authentication */
     Authentication: {
@@ -9484,9 +9507,21 @@ export interface components {
       id: string;
       /** Organization Id */
       organization_id: string;
+      /**
+       * Overrides Sso
+       * @description The manual grant overrides an SSO default at this scope.
+       * @default false
+       */
+      overrides_sso?: boolean;
       principal: components["schemas"]["PrincipalSummary"];
       /** Role */
       role: string;
+      /**
+       * Source
+       * @default manual
+       * @enum {string}
+       */
+      source?: "manual" | "oidc";
       /** Workspace Id */
       workspace_id: string | null;
     };
@@ -11374,6 +11409,16 @@ export interface components {
       /** @default none */
       token_endpoint_auth_method?: components["schemas"]["ClientAuthentication"];
     };
+    /** @enum {string} */
+    OIDCBrand: "generic" | "google" | "microsoft";
+    /** OIDCSignIn */
+    OIDCSignIn: {
+      brand: components["schemas"]["OIDCBrand"];
+      /** Id */
+      id: string;
+      /** Label */
+      label: string;
+    };
     /** Observation */
     Observation: {
       /** Age Ms */
@@ -11961,6 +12006,13 @@ export interface components {
       /** Token */
       token: string;
     };
+    /** PasswordResetReceipt */
+    PasswordResetReceipt: {
+      /** Email Queued */
+      email_queued: boolean;
+      /** Reset Url */
+      reset_url?: string | null;
+    };
     /**
      * Pending
      * @description Public projection; complete native requests and private metadata stay in the checkpoint.
@@ -12166,6 +12218,8 @@ export interface components {
       kind: string;
       /** Name */
       name: string;
+      /** Oidc Email */
+      oidc_email?: string | null;
       /** Status */
       status: string;
     };
@@ -12199,6 +12253,8 @@ export interface components {
       kind: string;
       /** Name */
       name: string;
+      /** Oidc Email */
+      oidc_email?: string | null;
       /** Status */
       status: string;
       /**
@@ -22905,6 +22961,31 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["MemberPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  reset_member_password: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        organization_id: string;
+        user_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PasswordResetReceipt"];
         };
       };
       400: components["responses"]["Error"];
