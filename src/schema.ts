@@ -7563,6 +7563,8 @@ export interface components {
       name: string;
       /** Organization Id */
       organization_id: string;
+      /** Owner App Id */
+      owner_app_id?: string | null;
       /** Revoked At */
       revoked_at: string | null;
       /**
