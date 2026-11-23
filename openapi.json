@@ -9847,6 +9847,7 @@
             "type": "string"
           },
           "evidence": {
+            "description": "Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.",
             "items": {
               "$ref": "#/components/schemas/Evidence"
             },
@@ -9969,6 +9970,7 @@
             "description": "One primary issue type for the central evidenced claim, separate from analysis presets, impact and review. Put uncertainty in explanation/limitations; do not invent categories."
           },
           "evidence": {
+            "description": "Pair each trace with its owning Run. In an analysis, first read every cited trace with get_trace, get_trace_span or a list_trace_spans call that returns spans.",
             "items": {
               "$ref": "#/components/schemas/Evidence"
             },
@@ -57311,6 +57313,7 @@
         "operationId": "search_traces",
         "parameters": [
           {
+            "description": "Scope a comparison across Threads to this Session.",
             "in": "query",
             "name": "session_id",
             "required": false,
@@ -57325,6 +57328,7 @@
                   "type": "null"
                 }
               ],
+              "description": "Scope a comparison across Threads to this Session.",
               "title": "Session Id"
             }
           },
@@ -57420,6 +57424,7 @@
             }
           },
           {
+            "description": "Inclusive lower bound on trace duration in seconds, applied before ranking.",
             "in": "query",
             "name": "min_duration_seconds",
             "required": false,
@@ -57437,6 +57442,7 @@
                   "type": "null"
                 }
               ],
+              "description": "Inclusive lower bound on trace duration in seconds, applied before ranking.",
               "title": "Min Duration Seconds"
             }
           },
