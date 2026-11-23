@@ -11330,6 +11330,23 @@ export interface components {
       /** Session Id */
       session_id?: string | null;
     };
+    /**
+     * NoPrimaryEnvironment
+     * @description Skip the primary mount for this Run. Named mounts remain available.
+     */
+    NoPrimaryEnvironment: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "none";
+      permission_ceiling?: never;
+      session_binding?: never;
+      session_configuration?: never;
+      template_id?: never;
+      working_directory?: never;
+      environment_id?: never;
+    };
     /** @enum {string} */
     OAuthGrant: "authorization_code" | "client_credentials";
     /** OAuthRedirect */
@@ -12899,10 +12916,12 @@ export interface components {
     };
     "RunEnvironment-Input":
       | components["schemas"]["FreshRunEnvironment-Input"]
-      | components["schemas"]["ExistingRunEnvironment-Input"];
+      | components["schemas"]["ExistingRunEnvironment-Input"]
+      | components["schemas"]["NoPrimaryEnvironment"];
     "RunEnvironment-Output":
       | components["schemas"]["FreshRunEnvironment-Output"]
-      | components["schemas"]["ExistingRunEnvironment-Output"];
+      | components["schemas"]["ExistingRunEnvironment-Output"]
+      | components["schemas"]["NoPrimaryEnvironment"];
     /** RunInputPreview */
     RunInputPreview: {
       /**

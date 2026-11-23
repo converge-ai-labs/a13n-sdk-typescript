@@ -1287,6 +1287,23 @@ export interface components {
       sources?: components["schemas"]["AutomaticToolSearch"];
     };
     /**
+     * NoPrimaryEnvironment
+     * @description Skip the primary mount for this Run. Named mounts remain available.
+     */
+    NoPrimaryEnvironment: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "none";
+      permission_ceiling?: never;
+      session_binding?: never;
+      session_configuration?: never;
+      template_id?: never;
+      working_directory?: never;
+      environment_id?: never;
+    };
+    /**
      * ObserverContinuation
      * @description Native conversion cursors required to resume mid-part, without raw history.
      */
@@ -1659,7 +1676,8 @@ export interface components {
     };
     RunEnvironment:
       | components["schemas"]["FreshRunEnvironment"]
-      | components["schemas"]["ExistingRunEnvironment"];
+      | components["schemas"]["ExistingRunEnvironment"]
+      | components["schemas"]["NoPrimaryEnvironment"];
     /**
      * RunMemoryMount
      * @description Host-resolved Space identity and roots, never accepted from a mount request.

@@ -15677,6 +15677,20 @@
         "title": "NewThread",
         "type": "object"
       },
+      "NoPrimaryEnvironment": {
+        "additionalProperties": false,
+        "description": "Skip the primary mount for this Run. Named mounts remain available.",
+        "properties": {
+          "mode": {
+            "const": "none",
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": ["mode"],
+        "title": "NoPrimaryEnvironment",
+        "type": "object"
+      },
       "OAuthGrant": {
         "enum": ["authorization_code", "client_credentials"],
         "type": "string"
@@ -19869,7 +19883,8 @@
         "discriminator": {
           "mapping": {
             "existing": "#/components/schemas/ExistingRunEnvironment-Input",
-            "fresh": "#/components/schemas/FreshRunEnvironment-Input"
+            "fresh": "#/components/schemas/FreshRunEnvironment-Input",
+            "none": "#/components/schemas/NoPrimaryEnvironment"
           },
           "propertyName": "mode"
         },
@@ -19879,6 +19894,9 @@
           },
           {
             "$ref": "#/components/schemas/ExistingRunEnvironment-Input"
+          },
+          {
+            "$ref": "#/components/schemas/NoPrimaryEnvironment"
           }
         ]
       },
@@ -19886,7 +19904,8 @@
         "discriminator": {
           "mapping": {
             "existing": "#/components/schemas/ExistingRunEnvironment-Output",
-            "fresh": "#/components/schemas/FreshRunEnvironment-Output"
+            "fresh": "#/components/schemas/FreshRunEnvironment-Output",
+            "none": "#/components/schemas/NoPrimaryEnvironment"
           },
           "propertyName": "mode"
         },
@@ -19896,6 +19915,9 @@
           },
           {
             "$ref": "#/components/schemas/ExistingRunEnvironment-Output"
+          },
+          {
+            "$ref": "#/components/schemas/NoPrimaryEnvironment"
           }
         ]
       },
