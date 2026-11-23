@@ -1526,7 +1526,10 @@ export interface components {
       | "environment_templates"
       | "providers"
       | "execution"
-      | "schedules";
+      | "schedules"
+      | "usage"
+      | "subscriptions"
+      | "egress_credentials";
     /**
      * PluginSelection
      * @description One instance of a Harness plugin factory the deployment installed.

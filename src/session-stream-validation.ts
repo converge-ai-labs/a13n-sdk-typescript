@@ -25297,6 +25297,9 @@ var schema134 = {
     "providers",
     "execution",
     "schedules",
+    "usage",
+    "subscriptions",
+    "egress_credentials",
   ],
   type: "string",
 };
@@ -25339,7 +25342,10 @@ function validate301(
     data === "environment_templates" ||
     data === "providers" ||
     data === "execution" ||
-    data === "schedules"
+    data === "schedules" ||
+    data === "usage" ||
+    data === "subscriptions" ||
+    data === "egress_credentials"
   )) {
     validate301.errors = [
       {
