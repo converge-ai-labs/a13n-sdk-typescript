@@ -15780,7 +15780,20 @@
         "type": "object"
       },
       "OIDCBrand": {
-        "enum": ["generic", "google", "microsoft"],
+        "enum": [
+          "generic",
+          "google",
+          "microsoft",
+          "okta",
+          "auth0",
+          "github",
+          "gitlab",
+          "cloudflare",
+          "authentik",
+          "keycloak",
+          "authelia",
+          "zitadel"
+        ],
         "type": "string"
       },
       "OIDCSignIn": {
