@@ -280,6 +280,7 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["GET", new RegExp("^/api/v1/skills/[^/]+/revisions/[^/]+/files/[^/]+$")],
   ["POST", new RegExp("^/api/v1/skills/[^/]+/revisions/[^/]+/set-default$")],
   ["POST", new RegExp("^/api/v1/skills/[^/]+/unarchive$")],
+  ["GET", new RegExp("^/api/v1/storage$")],
   ["GET", new RegExp("^/api/v1/subscriptions$")],
   ["POST", new RegExp("^/api/v1/subscriptions$")],
   ["DELETE", new RegExp("^/api/v1/subscriptions/[^/]+$")],
