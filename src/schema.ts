@@ -3192,6 +3192,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/organizations/{organization_id}/update-notices": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Update Notices
+     * @description Read the Control process's cached release and security notices as an organization administrator.
+     */
+    get: operations["get_update_notices"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/organizations/{organization_id}/workspaces": {
     parameters: {
       query?: never;
@@ -13671,6 +13691,22 @@ export interface components {
       env: string;
       inject_hosts: components["schemas"]["Hosts"];
     };
+    /** SecurityAdvisory */
+    SecurityAdvisory: {
+      /** Id */
+      id: string;
+      /**
+       * Severity
+       * @enum {string}
+       */
+      severity: "high" | "critical";
+      /** Summary */
+      summary: string;
+      /** Updated At */
+      updated_at: string | null;
+      /** Url */
+      url: string;
+    };
     /** SelectedTrace */
     SelectedTrace: {
       /** Run Id */
@@ -14503,6 +14539,15 @@ export interface components {
        * @constant
        */
       view?: "compact";
+    };
+    /** StableRelease */
+    StableRelease: {
+      /** Is Newer */
+      is_newer: boolean;
+      /** Url */
+      url: string;
+      /** Version */
+      version: string;
     };
     /** @enum {string} */
     StartupErrorPolicy: "skip" | "raise";
@@ -15483,6 +15528,14 @@ export interface components {
        */
       kind: "unlimited";
       bytes?: never;
+    };
+    /** UpdateNotices */
+    UpdateNotices: {
+      /** Advisories */
+      advisories: components["schemas"]["SecurityAdvisory"][];
+      /** Current Version */
+      current_version: string;
+      latest_stable: components["schemas"]["StableRelease"] | null;
     };
     /** Upload */
     Upload: {
@@ -23105,6 +23158,30 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PasswordResetReceipt"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_update_notices: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UpdateNotices"];
         };
       };
       400: components["responses"]["Error"];
