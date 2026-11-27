@@ -34,9 +34,11 @@ test("every supported operation and successful status is callable through static
       .filter(
         ([, op]) =>
           op.operationId &&
-          !["start_oidc_sign_in", "finish_oidc_sign_in"].includes(
-            op.operationId,
-          ),
+          ![
+            "start_oidc_sign_in",
+            "finish_oidc_sign_in",
+            "oidc_backchannel_logout",
+          ].includes(op.operationId),
       )
       .map(([verb]) => `${verb} ${path}`),
   );

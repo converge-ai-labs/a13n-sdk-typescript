@@ -238,7 +238,17 @@ export function generateResources(document) {
     const owner = op.owner ?? op.node;
     const suffix = op.owner ? ` + ${quote("/" + op.node.segments.at(-1))}` : "";
     const path = owner === nodes[0] ? quote(op.path) : `this.path${suffix}`;
-    const requestOptions = `{ signal: options.signal${query.length ? ", query: options.query" : ""} }`;
+    const appIdFilter = query.some(
+      (p) =>
+        p.name === "app_id" &&
+        p.schema.anyOf?.some(
+          (v) => v.$ref === "#/components/schemas/AppIdFilter",
+        ),
+    );
+    const queryValue = appIdFilter
+      ? "options.query?.app_id === null ? { ...options.query, app_id: undefined } : options.query"
+      : "options.query";
+    const requestOptions = `{ signal: options.signal${query.length ? `, query: ${queryValue}` : ""} }`;
     let request;
     if (stream)
       request = `binaryRequest(this.transport, ${path}, { ...${requestOptions}, headers: ${headerObject}, accept: ${quote(responseMedia.join(", "))} })`;

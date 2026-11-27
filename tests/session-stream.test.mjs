@@ -494,3 +494,53 @@ test("Session thread snapshot preserves none environment and new platform groups
     f.client.close();
   }
 });
+
+test("Session interactions preserve form and URL requests and deliver empty replacement", async () => {
+  const request = {
+    request_id: "req1",
+    thread_id: "thr",
+    server_id: "mcp",
+    mode: "form",
+    message: "Choose",
+    expires_at: "2026-11-27T12:00:00Z",
+    schema: { type: "object" },
+  };
+  const payload = {
+    thread_id: "thr",
+    requests: [
+      request,
+      {
+        ...request,
+        request_id: "req2",
+        mode: "url",
+        url: "https://example.com/confirm",
+      },
+    ],
+  };
+  const clear = { thread_id: "thr", requests: [] };
+  const f = fixture(
+    encode("interactions", payload) + encode("interactions", clear),
+  );
+  try {
+    const raw = await f.client.api.sessions.ref("session_one").stream.get();
+    assert.deepEqual(await Array.fromAsync(sessionStream(raw)), [
+      { type: "interactions", data: payload },
+      { type: "interactions", data: clear },
+    ]);
+    assert.equal(f.requests.length, 1);
+  } finally {
+    await f.client.close();
+  }
+  for (const text of [
+    encode("interactions", { thread_id: "thr" }),
+    encode("interactions", payload, "id: bad\n"),
+  ]) {
+    const bad = fixture(text);
+    try {
+      const raw = await bad.client.api.sessions.ref("session_one").stream.get();
+      await assert.rejects(Array.fromAsync(sessionStream(raw)), ProtocolError);
+    } finally {
+      await bad.client.close();
+    }
+  }
+});
