@@ -1,6 +1,6 @@
 # TypeScript SDK Contract
 
-This repository owns `@converge.ai/a13n`: an authored Agent-first finite Interaction, generated typed resource bindings over Service `/api/v1` (excluding browser-navigation OIDC start and callback), one authenticated transport, tests and an independent npm lifecycle. Service owns identities, authorization, durable state, receipts and stream protocol. The pinned `contract/` is generated offline from one Service revision. The Console client is not an implementation dependency.
+This repository owns `@converge.ai/a13n`: an authored Agent-first finite Interaction, generated typed resource bindings over Service `/api/v1` (excluding browser-navigation OIDC start and callback and the IdP-to-Service OIDC backchannel logout endpoint), one authenticated transport, tests and an independent npm lifecycle. Service owns identities, authorization, durable state, receipts and stream protocol. The pinned `contract/` is generated offline from one Service revision. The Console client is not an implementation dependency.
 
 | Contract                                                       | Responsibility                                           |
 | -------------------------------------------------------------- | -------------------------------------------------------- |

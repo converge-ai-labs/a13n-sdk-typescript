@@ -55,7 +55,7 @@ export interface components {
        * Lazy Environment
        * @default null
        */
-      lazy_environment?: boolean | null;
+      lazy_environment?: ("on_demand" | "warmup" | "eager") | boolean | null;
       /** @default null */
       media_understanding?:
         components["schemas"]["MediaUnderstandingSelection"] | null;
@@ -581,6 +581,11 @@ export interface components {
       agent_id: string | null;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /**
+       * App Id
+       * @default null
+       */
+      readonly app_id?: string | null;
       /** Assigned Run Id */
       assigned_run_id: string | null;
       /** Child Run Id */
@@ -1165,6 +1170,65 @@ export interface components {
     JsonValue: unknown;
     /** @enum {string} */
     Lineage: "root" | "continue" | "fork";
+    /** McpElicitation */
+    McpElicitation: {
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /**
+       * Kind
+       * @default mcp_elicitation
+       * @constant
+       */
+      kind?: "mcp_elicitation";
+      /** Message */
+      message: string;
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: "form" | "url";
+      /** Request Id */
+      request_id: string;
+      /**
+       * Run Id
+       * @default null
+       */
+      run_id?: string | null;
+      /**
+       * Schema
+       * @default null
+       */
+      schema?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /** Server Id */
+      server_id: string;
+      /**
+       * Server Name
+       * @default null
+       */
+      server_name?: string | null;
+      /** Thread Id */
+      thread_id: string;
+      /**
+       * Tool Call Id
+       * @default null
+       */
+      tool_call_id?: string | null;
+      /**
+       * Url
+       * @default null
+       */
+      url?: string | null;
+      /**
+       * Url Host
+       * @default null
+       */
+      url_host?: string | null;
+    };
     /**
      * MediaUnderstandingSelection
      * @description The model, by key, describing each media kind a model cannot read; a kind without one is unavailable.
@@ -1354,6 +1418,11 @@ export interface components {
     /** OccurrenceSummary */
     OccurrenceSummary: {
       /**
+       * App Id
+       * @default null
+       */
+      readonly app_id?: string | null;
+      /**
        * Completed At
        * @default null
        */
@@ -1533,6 +1602,16 @@ export interface components {
       tool_call_id: components["schemas"]["ToolCallId"];
       /** Tool Name */
       tool_name: string;
+    };
+    /**
+     * PendingInteractions
+     * @description Replace the pending interactions for this thread, including with an empty list.
+     */
+    PendingInteractions: {
+      /** Requests */
+      requests: components["schemas"]["McpElicitation"][];
+      /** Thread Id */
+      thread_id: string;
     };
     /** @enum {string} */
     PlatformGroup:
@@ -1753,6 +1832,11 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /**
+       * App Id
+       * @default null
+       */
+      readonly app_id?: string | null;
       /** Attempts */
       attempts: number;
       /** @default null */
@@ -1828,6 +1912,11 @@ export interface components {
       /** Thread Id */
       thread_id: string;
       trigger: components["schemas"]["Trigger"];
+      /**
+       * Trigger App Id
+       * @default null
+       */
+      readonly trigger_app_id?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -2051,6 +2140,11 @@ export interface components {
     };
     /** ThreadView */
     ThreadView: {
+      /**
+       * App Id
+       * @default null
+       */
+      readonly app_id?: string | null;
       /** Archived At */
       archived_at: string | null;
       /**
@@ -2497,6 +2591,7 @@ export type SessionStreamFrame =
   | { type: "app_ready"; data: components["schemas"]["AppReady"] }
   | { type: "delta"; data: components["schemas"]["Delta"] }
   | { type: "gap"; data: components["schemas"]["Gap"] }
+  | { type: "interactions"; data: components["schemas"]["PendingInteractions"] }
   | { type: "items"; data: components["schemas"]["RunSnapshot"] }
   | { type: "occurrence"; data: components["schemas"]["OccurrenceEvent"] }
   | { type: "schedule"; data: components["schemas"]["ScheduleEvent"] }

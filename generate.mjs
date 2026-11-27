@@ -55,10 +55,14 @@ function closedUnionTransform(schemas = {}) {
   };
 }
 
-/** Exclude browser navigation from callable SDK bindings, retaining all schemas. */
+/** Exclude provider protocol endpoints from callable SDK bindings, retaining all schemas. */
 export function projectOperations(document) {
   const projected = structuredClone(document);
-  const excluded = new Set(["start_oidc_sign_in", "finish_oidc_sign_in"]);
+  const excluded = new Set([
+    "start_oidc_sign_in",
+    "finish_oidc_sign_in",
+    "oidc_backchannel_logout",
+  ]);
   const methods = [
     "get",
     "put",

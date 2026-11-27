@@ -92,3 +92,99 @@ test("metric ranking retains sort and direction across lazy pages", async () => 
     client.close();
   }
 });
+
+test("App filters preserve strings and omit null across all six list routes", async () => {
+  const requests = [];
+  const client = createClient({
+    baseUrl: "https://service.test",
+    auth: { type: "bearer", token: "test" },
+    fetch: async (request) => {
+      requests.push(new URL(request.url));
+      return Response.json({ items: [], next_cursor: null });
+    },
+  });
+  try {
+    for (const name of [
+      "browsers",
+      "egressCredentials",
+      "environments",
+      "memorySpaces",
+      "schedules",
+      "sessions",
+    ]) {
+      const resource = client.api[name];
+      for (const app_id of ["demo.app", null, undefined, ""]) {
+        await resource.list({ query: { app_id } });
+        const query = requests.at(-1).searchParams;
+        assert.equal(query.has("app_id"), app_id != null);
+        if (app_id != null) assert.equal(query.get("app_id"), app_id);
+      }
+    }
+  } finally {
+    client.close();
+  }
+});
+
+test("App filters stay omitted or unchanged across browser pages", async () => {
+  const requests = [];
+  const client = createClient({
+    baseUrl: "https://service.test",
+    auth: { type: "bearer", token: "test" },
+    fetch: async (request) => {
+      requests.push(new URL(request.url));
+      return Response.json({
+        items: [],
+        next_cursor: requests.length % 2 ? "next" : null,
+      });
+    },
+  });
+  try {
+    for (const app_id of [null, "demo.app"]) {
+      await Array.fromAsync(client.api.browsers.pages({ query: { app_id } }));
+      for (const url of requests.slice(-2)) {
+        assert.equal(url.searchParams.get("app_id"), app_id);
+      }
+      assert.equal(requests.at(-1).searchParams.get("cursor"), "next");
+    }
+  } finally {
+    client.close();
+  }
+});
+
+test("logout preserves 200 JSON and 204 empty responses without navigation", async () => {
+  for (const status of [200, 204]) {
+    const requests = [];
+    const client = createClient({
+      baseUrl: "https://service.test",
+      auth: { type: "bearer", token: "test" },
+      fetch: async (request) => {
+        requests.push(request);
+        return status === 200
+          ? Response.json(
+              { logout_url: "https://identity.example/logout" },
+              { headers: { "X-Request-ID": "logout" } },
+            )
+          : new Response(null, {
+              status: 204,
+              headers: { "X-Request-ID": "logout" },
+            });
+      },
+    });
+    try {
+      const result = await client.api.auth.logout();
+      assert.equal(result.response.status, status);
+      assert.equal(result.response.headers.get("X-Request-ID"), "logout");
+      assert.deepEqual(
+        result.data,
+        status === 200
+          ? { logout_url: "https://identity.example/logout" }
+          : undefined,
+      );
+      assert.equal(requests.length, 1);
+      assert.equal(new URL(requests[0].url).pathname, "/api/v1/auth/logout");
+      assert.equal(requests[0].method, "POST");
+    } finally {
+      client.close();
+    }
+  }
+});

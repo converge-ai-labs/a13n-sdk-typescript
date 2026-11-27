@@ -245,9 +245,13 @@ test("browser navigation projection preserves the contract and all other operati
   const removed = [...before].filter((operation) => !after.has(operation));
   assert.deepEqual(
     new Set(removed.map((operation) => JSON.parse(operation)[2])),
-    new Set(["start_oidc_sign_in", "finish_oidc_sign_in"]),
+    new Set([
+      "start_oidc_sign_in",
+      "finish_oidc_sign_in",
+      "oidc_backchannel_logout",
+    ]),
   );
-  assert.equal(removed.length, 2);
+  assert.equal(removed.length, 3);
   assert.ok([...after].every((operation) => before.has(operation)));
   assert.deepEqual(projected.components, document.components);
   assert.deepEqual(document, original);
@@ -259,7 +263,11 @@ test("browser navigation projection preserves the contract and all other operati
     new URL("../src/resources/generated.ts", import.meta.url),
     "utf8",
   );
-  for (const name of ["start_oidc_sign_in", "finish_oidc_sign_in"]) {
+  for (const name of [
+    "start_oidc_sign_in",
+    "finish_oidc_sign_in",
+    "oidc_backchannel_logout",
+  ]) {
     assert.ok(!schema.includes(name));
     assert.ok(!resources.includes(name));
   }

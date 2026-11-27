@@ -361,7 +361,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Logout */
+    /**
+     * Logout
+     * @description End the local session and, when available, return the provider's browser logout URL.
+     */
     post: operations["logout"];
     delete?: never;
     options?: never;
@@ -1626,6 +1629,23 @@ export interface paths {
     head?: never;
     /** Update Environment Template */
     patch: operations["update_environment_template"];
+    trace?: never;
+  };
+  "/api/v1/environment-templates/{template_id}/duplicate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Duplicate Environment Template */
+    post: operations["duplicate_environment_template"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/environments": {
@@ -2959,6 +2979,23 @@ export interface paths {
     patch: operations["update_model"];
     trace?: never;
   };
+  "/api/v1/models/{key}/duplicate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Duplicate Model */
+    post: operations["duplicate_model"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/organizations": {
     parameters: {
       query?: never;
@@ -3186,6 +3223,26 @@ export interface paths {
     put?: never;
     /** Reset Member Password */
     post: operations["reset_member_password"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/organizations/{organization_id}/update-notices": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Update Notices
+     * @description Read the Control process's cached release and security notices as an organization administrator.
+     */
+    get: operations["get_update_notices"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3558,6 +3615,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/runs/{run_id}/mcp-inputs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Mcp Inputs
+     * @description List pending human input for this run's retained MCP tool executions.
+     */
+    get: operations["list_mcp_inputs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/runs/{run_id}/mcp-inputs/{request_id}/response": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Respond To Mcp Input
+     * @description Send one answer to the originating MCP task, without resuming the run.
+     */
+    post: operations["respond_to_mcp_input"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/runs/{run_id}/resume": {
     parameters: {
       query?: never;
@@ -3648,6 +3745,23 @@ export interface paths {
     put?: never;
     /** Dispatch Schedule */
     post: operations["dispatch_schedule"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/schedules/{schedule_id}/duplicate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Duplicate Schedule */
+    post: operations["duplicate_schedule"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3924,6 +4038,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/skills/{skill_id}/duplicate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Duplicate Skill */
+    post: operations["duplicate_skill"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/skills/{skill_id}/revisions": {
     parameters: {
       query?: never;
@@ -4030,6 +4161,26 @@ export interface paths {
     put?: never;
     /** Unarchive Skill */
     post: operations["unarchive_skill"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/storage": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Workspace Storage
+     * @description Summarize this workspace's asset and staged upload bytes by creator.
+     */
+    get: operations["get_workspace_storage"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -5482,7 +5633,7 @@ export interface components {
        * Lazy Environment
        * @default true
        */
-      lazy_environment?: boolean;
+      lazy_environment?: ("on_demand" | "warmup" | "eager") | boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
       memory?: components["schemas"]["SessionMemorySettings"];
       /**
@@ -5503,6 +5654,11 @@ export interface components {
        * @default []
        */
       plugins?: components["schemas"]["PluginSelection"][];
+      /**
+       * Respect Mcp Annotations
+       * @default false
+       */
+      respect_mcp_annotations?: boolean;
       retries?: components["schemas"]["RetryConfig"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
       /** Skill Sync */
@@ -5569,7 +5725,7 @@ export interface components {
        * Lazy Environment
        * @default true
        */
-      lazy_environment?: boolean;
+      lazy_environment?: ("on_demand" | "warmup" | "eager") | boolean;
       media_understanding?: components["schemas"]["MediaUnderstandingSelection"];
       memory?: components["schemas"]["SessionMemorySettings"];
       /**
@@ -5590,6 +5746,11 @@ export interface components {
        * @default []
        */
       plugins?: components["schemas"]["PluginSelection"][];
+      /**
+       * Respect Mcp Annotations
+       * @default false
+       */
+      respect_mcp_annotations?: boolean;
       retries?: components["schemas"]["RetryConfig"] | null;
       reviewer?: components["schemas"]["AgentReviewer"] | null;
       /** Skill Sync */
@@ -5691,7 +5852,7 @@ export interface components {
       /** Instructions */
       instructions?: string | null;
       /** Lazy Environment */
-      lazy_environment?: boolean | null;
+      lazy_environment?: ("on_demand" | "warmup" | "eager") | boolean | null;
       media_understanding?:
         components["schemas"]["MediaUnderstandingSelection"] | null;
       /** Model */
@@ -5744,7 +5905,7 @@ export interface components {
       /** Instructions */
       instructions?: string | null;
       /** Lazy Environment */
-      lazy_environment?: boolean | null;
+      lazy_environment?: ("on_demand" | "warmup" | "eager") | boolean | null;
       media_understanding?:
         components["schemas"]["MediaUnderstandingSelection"] | null;
       /** Model */
@@ -6031,6 +6192,7 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    AppIdFilter: string;
     /** AppPlugins */
     AppPlugins: {
       /** Id */
@@ -6185,9 +6347,11 @@ export interface components {
     /** AssetPage */
     AssetPage: {
       /** Items */
-      items: components["schemas"]["Asset"][];
+      items: components["schemas"]["ListedAsset"][];
       /** Next Cursor */
       next_cursor: string | null;
+      /** Total Count */
+      total_count: number;
     };
     /** AssetPart */
     AssetPart: {
@@ -6476,8 +6640,22 @@ export interface components {
        */
       password: string;
     };
+    /** BoxdVolumeMount */
+    BoxdVolumeMount: {
+      /** Disk ID */
+      disk_id: string;
+      /** Mount path */
+      mount_path: string;
+      /**
+       * Read only
+       * @default false
+       */
+      read_only?: boolean;
+    };
     /** Browser */
     Browser: {
+      /** App Id */
+      readonly app_id?: string | null;
       control: components["schemas"]["ControlStatus"];
       /** Control Expires At */
       control_expires_at: string | null;
@@ -7565,10 +7743,27 @@ export interface components {
        */
       started_at: string;
     };
+    /** CreatorStorage */
+    CreatorStorage: {
+      /** Active Bytes */
+      active_bytes: number;
+      /** Created By Id */
+      created_by_id: string;
+      /** Creator Name */
+      creator_name: string;
+      /** Retired Bytes */
+      retired_bytes: number;
+      /** Staged Upload Bytes */
+      staged_upload_bytes: number;
+      /** Total Bytes */
+      total_bytes: number;
+    };
     /** Credential */
     Credential: {
       /** Allowed Hosts */
       allowed_hosts: string[];
+      /** App Id */
+      readonly app_id?: string | null;
       /**
        * Created At
        * Format: date-time
@@ -7586,8 +7781,6 @@ export interface components {
       name: string;
       /** Organization Id */
       organization_id: string;
-      /** Owner App Id */
-      owner_app_id?: string | null;
       /** Revoked At */
       revoked_at: string | null;
       /**
@@ -7823,6 +8016,15 @@ export interface components {
       /** Name */
       name?: string | null;
       query_credentials?: components["schemas"]["Credentials"] | null;
+    };
+    /** DaytonaVolumeMount */
+    DaytonaVolumeMount: {
+      /** Mount path */
+      mount_path: string;
+      /** Volume subpath */
+      subpath?: string | null;
+      /** Volume ID */
+      volume_id: string;
     };
     /**
      * DebugHold
@@ -8240,6 +8442,8 @@ export interface components {
       agent_id: string | null;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Assigned Run Id */
       assigned_run_id: string | null;
       /** Child Run Id */
@@ -8315,6 +8519,8 @@ export interface components {
       agent_id: string | null;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Assigned Run Id */
       assigned_run_id: string | null;
       /** Child Run Id */
@@ -8696,6 +8902,8 @@ export interface components {
     };
     /** EnvironmentView */
     EnvironmentView: {
+      /** App Id */
+      readonly app_id?: string | null;
       client_connection?:
         components["schemas"]["ClientConnectionObservation"] | null;
       /**
@@ -9977,6 +10185,47 @@ export interface components {
     };
     /** @enum {string} */
     Lineage: "root" | "continue" | "fork";
+    /** ListedAsset */
+    ListedAsset: {
+      /** Content Type */
+      content_type: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Created By Id */
+      created_by_id: string;
+      /** Creator Name */
+      creator_name: string;
+      /** Digest */
+      digest: string;
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Retired At */
+      retired_at: string | null;
+      /** Session Id */
+      session_id: string | null;
+      /** Size */
+      size: number;
+      /** Source */
+      source: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /** Thread Id */
+      thread_id: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Version */
+      version: number;
+      /** Workspace Id */
+      workspace_id: string;
+    };
     /** LocalResult */
     LocalResult: {
       export?: components["schemas"]["ExportHealth"] | null;
@@ -10033,6 +10282,11 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
+    /** LogoutRedirect */
+    LogoutRedirect: {
+      /** Logout Url */
+      logout_url: string;
+    };
     /** Logs */
     Logs: {
       /** Container */
@@ -10062,6 +10316,7 @@ export interface components {
       };
       /** Name */
       name?: string | null;
+      recipe_overrides?: components["schemas"]["RecipeOverrides"];
       /** Template Id */
       template_id: string;
     };
@@ -10069,6 +10324,17 @@ export interface components {
     McpAuth: "none" | "bearer" | "headers" | "oauth";
     /** McpConfig */
     McpConfig: {
+      /**
+       * Authority
+       * @default operator
+       * @enum {string}
+       */
+      authority?: "operator" | "user" | "none";
+      /**
+       * Durable Tasks
+       * @default false
+       */
+      durable_tasks?: boolean;
       /** Forward Context Headers */
       forward_context_headers?: boolean;
       /**
@@ -10091,10 +10357,63 @@ export interface components {
       /** Url */
       url: string;
     };
+    /** McpElicitation */
+    McpElicitation: {
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /**
+       * Kind
+       * @default mcp_elicitation
+       * @constant
+       */
+      kind?: "mcp_elicitation";
+      /** Message */
+      message: string;
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: "form" | "url";
+      /** Request Id */
+      request_id: string;
+      /** Run Id */
+      run_id?: string | null;
+      /** Schema */
+      schema?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /** Server Id */
+      server_id: string;
+      /** Server Name */
+      server_name?: string | null;
+      /** Thread Id */
+      thread_id: string;
+      /** Tool Call Id */
+      tool_call_id?: string | null;
+      /** Url */
+      url?: string | null;
+      /** Url Host */
+      url_host?: string | null;
+    };
     McpHeaders: {
       [key: string]: {
         [key: string]: string;
       };
+    };
+    /** McpInputResponse */
+    McpInputResponse: {
+      /**
+       * Action
+       * @enum {string}
+       */
+      action: "accept" | "decline" | "cancel";
+      /** Content */
+      content?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
     };
     /** McpServer */
     McpServer: {
@@ -10636,6 +10955,8 @@ export interface components {
     MemorySpace: {
       /** Always Load */
       always_load: string[];
+      /** App Id */
+      readonly app_id?: string | null;
       /** Content Bytes */
       content_bytes: number;
       /**
@@ -10835,6 +11156,20 @@ export interface components {
       sequence: number;
       system: components["schemas"]["SystemMetrics"];
     };
+    /** ModalVolumeMount */
+    ModalVolumeMount: {
+      /** Mount path */
+      mount_path: string;
+      /**
+       * Read only
+       * @default false
+       */
+      read_only?: boolean;
+      /** Volume subpath */
+      sub_path?: string | null;
+      /** Volume name */
+      volume_name: string;
+    };
     /** Model */
     Model: {
       catalog_ref: components["schemas"]["CatalogRef"] | null;
@@ -10982,6 +11317,15 @@ export interface components {
       pricing?: components["schemas"]["ModelPricingEntry-Input"] | null;
       /** Provider Id */
       provider_id: string;
+    };
+    /** ModelDuplicate */
+    ModelDuplicate: {
+      /** Description */
+      description?: string | null;
+      /** Key */
+      key: string;
+      /** Name */
+      name?: string | null;
     };
     /** ModelMetrics */
     ModelMetrics: {
@@ -11410,7 +11754,19 @@ export interface components {
       token_endpoint_auth_method?: components["schemas"]["ClientAuthentication"];
     };
     /** @enum {string} */
-    OIDCBrand: "generic" | "google" | "microsoft";
+    OIDCBrand:
+      | "generic"
+      | "google"
+      | "microsoft"
+      | "okta"
+      | "auth0"
+      | "github"
+      | "gitlab"
+      | "cloudflare"
+      | "authentik"
+      | "keycloak"
+      | "authelia"
+      | "zitadel";
     /** OIDCSignIn */
     OIDCSignIn: {
       brand: components["schemas"]["OIDCBrand"];
@@ -11439,6 +11795,8 @@ export interface components {
     };
     /** Occurrence */
     Occurrence: {
+      /** App Id */
+      readonly app_id?: string | null;
       /** Completed At */
       completed_at?: string | null;
       /** Completion Run Id */
@@ -11542,6 +11900,8 @@ export interface components {
       | "cancelled";
     /** OccurrenceSummary */
     OccurrenceSummary: {
+      /** App Id */
+      readonly app_id?: string | null;
       /** Completed At */
       completed_at?: string | null;
       /** Completion Run Id */
@@ -12552,6 +12912,18 @@ export interface components {
     };
     /** @enum {string} */
     ReadView: "detailed" | "compact";
+    /** RecipeOverrides */
+    RecipeOverrides: {
+      /** Volume Mounts */
+      volume_mounts?: {
+        [key: string]: string;
+      };
+      /** Volumes */
+      volumes?:
+        | components["schemas"]["DaytonaVolumeMount"][]
+        | components["schemas"]["ModalVolumeMount"][]
+        | components["schemas"]["BoxdVolumeMount"][];
+    };
     /**
      * Reclamation
      * @description Instance-scoped reclamation settings copied at reservation; no stop/resume semantics.
@@ -13013,15 +13385,14 @@ export interface components {
         [key: string]: string;
       };
     };
-    /**
-     * RunListItem
-     * @description Run discovery metadata. Full input, results and execution settings belong to the Run detail read.
-     */
+    /** RunListItem */
     RunListItem: {
       /** Agent Id */
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Attempts */
       attempts: number;
       /**
@@ -13053,6 +13424,8 @@ export interface components {
       /** Thread Id */
       thread_id: string;
       trigger: components["schemas"]["Trigger"];
+      /** Trigger App Id */
+      readonly trigger_app_id?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -13144,6 +13517,8 @@ export interface components {
       agent_name: string | null;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Attempts */
       attempts: number;
       /**
@@ -13202,6 +13577,8 @@ export interface components {
       /** Thread Id */
       thread_id: string;
       trigger: components["schemas"]["Trigger"];
+      /** Trigger App Id */
+      readonly trigger_app_id?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -13247,6 +13624,8 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Attempts */
       attempts: number;
       browser_binding?: components["schemas"]["BrowserBinding"] | null;
@@ -13314,6 +13693,8 @@ export interface components {
       /** Thread Id */
       thread_id: string;
       trigger: components["schemas"]["Trigger"];
+      /** Trigger App Id */
+      readonly trigger_app_id?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -13343,6 +13724,8 @@ export interface components {
       | components["schemas"]["RestrictedSandbox"];
     /** Schedule */
     Schedule: {
+      /** App Id */
+      readonly app_id?: string | null;
       /** Archived At */
       archived_at: string | null;
       /**
@@ -13420,6 +13803,18 @@ export interface components {
        */
       state?: "paused" | "enabled";
       target?: components["schemas"]["ScheduleTarget"];
+    };
+    /** ScheduleDuplicate */
+    ScheduleDuplicate: {
+      /** Description */
+      description?: string | null;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      } | null;
+      /** Name */
+      name?: string | null;
+      target?: components["schemas"]["ScheduleTarget"] | null;
     };
     /** ScheduleInvocation */
     "ScheduleInvocation-Input": {
@@ -13570,6 +13965,22 @@ export interface components {
       /** Env */
       env: string;
       inject_hosts: components["schemas"]["Hosts"];
+    };
+    /** SecurityAdvisory */
+    SecurityAdvisory: {
+      /** Id */
+      id: string;
+      /**
+       * Severity
+       * @enum {string}
+       */
+      severity: "high" | "critical";
+      /** Summary */
+      summary: string;
+      /** Updated At */
+      updated_at: string | null;
+      /** Url */
+      url: string;
     };
     /** SelectedTrace */
     SelectedTrace: {
@@ -13886,6 +14297,8 @@ export interface components {
     };
     /** SessionView */
     SessionView: {
+      /** App Id */
+      readonly app_id?: string | null;
       /** Auto Recreate Lost Environment */
       auto_recreate_lost_environment: boolean;
       /** Cost */
@@ -14016,6 +14429,19 @@ export interface components {
       source:
         | components["schemas"]["UploadSource"]
         | components["schemas"]["GitHubSource"];
+    };
+    /** SkillDuplicate */
+    SkillDuplicate: {
+      /** Description */
+      description?: string | null;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      } | null;
+      /** Name */
+      name?: string | null;
+      /** Revision Id */
+      revision_id?: string | null;
     };
     /** SkillFile */
     SkillFile: {
@@ -14404,6 +14830,15 @@ export interface components {
        */
       view?: "compact";
     };
+    /** StableRelease */
+    StableRelease: {
+      /** Is Newer */
+      is_newer: boolean;
+      /** Url */
+      url: string;
+      /** Version */
+      version: string;
+    };
     /** @enum {string} */
     StartupErrorPolicy: "skip" | "raise";
     /** @enum {string} */
@@ -14721,6 +15156,17 @@ export interface components {
       /** Provider Id */
       provider_id: string;
     };
+    /** TemplateDuplicate */
+    TemplateDuplicate: {
+      /** Description */
+      description?: string | null;
+      /** Labels */
+      labels?: {
+        [key: string]: string;
+      } | null;
+      /** Name */
+      name?: string | null;
+    };
     /** TemplatePage */
     TemplatePage: {
       /** Items */
@@ -14870,6 +15316,8 @@ export interface components {
       agent_id: string;
       /** Agent Revision Id */
       agent_revision_id: string | null;
+      /** App Id */
+      readonly app_id?: string | null;
       /** Attempts */
       attempts: number;
       /** Cost */
@@ -14907,6 +15355,8 @@ export interface components {
       /** Thread Id */
       thread_id: string;
       trigger: components["schemas"]["Trigger"];
+      /** Trigger App Id */
+      readonly trigger_app_id?: string | null;
       /** Unpriced Requests */
       unpriced_requests: number;
       /**
@@ -14945,6 +15395,8 @@ export interface components {
     };
     /** ThreadView */
     ThreadView: {
+      /** App Id */
+      readonly app_id?: string | null;
       /** Archived At */
       archived_at: string | null;
       /**
@@ -15384,6 +15836,14 @@ export interface components {
       kind: "unlimited";
       bytes?: never;
     };
+    /** UpdateNotices */
+    UpdateNotices: {
+      /** Advisories */
+      advisories: components["schemas"]["SecurityAdvisory"][];
+      /** Current Version */
+      current_version: string;
+      latest_stable: components["schemas"]["StableRelease"] | null;
+    };
     /** Upload */
     Upload: {
       /** Content Type */
@@ -15717,6 +16177,19 @@ export interface components {
       items: components["schemas"]["Workspace"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** WorkspaceStorage */
+    WorkspaceStorage: {
+      /** Active Bytes */
+      active_bytes: number;
+      /** By Creator */
+      by_creator: components["schemas"]["CreatorStorage"][];
+      /** Retired Bytes */
+      retired_bytes: number;
+      /** Staged Upload Bytes */
+      staged_upload_bytes: number;
+      /** Total Bytes */
+      total_bytes: number;
     };
     /** WorkspaceUpdate */
     WorkspaceUpdate: {
@@ -16374,6 +16847,12 @@ export interface operations {
       query?: {
         limit?: number;
         cursor?: string | null;
+        /** @description Case-insensitive literal filename substring. */
+        query?: string | null;
+        created_by_id?: string | null;
+        source_kind?: ("user_upload" | "agent_run") | null;
+        status?: "all" | "active" | "retired";
+        order?: "id" | "newest";
       };
       header?: {
         /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
@@ -16625,6 +17104,15 @@ export interface operations {
     requestBody?: never;
     responses: {
       /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LogoutRedirect"];
+        };
+      };
+      /** @description Local logout */
       204: {
         headers: {
           [name: string]: unknown;
@@ -16879,6 +17367,7 @@ export interface operations {
       query?: {
         limit?: number;
         cursor?: string | null;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
       };
       header?: {
         /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
@@ -18679,6 +19168,7 @@ export interface operations {
       query?: {
         limit?: number;
         cursor?: string | null;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
       };
       header?: {
         /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
@@ -19255,10 +19745,42 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  duplicate_environment_template: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        template_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TemplateDuplicate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Template"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_environments: {
     parameters: {
       query?: {
         status?: string | null;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
         limit?: number;
         cursor?: string | null;
       };
@@ -21346,6 +21868,7 @@ export interface operations {
       query?: {
         label?: string[] | null;
         enabled?: boolean | null;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
         limit?: number;
         cursor?: string | null;
       };
@@ -22472,6 +22995,37 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  duplicate_model: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ModelDuplicate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Model"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_organizations: {
     parameters: {
       query?: {
@@ -22986,6 +23540,30 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PasswordResetReceipt"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_update_notices: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        organization_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UpdateNotices"];
         };
       };
       400: components["responses"]["Error"];
@@ -23740,6 +24318,63 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_mcp_inputs: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["McpElicitation"][];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  respond_to_mcp_input: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        run_id: string;
+        request_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["McpInputResponse"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   resume_run: {
     parameters: {
       query?: never;
@@ -23785,6 +24420,7 @@ export interface operations {
     parameters: {
       query?: {
         limit?: number;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
         cursor?: string | null;
         state?: components["schemas"]["ScheduleState"] | null;
         agent_id?: string | null;
@@ -23994,6 +24630,37 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  duplicate_schedule: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        schedule_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ScheduleDuplicate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Schedule"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   enable_schedule: {
     parameters: {
       query?: never;
@@ -24161,6 +24828,7 @@ export interface operations {
         /** @description Session/thread ID, title, origin, label value or retained conversation text */
         q?: string | null;
         application?: string | null;
+        app_id?: components["schemas"]["AppIdFilter"] | null;
         agent_id?: string | null;
         status?: components["schemas"]["RunStatus"][];
         trigger?: components["schemas"]["Trigger"][];
@@ -24550,6 +25218,37 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  duplicate_skill: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        skill_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SkillDuplicate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Skill"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_skill_revisions: {
     parameters: {
       query?: {
@@ -24751,6 +25450,31 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["Skill"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_workspace_storage: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceStorage"];
         };
       };
       400: components["responses"]["Error"];
