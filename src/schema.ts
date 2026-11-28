@@ -3488,8 +3488,8 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Realtime Availability
-     * @description Report realtime input for the selected Agent and Thread.
+     * Check Realtime availability (Alpha)
+     * @description Report Alpha native live API capabilities for the selected Agent and Thread.
      */
     get: operations["realtime_availability"];
     put?: never;
@@ -3510,8 +3510,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Create Realtime Session
-     * @description Issue a one-use WebSocket ticket for the selected Agent and optional Thread.
+     * Create a Realtime session ticket (Alpha)
+     * @description Issue a single-use ticket for the Alpha Realtime WebSocket at `/api/v1/workspaces/{workspace_id}/realtime`.
      */
     post: operations["create_realtime_session"];
     delete?: never;
@@ -10224,6 +10224,15 @@ export interface components {
       purged: number;
     };
     Hosts: string[];
+    /** IceServer */
+    IceServer: {
+      /** Credential */
+      credential?: string | null;
+      /** Urls */
+      urls: string | string[];
+      /** Username */
+      username?: string | null;
+    };
     /**
      * ImageInputPolicy
      * @description Preparation limits for one model's image input, not native ModelSettings.
@@ -13299,15 +13308,32 @@ export interface components {
     /** RealtimeAvailability */
     RealtimeAvailability: {
       /**
+       * Accepts Images
+       * @default false
+       */
+      accepts_images?: boolean;
+      /**
        * Accepts Text
        * @default false
        */
       accepts_text?: boolean;
+      /** Audio Input Hz */
+      audio_input_hz?: number | null;
+      /** Audio Output Hz */
+      audio_output_hz?: number | null;
       /**
        * Can Start
        * @default false
        */
       can_start?: boolean;
+      /**
+       * Maturity
+       * @default alpha
+       * @constant
+       */
+      maturity?: "alpha";
+      /** Max Duration Seconds */
+      max_duration_seconds?: number | null;
       /**
        * Realtime
        * @default false
@@ -13315,6 +13341,16 @@ export interface components {
       realtime?: boolean;
       /** Reason */
       reason?: string | null;
+      /**
+       * Supported Image Types
+       * @default []
+       */
+      supported_image_types?: string[];
+      /**
+       * Supports Interruption
+       * @default false
+       */
+      supports_interruption?: boolean;
       /**
        * Transports
        * @default []
@@ -13346,6 +13382,8 @@ export interface components {
        * @default false
        */
       fresh_environments?: boolean;
+      /** Max Duration Seconds */
+      max_duration_seconds?: number | null;
       max_usage?: components["schemas"]["UsageLimit"] | null;
       /**
        * Memories
@@ -13361,11 +13399,28 @@ export interface components {
     };
     /** RealtimeSessionTicket */
     RealtimeSessionTicket: {
+      /** Audio Input Hz */
+      audio_input_hz: number;
+      /** Audio Output Hz */
+      audio_output_hz: number;
       /**
        * Expires In
        * @description Ticket lifetime in seconds.
        */
       expires_in: number;
+      /**
+       * Ice Servers
+       * @default []
+       */
+      ice_servers?: components["schemas"]["IceServer"][];
+      /**
+       * Maturity
+       * @default alpha
+       * @constant
+       */
+      maturity?: "alpha";
+      /** Max Duration Seconds */
+      max_duration_seconds: number;
       /** Run Id */
       run_id: string;
       /** Session Id */
