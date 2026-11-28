@@ -314,6 +314,31 @@ export interface components {
        */
       template_id?: string | null;
     };
+    /** Citation */
+    Citation: {
+      /** @default null */
+      anchor?: components["schemas"]["CitationAnchor"] | null;
+      /** Sources */
+      sources: components["schemas"]["CitationSource"][];
+    };
+    /**
+     * CitationAnchor
+     * @description Half-open Unicode code-point range in the item's text.
+     */
+    CitationAnchor: {
+      /** End */
+      end: number;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "content" | "marker";
+      /** Start */
+      start: number;
+    };
+    CitationSource:
+      | components["schemas"]["WebCitationSource"]
+      | components["schemas"]["DocumentCitationSource"];
     /** ClientOutputAlternative */
     ClientOutputAlternative: {
       /**
@@ -525,6 +550,10 @@ export interface components {
       /** Next Ordinal */
       next_ordinal: number;
       observer?: components["schemas"]["ObserverContinuation"];
+      /** Open Request Items */
+      open_request_items?: {
+        [key: string]: string[];
+      };
       position: components["schemas"]["StreamPosition"];
       /** Response Groups */
       response_groups?: {
@@ -532,6 +561,30 @@ export interface components {
       };
       /** Run Id */
       run_id: string;
+    };
+    /** DocumentCitationSource */
+    DocumentCitationSource: {
+      /**
+       * Document Id
+       * @default null
+       */
+      document_id?: string | null;
+      /**
+       * Excerpts
+       * @default []
+       */
+      excerpts?: string[];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "document";
+      /**
+       * Title
+       * @default null
+       */
+      title?: string | null;
+      url?: never;
     };
     /**
      * DynamicSubagents
@@ -1126,6 +1179,11 @@ export interface components {
      * @description The item a live event changed, and its state after the event.
      */
     ItemRef: {
+      /**
+       * Citations
+       * @default null
+       */
+      citations?: components["schemas"]["Citation"][] | null;
       /**
        * Failure
        * @default null
@@ -2498,6 +2556,27 @@ export interface components {
     };
     /** @enum {string} */
     WaitReason: "approval" | "call" | "multiple" | "desktop_control";
+    /** WebCitationSource */
+    WebCitationSource: {
+      /**
+       * Excerpts
+       * @default []
+       */
+      excerpts?: string[];
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: "web";
+      /**
+       * Title
+       * @default null
+       */
+      title?: string | null;
+      /** Url */
+      url: string;
+      document_id?: never;
+    };
     /**
      * _Arguments
      * @description A tool-call part's streamed arguments so far and the one observation item that holds them.
@@ -2543,10 +2622,19 @@ export interface components {
         [key: string]: components["schemas"]["_PartCursor"];
       };
       /**
+       * Parts Request Index
+       * @default null
+       */
+      parts_request_index?: number | null;
+      /**
        * Request Index
        * @default 0
        */
       request_index?: number;
+      /** Text Message Ids */
+      text_message_ids?: {
+        [key: string]: string;
+      };
       /** Threads */
       threads?: {
         [key: string]: string;
@@ -2554,6 +2642,11 @@ export interface components {
     };
     /** _PartCursor */
     _PartCursor: {
+      /**
+       * Citations
+       * @default []
+       */
+      citations?: components["schemas"]["Citation"][];
       /**
        * Emitted Content
        * @default false
