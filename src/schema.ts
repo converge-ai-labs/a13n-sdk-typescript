@@ -1178,6 +1178,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/connector-events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Connector Events */
+    get: operations["list_connector_events"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-events/{event_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Connector Event */
+    get: operations["get_connector_event"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-events/{event_id}/retry": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Retry Connector Event */
+    post: operations["retry_connector_event"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/connector-providers": {
     parameters: {
       query?: never;
@@ -1309,6 +1360,58 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/connector-providers/{provider_id}/apps/{app}/event-types": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Connector Event Types */
+    get: operations["list_connector_event_types"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-providers/{provider_id}/apps/{app}/event-types/{event_type}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Connector Event Type */
+    get: operations["get_connector_event_type"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-providers/{provider_id}/event-webhook": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Connector Event Webhook */
+    get: operations["get_connector_event_webhook"];
+    put?: never;
+    /** Configure Connector Event Webhook */
+    post: operations["configure_connector_event_webhook"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/connector-providers/{provider_id}/test": {
     parameters: {
       query?: never;
@@ -1320,6 +1423,79 @@ export interface paths {
     put?: never;
     /** Test connector provider */
     post: operations["test_connector_provider"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-triggers": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Connector Triggers */
+    get: operations["list_connector_triggers"];
+    put?: never;
+    /** Create Connector Trigger */
+    post: operations["create_connector_trigger"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-triggers/{trigger_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Connector Trigger */
+    get: operations["get_connector_trigger"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update Connector Trigger */
+    patch: operations["update_connector_trigger"];
+    trace?: never;
+  };
+  "/api/v1/connector-triggers/{trigger_id}/{command}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Transition Connector Trigger */
+    post: operations["transition_connector_trigger"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/connector-webhooks/{provider_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Receive Connector Webhook
+     * @description Authenticate the sender's signature; receipt confirms durable storage, not Agent completion.
+     */
+    post: operations["receive_connector_webhook"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3298,6 +3474,46 @@ export interface paths {
     get: operations["list_provider_types"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/realtime": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Check Realtime availability (Alpha)
+     * @description Report Alpha native live API capabilities for the selected Agent and Thread.
+     */
+    get: operations["realtime_availability"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/realtime/sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Create a Realtime session ticket (Alpha)
+     * @description Issue a single-use ticket for the Alpha Realtime WebSocket at `/api/v1/workspaces/{workspace_id}/realtime`.
+     */
+    post: operations["create_realtime_session"];
     delete?: never;
     options?: never;
     head?: never;
@@ -6965,6 +7181,8 @@ export interface components {
       characteristics: components["schemas"]["HarnessModelCharacteristics-Output"];
       /** Identity */
       identity: string;
+      /** Model Api */
+      model_api?: string | null;
       /** Name */
       name: string;
       pricing: components["schemas"]["ModelPricingEntry-Output"] | null;
@@ -7566,6 +7784,103 @@ export interface components {
       setup?: {
         [key: string]: components["schemas"]["JsonValue"];
       };
+    };
+    /** ConnectorEvent */
+    ConnectorEvent: {
+      /** Attempts */
+      attempts: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Event Type */
+      event_type: string;
+      /** Failure */
+      failure: string | null;
+      /** Id */
+      id: string;
+      /** Inbox Id */
+      inbox_id: string | null;
+      /**
+       * Occurred At
+       * Format: date-time
+       */
+      occurred_at: string;
+      /** Payload */
+      payload: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /** Provider Id */
+      provider_id: string;
+      /**
+       * Retryable
+       * @default false
+       */
+      retryable?: boolean;
+      /** Source Id */
+      source_id: string;
+      /**
+       * State
+       * @enum {string}
+       */
+      state:
+        "unmatched" | "pending" | "stored" | "ignored" | "submitted" | "failed";
+      /** Thread Id */
+      thread_id: string | null;
+      /** Trigger Id */
+      trigger_id: string | null;
+      /** Version */
+      version: number;
+    };
+    /** ConnectorTrigger */
+    ConnectorTrigger: {
+      /** Connection Id */
+      connection_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      definition: components["schemas"]["EventType"];
+      /** Event Type */
+      event_type: string;
+      /** Failure */
+      failure: string | null;
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Operation Kind */
+      operation_kind: string | null;
+      /** Parameters */
+      parameters: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /** Provider Id */
+      provider_id: string;
+      /** Remote Id */
+      remote_id: string | null;
+      /**
+       * Retryable
+       * @default false
+       */
+      retryable?: boolean;
+      /**
+       * State
+       * @enum {string}
+       */
+      state: "enabled" | "paused" | "retired";
+      target: components["schemas"]["Target"];
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Version */
+      version: number;
+      /** Workspace Id */
+      workspace_id: string;
     };
     /**
      * ContentRef
@@ -9028,6 +9343,73 @@ export interface components {
       /** Type */
       type?: string | null;
     };
+    /** EventPage */
+    EventPage: {
+      /** Items */
+      items: components["schemas"]["ConnectorEvent"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** EventThreadTarget */
+    EventThreadTarget: {
+      /** Agent Id */
+      agent_id: string;
+      /** Agent Revision Id */
+      agent_revision_id?: string | null;
+      /**
+       * Instruction
+       * @default Process the following connector event.
+       */
+      instruction?: string;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "new_thread";
+      /** Principal Id */
+      principal_id: string;
+    };
+    /** EventType */
+    EventType: {
+      /** App */
+      app: string;
+      /** Config Schema */
+      config_schema: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      /**
+       * Description
+       * @default
+       */
+      description?: string;
+      /**
+       * Instructions
+       * @default
+       */
+      instructions?: string;
+      /** Key */
+      key: string;
+      /** Name */
+      name: string;
+      /** Payload Schema */
+      payload_schema?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      } | null;
+      /**
+       * Requires Provider Setup
+       * @default false
+       */
+      requires_provider_setup?: boolean;
+      /** Version */
+      version?: string | null;
+    };
+    /** EventTypePage */
+    EventTypePage: {
+      /** Items */
+      items: components["schemas"]["EventType"][];
+      /** Next Cursor */
+      next_cursor?: null;
+    };
     /** Evidence */
     Evidence: {
       /** Run Id */
@@ -9842,6 +10224,15 @@ export interface components {
       purged: number;
     };
     Hosts: string[];
+    /** IceServer */
+    IceServer: {
+      /** Credential */
+      credential?: string | null;
+      /** Urls */
+      urls: string | string[];
+      /** Username */
+      username?: string | null;
+    };
     /**
      * ImageInputPolicy
      * @description Preparation limits for one model's image input, not native ModelSettings.
@@ -12801,6 +13192,8 @@ export interface components {
       oauth_scheme?: string | null;
       /** Operations */
       operations?: components["schemas"]["WebOperation"][] | null;
+      /** Realtime Model Apis */
+      realtime_model_apis?: string[] | null;
       /** Settings Schemas */
       settings_schemas?: {
         [key: string]: {
@@ -12912,6 +13305,155 @@ export interface components {
     };
     /** @enum {string} */
     ReadView: "detailed" | "compact";
+    /** RealtimeAvailability */
+    RealtimeAvailability: {
+      /**
+       * Accepts Images
+       * @default false
+       */
+      accepts_images?: boolean;
+      /**
+       * Accepts Text
+       * @default false
+       */
+      accepts_text?: boolean;
+      /** Audio Input Hz */
+      audio_input_hz?: number | null;
+      /** Audio Output Hz */
+      audio_output_hz?: number | null;
+      /**
+       * Can Start
+       * @default false
+       */
+      can_start?: boolean;
+      /**
+       * Maturity
+       * @default alpha
+       * @constant
+       */
+      maturity?: "alpha";
+      /** Max Duration Seconds */
+      max_duration_seconds?: number | null;
+      /**
+       * Max Images Per Input
+       * @default 0
+       */
+      max_images_per_input?: number;
+      /**
+       * Realtime
+       * @default false
+       */
+      realtime?: boolean;
+      /** Reason */
+      reason?: string | null;
+      /**
+       * Supported Image Types
+       * @default []
+       */
+      supported_image_types?: string[];
+      /**
+       * Supports Interruption
+       * @default false
+       */
+      supports_interruption?: boolean;
+      /**
+       * Transports
+       * @default []
+       */
+      transports?: components["schemas"]["Transport"][];
+    };
+    /** RealtimeSessionCreate */
+    RealtimeSessionCreate: {
+      /** Agent Id */
+      agent_id: string;
+      /** Agent Revision Id */
+      agent_revision_id?: string | null;
+      /**
+       * Audio
+       * @default true
+       */
+      audio?: boolean;
+      /**
+       * Draft
+       * @default
+       */
+      draft?: string;
+      /**
+       * Draft Asset Ids
+       * @default []
+       */
+      draft_asset_ids?: string[];
+      /** @default [] */
+      environments?: components["schemas"]["InitialMounts"];
+      /** Fork Run Id */
+      fork_run_id?: string | null;
+      /**
+       * Fresh Environments
+       * @default false
+       */
+      fresh_environments?: boolean;
+      /** Max Duration Seconds */
+      max_duration_seconds?: number | null;
+      max_usage?: components["schemas"]["UsageLimit"] | null;
+      /**
+       * Memories
+       * @default []
+       */
+      memories?: components["schemas"]["MemoryMount"][];
+      memory?: components["schemas"]["SessionMemorySettings"] | null;
+      options?: components["schemas"]["RunOptions-Input"];
+      /** Thread Id */
+      thread_id?: string | null;
+      /** @default websocket */
+      transport?: components["schemas"]["Transport"];
+    };
+    /** RealtimeSessionTicket */
+    RealtimeSessionTicket: {
+      /** Audio Input Hz */
+      audio_input_hz: number;
+      /** Audio Output Hz */
+      audio_output_hz: number;
+      /**
+       * Expires In
+       * @description Ticket lifetime in seconds.
+       */
+      expires_in: number;
+      /**
+       * Ice Servers
+       * @default []
+       */
+      ice_servers?: components["schemas"]["IceServer"][];
+      /**
+       * Maturity
+       * @default alpha
+       * @constant
+       */
+      maturity?: "alpha";
+      /** Max Duration Seconds */
+      max_duration_seconds: number;
+      /** Run Id */
+      run_id: string;
+      /** Session Id */
+      session_id: string;
+      /**
+       * Subprotocol
+       * @description Offer this protocol first and the ticket second.
+       * @constant
+       */
+      subprotocol: "a13n.realtime.v1";
+      /** Thread Id */
+      thread_id: string;
+      /**
+       * Ticket
+       * @description Single-use connection credential. Pass it as the second WebSocket subprotocol.
+       */
+      ticket: string;
+      /**
+       * Websocket Path
+       * @description WebSocket path relative to the Service origin.
+       */
+      websocket_path: string;
+    };
     /** RecipeOverrides */
     RecipeOverrides: {
       /** Volume Mounts */
@@ -14869,6 +15411,18 @@ export interface components {
     };
     /** @enum {string} */
     Steering: "boundary" | "immediate";
+    /** StoreOnly */
+    StoreOnly: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      mode: "store_only";
+      agent_id?: never;
+      agent_revision_id?: never;
+      instruction?: never;
+      principal_id?: never;
+    };
     /** StructuredOutputAlternative */
     StructuredOutputAlternative: {
       /** Description */
@@ -15089,6 +15643,9 @@ export interface components {
     };
     /** @enum {string} */
     SystemPreset: "general" | "journal";
+    Target:
+      | components["schemas"]["StoreOnly"]
+      | components["schemas"]["EventThreadTarget"];
     /** Template */
     Template: {
       config: components["schemas"]["TemplateConfig"];
@@ -15736,7 +16293,10 @@ export interface components {
       total: number;
     };
     /** @enum {string} */
+    Transport: "websocket" | "webrtc";
+    /** @enum {string} */
     Trigger:
+      | "realtime"
       | "input"
       | "queued"
       | "resume"
@@ -15746,6 +16306,33 @@ export interface components {
       | "browser_handback"
       | "desktop_handback"
       | "spawned";
+    /** TriggerCreate */
+    TriggerCreate: {
+      /** Connection Id */
+      connection_id: string;
+      /** Event Type */
+      event_type: string;
+      /** Name */
+      name: string;
+      /** Parameters */
+      parameters?: {
+        [key: string]: components["schemas"]["JsonValue"];
+      };
+      target?: components["schemas"]["Target"];
+    };
+    /** TriggerPage */
+    TriggerPage: {
+      /** Items */
+      items: components["schemas"]["ConnectorTrigger"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** TriggerUpdate */
+    TriggerUpdate: {
+      /** Name */
+      name?: string | null;
+      target?: components["schemas"]["Target"] | null;
+    };
     /** TypedQuery */
     TypedQuery: {
       /**
@@ -16098,6 +16685,27 @@ export interface components {
     WaitReason: "approval" | "call" | "multiple" | "desktop_control";
     /** @enum {string} */
     WebOperation: "search" | "scrape";
+    /** Webhook */
+    Webhook: {
+      /** Configured */
+      configured: boolean;
+      /** Failure */
+      failure: string | null;
+      /** Operation */
+      operation: string | null;
+      /** Provider Id */
+      provider_id: string;
+      /** Remote Id */
+      remote_id: string | null;
+      /** Retryable */
+      retryable: boolean;
+      /** Secret Version */
+      secret_version: number;
+      /** Url */
+      url: string | null;
+      /** Version */
+      version: number;
+    };
     /**
      * WebhookDelivery
      * @description One webhook outbox row; its ID is the delivery ID receivers deduplicate by.
@@ -18625,6 +19233,91 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_connector_events: {
+    parameters: {
+      query?: {
+        trigger_id?: string | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EventPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_connector_event: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        event_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorEvent"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  retry_connector_event: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        event_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorEvent"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   list_connector_providers: {
     parameters: {
       query?: {
@@ -18930,6 +19623,123 @@ export interface operations {
       default: components["responses"]["Error"];
     };
   };
+  list_connector_event_types: {
+    parameters: {
+      query?: {
+        refresh?: boolean;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+        app: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EventTypePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_connector_event_type: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+        app: string;
+        event_type: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EventType"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_connector_event_webhook: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Webhook"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  configure_connector_event_webhook: {
+    parameters: {
+      query?: {
+        rotate?: boolean;
+      };
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Webhook"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
   test_connector_provider: {
     parameters: {
       query?: never;
@@ -18952,6 +19762,177 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ProviderTest"];
         };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  list_connector_triggers: {
+    parameters: {
+      query?: {
+        connection_id?: string | null;
+        limit?: number;
+        cursor?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TriggerPage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_connector_trigger: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TriggerCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorTrigger"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  get_connector_trigger: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        trigger_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorTrigger"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  update_connector_trigger: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        trigger_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TriggerUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorTrigger"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  transition_connector_trigger: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The resource's ETag: `"{id}:{version}"` of its current view, `"{key}:{version}"` for a model */
+        "If-Match"?: string | null;
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path: {
+        trigger_id: string;
+        command: "enable" | "pause" | "retire" | "reconcile";
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConnectorTrigger"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  receive_connector_webhook: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        provider_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       400: components["responses"]["Error"];
       default: components["responses"]["Error"];
@@ -23669,6 +24650,66 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProviderTypePage"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  realtime_availability: {
+    parameters: {
+      query: {
+        agent_id: string;
+        agent_revision_id?: string | null;
+        thread_id?: string | null;
+        fork_run_id?: string | null;
+        model?: string | null;
+      };
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RealtimeAvailability"];
+        };
+      };
+      400: components["responses"]["Error"];
+      default: components["responses"]["Error"];
+    };
+  };
+  create_realtime_session: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description The workspace ID a login session acts in; required with a login session. An API key acts in its own workspace and needs none; naming another is forbidden. */
+        "X-Workspace-ID"?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RealtimeSessionCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RealtimeSessionTicket"];
         };
       };
       400: components["responses"]["Error"];
