@@ -32486,6 +32486,7 @@ validate363.evaluated = {
 };
 var schema158 = {
   enum: [
+    "realtime",
     "input",
     "queued",
     "resume",
@@ -32530,6 +32531,7 @@ function validate366(
     return false;
   }
   if (!(
+    data === "realtime" ||
     data === "input" ||
     data === "queued" ||
     data === "resume" ||

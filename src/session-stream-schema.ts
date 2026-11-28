@@ -2362,6 +2362,7 @@ export interface components {
     };
     /** @enum {string} */
     Trigger:
+      | "realtime"
       | "input"
       | "queued"
       | "resume"

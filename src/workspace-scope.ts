@@ -232,6 +232,8 @@ const routes: ReadonlyArray<readonly [string, RegExp]> = [
   ["PATCH", new RegExp("^/api/v1/models/[^/]+$")],
   ["POST", new RegExp("^/api/v1/models/[^/]+/duplicate$")],
   ["GET", new RegExp("^/api/v1/plugins$")],
+  ["GET", new RegExp("^/api/v1/realtime$")],
+  ["POST", new RegExp("^/api/v1/realtime/sessions$")],
   ["GET", new RegExp("^/api/v1/runs$")],
   ["GET", new RegExp("^/api/v1/runs/[^/]+$")],
   ["PATCH", new RegExp("^/api/v1/runs/[^/]+$")],
